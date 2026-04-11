@@ -22,6 +22,7 @@ import { weekStartMonday, ymd } from "../app/date";
 import { TaskDialog } from "../components/TaskDialog";
 import { ConfirmDoneDialog } from "../components/ConfirmDoneDialog";
 import { ConfirmDeleteDialog } from "../components/ConfirmDeleteDialog";
+import { ConfirmAllDoneDialog } from "../components/ConfirmAllDoneDialog";
 
 import {
   COMPLETIONS_KEY,
@@ -72,6 +73,7 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
   const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; task?: Task }>({
     open: false,
   });
+  const [doneAllConfirm, setDoneAllConfirm] = useState<{ open: boolean }>({ open: false });
 
   function upsert(t: Task) {
     const next = props.tasks.some((x) => x.id === t.id)
@@ -198,6 +200,37 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
     return map[safeLevel] ?? map[5];
   }
 
+  function markAllDoneForSelectedDay() {
+    const nowIso = new Date().toISOString();
+    // first mark all temporary tasks as done
+    const temporaryIds = todays
+      .filter((t) => t.type === "TEMPORARY")
+      .map((t) => t.id);
+
+    if (temporaryIds.length > 0) {
+      props.setTasks(
+        props.tasks.map((t) => {
+          if (temporaryIds.includes(t.id)) {
+            return { ...t, done: true, updatedAt: nowIso };
+          }
+          return t;
+        })
+      );
+    }
+
+    // then mark all permanent tasks as done for this date
+    let next = completions;
+    todays.forEach((task) => {
+      if (task.type === "PERMANENT") {
+        next = markDoneForDate(next, task.id, selectedDay);
+      }
+    });
+    if (next !== completions) {
+      setCompletions(next);
+      saveCompletions(next);
+    }
+  }
+
   return (
     <Box sx={{ maxWidth: 900, mx: "auto", p: 2 }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
@@ -222,6 +255,16 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
           }}
         >
           Add task
+        </Button>
+
+        <Button
+          startIcon={<CheckIcon />}
+          variant="outlined"
+          disabled={todays.length === 0}
+          onClick={() => setDoneAllConfirm({ open: true })}
+          sx={{ whiteSpace: "nowrap" }}
+        >
+          All done
         </Button>
       </Stack>
 
@@ -360,6 +403,15 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
           setDeleteConfirm({ open: false });
           if (!t) return;
           remove(t.id);
+        }}
+      />
+
+      <ConfirmAllDoneDialog
+        open={doneAllConfirm.open}
+        onCancel={() => setDoneAllConfirm({ open: false })}
+        onConfirm={() => {
+          setDoneAllConfirm({ open: false });
+          markAllDoneForSelectedDay();
         }}
       />
     </Box>
