@@ -9,6 +9,8 @@ import { COMPLETIONS_KEY } from "./app/completions";
 import { TodayPage } from "./pages/TodayPage";
 import { WeekPage } from "./pages/WeekPage";
 
+import dayjs from "dayjs";
+
 export default function App() {
   // 1. Initialize tasks as an empty array, and track if we are loading
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -18,11 +20,27 @@ export default function App() {
   const [completionsRev, setCompletionsRev] = useState(0);
 
   // 2. Fetch tasks from the server when the app first loads
+  // 2. Fetch tasks from the server when the app first loads
   useEffect(() => {
     async function fetchInitialTasks() {
       try {
         const serverTasks = await loadTasks();
-        const processedTasks = rolloverIfNeeded(serverTasks);
+        
+        // --- NEW CLEANUP LOGIC ---
+        // Calculate the date 30 days ago in YYYY-MM-DD format
+        const thirtyDaysAgo = dayjs().subtract(30, 'day').format('YYYY-MM-DD');
+        
+        // Keep tasks if they don't have a date (Habits/Weekly), 
+        // OR if their date is strictly newer than 30 days ago.
+        const cleanedTasks = serverTasks.filter(task => {
+          if (task.date) {
+            return task.date >= thirtyDaysAgo;
+          }
+          return true; 
+        });
+        // -------------------------
+
+        const processedTasks = rolloverIfNeeded(cleanedTasks);
         setTasks(processedTasks);
       } catch (error) {
         console.error("Failed to fetch initial tasks", error);
