@@ -2,58 +2,46 @@ import type { Task } from "../types";
 import dayjs from "dayjs";
 import { weekStartMonday } from "./date";
 
-const TASKS_KEY = "weekly_todo_tasks_v1";
+// The tasks key is removed because we no longer save tasks to local storage
 const WEEK_KEY = "weekly_todo_lastWeekStart_v1";
 
-export function loadTasks(): Task[] {
+// This will use your Render URL when deployed, or localhost when running on your machine
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+export async function loadTasks(): Promise<Task[]> {
   try {
-    const raw = localStorage.getItem(TASKS_KEY);
-    return raw ? (JSON.parse(raw) as Task[]) : [];
-  } catch {
-    return [];
+    const response = await fetch(`${API_URL}/tasks`);
+    if (!response.ok) throw new Error("Network response was not ok");
+    return await response.json();
+  } catch (error) {
+    console.error("Failed to load tasks from server, falling back to empty array", error);
+    return []; // Return empty array if server is down or unreachable
   }
 }
 
-export function saveTasks(tasks: Task[]) {
-  localStorage.setItem(TASKS_KEY, JSON.stringify(tasks));
+export async function saveTasks(tasks: Task[]): Promise<void> {
+  try {
+    await fetch(`${API_URL}/tasks`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(tasks),
+    });
+  } catch (error) {
+    console.error("Failed to save tasks to server", error);
+  }
 }
-
-// export function rolloverIfNeeded(tasks: Task[]): Task[] {
-//   const now = dayjs();
-//   const currentWeekStart = weekStartMonday(now);
-//   const lastWeekStart = localStorage.getItem(WEEK_KEY);
-
-//   if (lastWeekStart !== currentWeekStart) {
-//     const kept = tasks.filter((t) => {
-//       if (t.type !== "TEMPORARY") return true;
-//       if (!t.date) return false;
-//       return t.date >= currentWeekStart;
-//     });
-//     localStorage.setItem(WEEK_KEY, currentWeekStart);
-//     saveTasks(kept);
-//     return kept;
-//   }
-
-//   if (!lastWeekStart) localStorage.setItem(WEEK_KEY, currentWeekStart);
-//   return tasks;
-// }
-
-/**
- * Disabled weekly rollover cleanup:
- * - TEMPORARY tasks will NOT be deleted automatically anymore.
- * - We only update WEEK_KEY (optional, for future use).
- */
 
 export function rolloverIfNeeded(tasks: Task[]): Task[] {
   const now = dayjs();
   const currentWeekStart = weekStartMonday(now);
 
-  // Keep WEEK_KEY updated (optional)
+  // It is perfectly fine to leave WEEK_KEY in localStorage! 
+  // It just tracks the last time this specific browser opened the app during a new week.
   const lastWeekStart = localStorage.getItem(WEEK_KEY);
   if (!lastWeekStart || lastWeekStart !== currentWeekStart) {
     localStorage.setItem(WEEK_KEY, currentWeekStart);
   }
 
-  // ✅ No deletion
+  // No deletion
   return tasks;
 }

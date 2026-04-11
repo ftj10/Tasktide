@@ -1,5 +1,5 @@
 import { Link, Route, Routes } from "react-router-dom";
-import { AppBar, Box, Button, Container, Toolbar } from "@mui/material";
+import { AppBar, Box, Button, Container, Toolbar, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 
 import type { Task } from "./types";
@@ -9,36 +9,41 @@ import { COMPLETIONS_KEY } from "./app/completions";
 import { TodayPage } from "./pages/TodayPage";
 import { WeekPage } from "./pages/WeekPage";
 
-const TASKS_KEY = "weekly_todo_tasks_v1";
-
 export default function App() {
-  const [tasks, setTasks] = useState<Task[]>(() => rolloverIfNeeded(loadTasks()));
+  // 1. Initialize tasks as an empty array, and track if we are loading
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
 
-  // ✅ bump this when completions change in another tab
+  // bump this when completions change in another tab
   const [completionsRev, setCompletionsRev] = useState(0);
 
+  // 2. Fetch tasks from the server when the app first loads
   useEffect(() => {
-    saveTasks(tasks);
-  }, [tasks]);
+    async function fetchInitialTasks() {
+      try {
+        const serverTasks = await loadTasks();
+        const processedTasks = rolloverIfNeeded(serverTasks);
+        setTasks(processedTasks);
+      } catch (error) {
+        console.error("Failed to fetch initial tasks", error);
+      } finally {
+        setIsLoaded(true); // Mark loading as finished!
+      }
+    }
 
+    fetchInitialTasks();
+  }, []);
+
+  // 3. Save tasks to the server ONLY AFTER they have been initially loaded
+  useEffect(() => {
+    if (isLoaded) {
+      saveTasks(tasks);
+    }
+  }, [tasks, isLoaded]);
+
+  // 4. Listen for completion changes across tabs (Tasks sync removed as they are on the server now)
   useEffect(() => {
     function onStorage(e: StorageEvent) {
-      // tasks sync
-      if (e.key === TASKS_KEY) {
-        if (!e.newValue) {
-          setTasks([]);
-          return;
-        }
-        try {
-          const next = JSON.parse(e.newValue) as Task[];
-          if (Array.isArray(next)) setTasks(next);
-        } catch {
-          // ignore
-        }
-        return;
-      }
-
-      // ✅ completions sync: trigger rerender/refetch in WeekPage (and any others)
       if (e.key === COMPLETIONS_KEY) {
         setCompletionsRev((x) => x + 1);
       }
@@ -47,6 +52,15 @@ export default function App() {
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
   }, []);
+
+  // Prevent rendering the app while tasks are downloading
+  if (!isLoaded) {
+    return (
+      <Box sx={{ p: 4, textAlign: 'center' }}>
+        <Typography variant="h6">Loading your tasks...</Typography>
+      </Box>
+    );
+  }
 
   return (
     <>
@@ -74,7 +88,7 @@ export default function App() {
                 <WeekPage
                   tasks={tasks}
                   setTasks={setTasks}
-                  completionsRev={completionsRev} // ✅ new prop
+                  completionsRev={completionsRev}
                 />
               }
             />
