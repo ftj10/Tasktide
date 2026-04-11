@@ -8,14 +8,26 @@ const WEEK_KEY = "weekly_todo_lastWeekStart_v1";
 // This will use your Render URL when deployed, or localhost when running on your machine
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
+// Add a console log to prove exactly which URL the frontend is using
+console.log("Current API Target:", API_URL);
+
 export async function loadTasks(): Promise<Task[]> {
   try {
     const response = await fetch(`${API_URL}/tasks`);
-    if (!response.ok) throw new Error("Network response was not ok");
-    return await response.json();
-  } catch (error) {
-    console.error("Failed to load tasks from server, falling back to empty array", error);
-    return []; // Return empty array if server is down or unreachable
+    
+    if (!response.ok) {
+      throw new Error(`Server responded with Status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log("Data successfully received from backend:", data);
+    return data;
+    
+  } catch (error: any) {
+    console.error("Fetch failed:", error);
+    // This alert will pop up on your screen and tell you EXACTLY why it failed!
+    alert(`Failed to load tasks!\nAttempted URL: ${API_URL}/tasks\nError: ${error.message}`);
+    return [];
   }
 }
 

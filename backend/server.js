@@ -18,11 +18,16 @@ mongoose.connect(process.env.MONGODB_URI)
 // Route 1: Load Tasks (GET /tasks)
 app.get('/tasks', async (req, res) => {
   try {
-    // Find all tasks, exclude the internal MongoDB '_id' and '__v' fields
+    console.log("➡️ Frontend requested tasks...");
+    
+    // Find all tasks
     const tasks = await Task.find({}, { _id: 0, __v: 0 });
+    
+    console.log(`✅ Found ${tasks.length} tasks in the database!`);
+    
     res.status(200).json(tasks);
   } catch (err) {
-    console.error("Error loading tasks:", err);
+    console.error("❌ Error loading tasks:", err);
     res.status(500).json({ error: "Failed to fetch tasks" });
   }
 });
