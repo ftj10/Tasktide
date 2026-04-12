@@ -1,5 +1,16 @@
 import { useState } from "react";
-import { Box, Button, TextField, Typography, Paper, Alert } from "@mui/material";
+import { 
+  Box, 
+  Button, 
+  TextField, 
+  Typography, 
+  Paper, 
+  Alert,
+  InputAdornment,
+  IconButton
+} from "@mui/material";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { setAuth } from "../app/storage";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
@@ -10,6 +21,9 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  
+  // State to track if the password should be visible
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,18 +46,18 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
       }
 
       if (isRegistering) {
-        // Automatically switch to login screen after successful registration
         setIsRegistering(false);
         setError("Registration successful! Please log in.");
         setUsername("");
         setPassword("");
       } else {
-        // Save the secure token and username, then notify the App
         setAuth(data.token, data.username);
         onLoginSuccess();
       }
     } catch (err: any) {
       setError(err.message);
+      // Clear ONLY the password if login/register fails
+      setPassword("");
     } finally {
       setIsLoading(false);
     }
@@ -75,12 +89,26 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
           <TextField
             fullWidth
             label="Password"
-            type="password"
+            // NEW: Toggle between "text" and "password" based on state
+            type={showPassword ? "text" : "password"}
             variant="outlined"
             margin="normal"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            // Add the eye icon button inside the input field
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={() => setShowPassword(!showPassword)}
+                    edge="end"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
           />
           <Button
             type="submit"
@@ -101,6 +129,10 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
           onClick={() => {
             setIsRegistering(!isRegistering);
             setError("");
+            // Clear both fields when switching modes
+            setUsername("");
+            setPassword("");
+            setShowPassword(false); // Reset password visibility too
           }}
         >
           {isRegistering
