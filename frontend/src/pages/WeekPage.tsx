@@ -36,7 +36,7 @@ export function WeekPage(props: {
     props.setTasks(props.tasks.filter((t) => t.id !== id));
   }
 
-  // ✅ Generate events for the currently visible range (prev/next week works)
+  // Generate events for the currently visible range (prev/next week works)
   const events = useMemo(() => {
     return (info: any, successCallback: any) => {
       const completions = loadCompletions(); // read latest (in case TodayPage changed it)
@@ -73,7 +73,7 @@ export function WeekPage(props: {
         firstDay={1}
         events={events}
 
-        // ✅ CLICK "Monday 1" / "Tuesday 2" header to jump to TodayPage
+        // CLICK "Monday 1" / "Tuesday 2" header to jump to TodayPage
         dayHeaderContent={(arg) => {
           const ymdStr = dayjs(arg.date).format("YYYY-MM-DD");
           return (

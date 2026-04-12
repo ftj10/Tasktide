@@ -2,60 +2,113 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
 const Task = require('./models/Task');
+const User = require('./models/User');
 
 const app = express();
+app.use(cors());
+app.use(express.json());
 
-// Middleware
-app.use(cors()); // Allows your React frontend to talk to this server
-app.use(express.json()); // Allows the server to read incoming JSON data
-
-// Database Connection
 mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log("✅ Connected to MongoDB Atlas"))
-  .catch(err => console.error("❌ Database connection error:", err));
+  .then(() => console.log("Connected to MongoDB Atlas"))
+  .catch(err => console.error("Database connection error:", err));
 
-// Route 1: Load Tasks (GET /tasks)
-app.get('/tasks', async (req, res) => {
+// --- AUTHENTICATION MIDDLEWARE ---
+// This acts as a bouncer. It checks if the request has a valid login ticket (token).
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1]; // Format: "Bearer <token>"
+
+  if (!token) return res.status(401).json({ error: "Access denied. Please log in." });
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, decodedUser) => {
+    if (err) return res.status(403).json({ error: "Invalid or expired token." });
+    req.user = decodedUser; // Attach the user info (like userId) to the request
+    next();
+  });
+};
+
+// --- USER ROUTES (Public) ---
+app.post('/register', async (req, res) => {
   try {
-    console.log("➡️ Frontend requested tasks...");
+    const { username, password } = req.body;
     
-    // Find all tasks
-    const tasks = await Task.find({}, { _id: 0, __v: 0 });
+    // Check if user exists
+    const existingUser = await User.findOne({ username });
+    if (existingUser) return res.status(400).json({ error: "Username already taken" });
+
+    // Encrypt password and save user
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
     
-    console.log(`✅ Found ${tasks.length} tasks in the database!`);
+    const newUser = new User({ username, password: hashedPassword });
+    await newUser.save();
+
+    res.status(201).json({ message: "User registered successfully!" });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to register" });
+  }
+});
+
+app.post('/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    // Find user
+    const user = await User.findOne({ username });
+    if (!user) return res.status(400).json({ error: "Invalid username or password" });
+
+    // Check password
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) return res.status(400).json({ error: "Invalid username or password" });
+
+    // Create a token that lasts for 7 days
+    const token = jwt.sign({ userId: user._id, username: user.username }, process.env.JWT_SECRET, { expiresIn: '7d' });
     
+    res.status(200).json({ token, username: user.username });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to log in" });
+  }
+});
+
+// --- TASK ROUTES (Protected) ---
+// Notice we added `authenticateToken` as the middle argument to these routes
+
+app.get('/tasks', authenticateToken, async (req, res) => {
+  try {
+    // Only find tasks that belong to the logged-in user
+    const tasks = await Task.find({ userId: req.user.userId }, { _id: 0, __v: 0 });
     res.status(200).json(tasks);
   } catch (err) {
-    console.error("❌ Error loading tasks:", err);
     res.status(500).json({ error: "Failed to fetch tasks" });
   }
 });
 
-// Route 2: Save Tasks (POST /tasks)
-// Because your frontend sends the entire list of tasks every time you save,
-// we will clear the old database and replace it with the new list.
-app.post('/tasks', async (req, res) => {
+app.post('/tasks', authenticateToken, async (req, res) => {
   try {
     const newTasks = req.body; 
     
-    // Clear out the old tasks
-    await Task.deleteMany({});
+    // IMPORTANT: Only clear out the old tasks belonging to THIS specific user
+    await Task.deleteMany({ userId: req.user.userId });
     
-    // Insert the new list if it's not empty
     if (newTasks && newTasks.length > 0) {
-      await Task.insertMany(newTasks);
+      // Attach the userId to every task before saving it to the database
+      const tasksWithUser = newTasks.map(task => ({
+        ...task,
+        userId: req.user.userId
+      }));
+      await Task.insertMany(tasksWithUser);
     }
     
     res.status(200).json({ message: "Tasks saved successfully" });
   } catch (err) {
-    console.error("Error saving tasks:", err);
+    console.error(err);
     res.status(500).json({ error: "Failed to save tasks" });
   }
 });
 
-// Start the server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server is running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

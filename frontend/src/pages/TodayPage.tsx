@@ -33,7 +33,7 @@ import {
 } from "../app/completions";
 
 export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => void }) {
-  // ✅ read date from URL: /?date=YYYY-MM-DD
+  // read date from URL: /?date=YYYY-MM-DD
   const [searchParams] = useSearchParams();
   const initialDayParam = searchParams.get("date");
 
@@ -41,7 +41,7 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
     initialDayParam ?? ymd(dayjs())
   );
 
-  // ✅ update selectedDay if user navigates with another date param
+  // update selectedDay if user navigates with another date param
   useEffect(() => {
     const param = searchParams.get("date");
     if (param) {
@@ -111,7 +111,6 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
     });
   }
 
-  // ✅ NEW: move TEMPORARY to today (this week only, from a future day)
   function moveTemporaryToToday(task: Task) {
     if (task.type !== "TEMPORARY") return;
     const todayYmd = ymd(dayjs());
@@ -123,7 +122,6 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
     });
   }
 
-  // ✅ NEW: move PERMANENT occurrence (selectedDay) to today for THIS WEEK ONLY
   // Implementation: mark permanent as done on selectedDay + create temp clone on today
   function movePermanentOccurrenceToToday(task: Task) {
     if (task.type !== "PERMANENT") return;

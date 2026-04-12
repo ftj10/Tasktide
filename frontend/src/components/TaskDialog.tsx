@@ -132,7 +132,7 @@ export function TaskDialog(props: {
     <Dialog open={props.open} onClose={props.onClose} fullWidth maxWidth="sm">
       <DialogTitle>{props.mode === "create" ? "Add task" : "Edit task"}</DialogTitle>
 
-      {/* ✅ FORM: Enter submits */}
+      {/* FORM: Enter submits */}
       <Box
         component="form"
         onSubmit={(e) => {
