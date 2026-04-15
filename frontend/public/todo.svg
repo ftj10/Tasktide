@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4facfe" />
+      <stop offset="100%" stop-color="#00f2fe" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-opacity="0.15" />
+    </filter>
+  </defs>
+  
+  <rect width="512" height="512" rx="115" fill="url(#bgGrad)" />
+  
+  <path d="M 130 140 L 382 140 A 32 32 0 0 1 414 172 L 414 200 L 98 200 L 98 172 A 32 32 0 0 1 130 140 Z" fill="#ffffff" opacity="0.9" />
+  
+  <path d="M 98 200 L 414 200 L 414 350 A 32 32 0 0 1 382 382 L 130 382 A 32 32 0 0 1 98 350 Z" fill="#f8f9fa" filter="url(#shadow)" />
+  
+  <rect x="150" y="110" width="24" height="48" rx="12" fill="#e0e0e0" />
+  <rect x="338" y="110" width="24" height="48" rx="12" fill="#e0e0e0" />
+  
+  <path d="M 180 280 L 240 330 L 340 210" fill="none" stroke="#2196f3" stroke-width="36" stroke-linecap="round" stroke-linejoin="round" />
+</svg>

@@ -68,6 +68,49 @@ export default function App() {
     if (isLoaded && isAuthenticated) saveReminders(reminders);
   }, [reminders, isLoaded, isAuthenticated]);
 
+  // --- DAILY NOTIFICATIONS ---
+  useEffect(() => {
+    // Ask the user for permission to send notifications
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+
+    // Set up a timer to check the clock every 60 seconds
+    const intervalId = setInterval(() => {
+      const now = new Date();
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+
+      // Check if it is EXACTLY 10:00 AM (10) or 9:00 PM (21)
+      if ((hours === 10 || hours === 21) && minutes === 0) {
+        
+        // We use localStorage to ensure we only send ONE notification per hour,
+        // otherwise it might trigger 60 times during that single minute!
+        const firedKey = `notified-${now.toDateString()}-${hours}`;
+        if (localStorage.getItem(firedKey)) return; 
+
+        // Send the notification!
+        if ("Notification" in window && Notification.permission === "granted") {
+          const notification = new Notification("Daily Reminder", {
+            body: "Don't forget your tasks for today.",
+            icon: "/todo.svg"
+          });
+
+          // 3. Make the tab jump to the front when clicked
+          notification.onclick = () => {
+            window.focus(); 
+            notification.close();
+          };
+
+          // Mark this notification as sent so it doesn't repeat
+          localStorage.setItem(firedKey, "true"); 
+        }
+      }
+    }, 60000);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
   const handleLogout = () => {
     logoutUser();
     setIsAuthenticated(false);
