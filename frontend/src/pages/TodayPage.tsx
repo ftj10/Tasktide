@@ -12,9 +12,9 @@ import {
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import TodayIcon from "@mui/icons-material/Today";
+import EditIcon from "@mui/icons-material/Edit";
 import CheckIcon from "@mui/icons-material/Check";
-import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
+import EventIcon from "@mui/icons-material/Event";
 
 import type { Task } from "../types";
 import { tasksForDate } from "../app/taskLogic";
@@ -141,6 +141,17 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
     });
   }
 
+  function moveTemporaryToTomorrow(task: Task) {
+    if (task.type !== "TEMPORARY") return;
+    const tomorrowYmd = ymd(dayjs().add(1, "day"));
+    upsert({
+      ...task,
+      date: tomorrowYmd,
+      done: false,
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
   function getColor(t: Task) {
     switch (t.emergency) {
       case 1:
@@ -207,6 +218,9 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
           </Box>
           {todays.map((task) => {
             const color = getColor(task);
+            const isToday = selectedDay === ymd(dayjs());
+            const isTomorrow = selectedDay === ymd(dayjs().add(1, "day"));
+
             return (
               <Card
                 key={task.id}
@@ -219,11 +233,10 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
               >
                 <CardContent sx={{ p: "16px !important" }}>
                   <Stack 
-                    direction="row" 
+                    direction={{ xs: "column", sm: "row" }} 
                     justifyContent="space-between" 
-                    alignItems="center" 
-                    spacing={1}
-                    flexWrap="wrap" 
+                    alignItems={{ xs: "flex-start", sm: "center" }} 
+                    spacing={2}
                   >
                     <Box sx={{ maxWidth: "100%", overflow: "hidden" }}>
                       <Typography
@@ -239,34 +252,56 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
                         {task.type} • Priority {task.emergency ?? 5}
                       </Typography>
                     </Box>
-                    <Stack direction="row" spacing={0.5} sx={{ mt: { xs: 1, sm: 0 } }}>
-                      <IconButton
+
+                    {/* Action Buttons with clear text labels */}
+                    <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mt: { xs: 1, sm: 0 } }}>
+                      <Button
+                        size="small"
+                        variant="outlined"
                         color="primary"
+                        startIcon={<EditIcon />}
                         onClick={() => {
                           setEditing(task);
                           setDialogOpen(true);
                         }}
                       >
-                        <TodayIcon />
-                      </IconButton>
+                        Modify
+                      </Button>
 
-                      {task.type === "TEMPORARY" && selectedDay !== ymd(dayjs()) && (
-                        <IconButton
+                      {task.type === "TEMPORARY" && !isToday && (
+                        <Button
+                          size="small"
+                          variant="outlined"
                           color="secondary"
+                          startIcon={<EventIcon />}
                           onClick={() => moveTemporaryToToday(task)}
-                          title="Move to Today"
                         >
-                          <SwapHorizIcon />
-                        </IconButton>
+                          To Today
+                        </Button>
+                      )}
+
+                      {task.type === "TEMPORARY" && !isTomorrow && (
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          color="secondary"
+                          startIcon={<EventIcon />}
+                          onClick={() => moveTemporaryToTomorrow(task)}
+                        >
+                          To Tomorrow
+                        </Button>
                       )}
 
                       {!task.done && (
-                        <IconButton
+                        <Button
+                          size="small"
+                          variant="contained"
                           color="success"
+                          startIcon={<CheckIcon />}
                           onClick={() => setMarkDoneTask(task)}
                         >
-                          <CheckIcon />
-                        </IconButton>
+                          Done
+                        </Button>
                       )}
                     </Stack>
                   </Stack>
