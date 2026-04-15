@@ -29,3 +29,13 @@ export type Task = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type Reminder = {
+  id: string;
+  title: string;
+  content: string; // The notes
+  emergency: number;
+  done: boolean;
+  createdAt: string;
+  updatedAt: string;
+};

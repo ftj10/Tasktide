@@ -3,61 +3,79 @@ import { AppBar, Box, Button, Container, Toolbar, Typography } from "@mui/materi
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 
-import type { Task } from "./types";
-import { loadTasks, rolloverIfNeeded, saveTasks, getToken, logoutUser, getUsername } from "./app/storage";
+import type { Task, Reminder } from "./types"; // <-- Import Reminder
+import { loadTasks, rolloverIfNeeded, saveTasks, getToken, logoutUser, getUsername, loadReminders, saveReminders } from "./app/storage";
 
 import { TodayPage } from "./pages/TodayPage";
 import { WeekPage } from "./pages/WeekPage";
 import { LoginPage } from "./pages/LoginPage";
-import { ReminderPage } from "./pages/ReminderPage";
+import { ReminderPage } from "./pages/ReminderDialog";
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!getToken());
+  
+  // State for both lists
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [reminders, setReminders] = useState<Reminder[]>([]);
+  
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load tasks only when authenticated
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    async function fetchInitialTasks() {
+    async function fetchInitialData() {
       try {
-        const serverTasks = await loadTasks();
+        const [serverTasks, serverReminders] = await Promise.all([
+          loadTasks(),
+          loadReminders()
+        ]);
         
-        // 30-Day Cleanup Filter
         const thirtyDaysAgo = dayjs().subtract(30, 'day').format('YYYY-MM-DD');
-        const cleanedTasks = serverTasks.filter(task => {
+        
+        // 1. Clean Tasks
+        const cleanedTasks = serverTasks.filter((task: Task) => {
           if (task.date) return task.date >= thirtyDaysAgo;
           return true; 
         });
 
-        const processedTasks = rolloverIfNeeded(cleanedTasks);
-        setTasks(processedTasks);
+        // 2. Clean Reminders (Delete if marked 'done' over 30 days ago)
+        const cleanedReminders = serverReminders.filter((r: Reminder) => {
+          if (r.done && r.updatedAt) {
+             const doneDate = dayjs(r.updatedAt).format('YYYY-MM-DD');
+             return doneDate >= thirtyDaysAgo;
+          }
+          return true;
+        });
+
+        setTasks(rolloverIfNeeded(cleanedTasks));
+        setReminders(cleanedReminders);
       } catch (error) {
-        console.error("Failed to fetch initial tasks", error);
+        console.error("Failed to fetch initial data", error);
       } finally {
         setIsLoaded(true);
       }
     }
 
-    fetchInitialTasks();
+    fetchInitialData();
   }, [isAuthenticated]);
 
-  // Save tasks on change
+  // Save changes to server
   useEffect(() => {
-    if (isLoaded && isAuthenticated) {
-      saveTasks(tasks);
-    }
+    if (isLoaded && isAuthenticated) saveTasks(tasks);
   }, [tasks, isLoaded, isAuthenticated]);
+
+  useEffect(() => {
+    if (isLoaded && isAuthenticated) saveReminders(reminders);
+  }, [reminders, isLoaded, isAuthenticated]);
 
   const handleLogout = () => {
     logoutUser();
     setIsAuthenticated(false);
     setTasks([]);
+    setReminders([]);
     setIsLoaded(false);
   };
 
-  // If not logged in, just show the Login Page
   if (!isAuthenticated) {
     return (
       <Container maxWidth="sm">
@@ -66,11 +84,10 @@ export default function App() {
     );
   }
 
-  // Prevent rendering main app while downloading tasks
   if (!isLoaded) {
     return (
       <Box sx={{ p: 4, textAlign: 'center' }}>
-        <Typography variant="h6">Loading your tasks...</Typography>
+        <Typography variant="h6">Loading your data...</Typography>
       </Box>
     );
   }
@@ -79,11 +96,9 @@ export default function App() {
     <>
       <AppBar position="static">
         <Toolbar>
-          {/* Add Reminder as the first button pointing to / */}
           <Button color="inherit" component={Link} to="/">
             Reminders
           </Button>
-          {/* Change Today to point to /today */}
           <Button color="inherit" component={Link} to="/today">
             Today
           </Button>
@@ -105,9 +120,7 @@ export default function App() {
       <Container maxWidth={false}>
         <Box sx={{ py: 2 }}>
           <Routes>
-            {/* Reminder is the home page now */}
-            <Route path="/" element={< ReminderPage tasks={tasks} setTasks={setTasks} />} />
-            {/* Today moves to /today */}
+            <Route path="/" element={<ReminderPage reminders={reminders} setReminders={setReminders} />} />
             <Route path="/today" element={<TodayPage tasks={tasks} setTasks={setTasks} />} />
             <Route path="/week" element={<WeekPage tasks={tasks} setTasks={setTasks} completionsRev={0} />} />
           </Routes>

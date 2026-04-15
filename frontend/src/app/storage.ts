@@ -66,6 +66,38 @@ export async function saveTasks(tasks: Task[]): Promise<void> {
   }
 }
 
+export async function loadReminders(): Promise<any[]> {
+  const token = getToken();
+  if (!token) return [];
+  try {
+    const response = await fetch(`${API_URL}/reminders`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!response.ok) throw new Error("Network response was not ok");
+    return await response.json();
+  } catch (error) {
+    console.error("Failed to load reminders", error);
+    return [];
+  }
+}
+
+export async function saveReminders(reminders: any[]): Promise<void> {
+  const token = getToken();
+  if (!token) return; 
+  try {
+    await fetch(`${API_URL}/reminders`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(reminders),
+    });
+  } catch (error) {
+    console.error("Failed to save reminders", error);
+  }
+}
+
 export function rolloverIfNeeded(tasks: Task[]): Task[] {
   const now = dayjs();
   const currentWeekStart = weekStartMonday(now);

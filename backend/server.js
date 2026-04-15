@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken');
 
 const Task = require('./models/Task');
 const User = require('./models/User');
+const Reminder = require('./models/Reminder');
 
 const app = express();
 app.use(cors());
@@ -107,6 +108,31 @@ app.post('/tasks', authenticateToken, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to save tasks" });
+  }
+});
+// --- REMINDER ROUTES (Protected) ---
+app.get('/reminders', authenticateToken, async (req, res) => {
+  try {
+    const reminders = await Reminder.find({ userId: req.user.userId }, { _id: 0, __v: 0 });
+    res.status(200).json(reminders);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch reminders" });
+  }
+});
+
+app.post('/reminders', authenticateToken, async (req, res) => {
+  try {
+    const newReminders = req.body; 
+    await Reminder.deleteMany({ userId: req.user.userId });
+    
+    if (newReminders && newReminders.length > 0) {
+      const remindersWithUser = newReminders.map(r => ({ ...r, userId: req.user.userId }));
+      await Reminder.insertMany(remindersWithUser);
+    }
+    res.status(200).json({ message: "Reminders saved successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to save reminders" });
   }
 });
 
