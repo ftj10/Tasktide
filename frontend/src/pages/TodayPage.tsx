@@ -18,7 +18,7 @@ import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 
 import type { Task } from "../types";
 import { tasksForDate } from "../app/taskLogic";
-import { weekStartMonday, ymd } from "../app/date";
+import { ymd } from "../app/date";
 import { TaskDialog } from "../components/TaskDialog";
 import { ConfirmDoneDialog } from "../components/ConfirmDoneDialog";
 import { ConfirmDeleteDialog } from "../components/ConfirmDeleteDialog";
@@ -33,82 +33,101 @@ import {
 } from "../app/completions";
 
 export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => void }) {
-  // read date from URL: /?date=YYYY-MM-DD
-  const [searchParams] = useSearchParams();
-  const initialDayParam = searchParams.get("date");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlDate = searchParams.get("date");
 
-  const [selectedDay, setSelectedDay] = useState(() =>
-    initialDayParam ?? ymd(dayjs())
+  const [selectedDay, setSelectedDay] = useState<string>(
+    urlDate || ymd(dayjs())
   );
 
-  // update selectedDay if user navigates with another date param
   useEffect(() => {
-    const param = searchParams.get("date");
-    if (param) {
-      setSelectedDay(param);
+    if (urlDate && urlDate !== selectedDay) {
+      setSelectedDay(urlDate);
     }
-  }, [searchParams]);
+  }, [urlDate]);
 
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editing, setEditing] = useState<Task | undefined>(undefined);
+  useEffect(() => {
+    if (selectedDay !== urlDate) {
+      setSearchParams({ date: selectedDay });
+    }
+  }, [selectedDay, setSearchParams, urlDate]);
 
-  const [completions, setCompletions] = useState<CompletionMap>(() => loadCompletions());
+  const [completions, setCompletions] = useState<CompletionMap>(loadCompletions());
+
   useEffect(() => {
     function onStorage(e: StorageEvent) {
-      if (e.key !== COMPLETIONS_KEY) return;
-      // reload completions whenever another tab updates it
-      setCompletions(loadCompletions());
+      if (e.key === COMPLETIONS_KEY) {
+        setCompletions(loadCompletions());
+      }
     }
-
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
-  const todays = useMemo(
-    () => tasksForDate(props.tasks, selectedDay, completions),
-    [props.tasks, selectedDay, completions]
-  );
+  const title = useMemo(() => {
+    const d = dayjs(selectedDay);
+    return d.format("dddd, MMM D");
+  }, [selectedDay]);
 
-  const [doneConfirm, setDoneConfirm] = useState<{ open: boolean; task?: Task }>({ open: false });
-  const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; task?: Task }>({
-    open: false,
-  });
-  const [doneAllConfirm, setDoneAllConfirm] = useState<{ open: boolean }>({ open: false });
+  const todays = useMemo(() => {
+    return tasksForDate(props.tasks, selectedDay, completions);
+  }, [props.tasks, selectedDay, completions]);
 
-  function upsert(t: Task) {
-    const next = props.tasks.some((x) => x.id === t.id)
-      ? props.tasks.map((x) => (x.id === t.id ? t : x))
-      : [...props.tasks, t];
-    props.setTasks(next);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<Task | undefined>();
+  const [markDoneTask, setMarkDoneTask] = useState<Task | undefined>();
+  const [deleteTask, setDeleteTask] = useState<Task | undefined>();
+  const [allDoneOpen, setAllDoneOpen] = useState(false);
+
+  function upsert(task: Task) {
+    props.setTasks([
+      ...props.tasks.filter((t) => t.id !== task.id),
+      task,
+    ]);
+    setDialogOpen(false);
   }
 
   function remove(id: string) {
     props.setTasks(props.tasks.filter((t) => t.id !== id));
+    setDeleteTask(undefined);
+    setDialogOpen(false);
   }
 
-  function markTemporaryDone(task: Task) {
-    props.setTasks(
-      props.tasks.map((t) =>
-        t.id === task.id ? { ...t, done: true, updatedAt: new Date().toISOString() } : t
-      )
-    );
+  function doMarkDone(task: Task) {
+    if (task.type === "TEMPORARY") {
+      upsert({ ...task, done: true, updatedAt: new Date().toISOString() });
+    } else {
+      const nextMap = markDoneForDate(completions, task.id, selectedDay);
+      saveCompletions(nextMap);
+      setCompletions(nextMap);
+    }
+    setMarkDoneTask(undefined);
   }
 
-  function markPermanentDoneForSelectedDate(task: Task) {
-    const next = markDoneForDate(completions, task.id, selectedDay);
-    setCompletions(next);
-    saveCompletions(next);
-  }
+  function markAllDone() {
+    const temporaryIds = todays.filter((t) => t.type === "TEMPORARY").map((t) => t.id);
+    let nextTasks = props.tasks;
+    if (temporaryIds.length > 0) {
+      nextTasks = nextTasks.map((t) => {
+        if (temporaryIds.includes(t.id)) {
+          return { ...t, done: true, updatedAt: new Date().toISOString() };
+        }
+        return t;
+      });
+    }
 
-  function moveTemporaryToTomorrow(task: Task) {
-    if (task.type !== "TEMPORARY") return;
-    const tomorrow = dayjs(task.date ?? selectedDay).add(1, "day");
-    upsert({
-      ...task,
-      date: ymd(tomorrow),
-      done: false,
-      updatedAt: new Date().toISOString(),
-    });
+    const permanentIds = todays.filter((t) => t.type === "PERMANENT").map((t) => t.id);
+    let nextCompletions = completions;
+    for (const pid of permanentIds) {
+      nextCompletions = markDoneForDate(nextCompletions, pid, selectedDay);
+    }
+
+    if (temporaryIds.length > 0) {
+      props.setTasks(nextTasks);
+    }
+    saveCompletions(nextCompletions);
+    setCompletions(nextCompletions);
+    setAllDoneOpen(false);
   }
 
   function moveTemporaryToToday(task: Task) {
@@ -122,228 +141,141 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
     });
   }
 
-  // Implementation: mark permanent as done on selectedDay + create temp clone on today
-  function movePermanentOccurrenceToToday(task: Task) {
-    if (task.type !== "PERMANENT") return;
-
-    const todayYmd = ymd(dayjs());
-    const nowIso = new Date().toISOString();
-
-    // 1) hide the permanent occurrence on its original day (selectedDay)
-    const next = markDoneForDate(completions, task.id, selectedDay);
-    setCompletions(next);
-    saveCompletions(next);
-
-    // 2) create a temporary one-time task for today
-    const temp: Task = {
-      id: globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`,
-      title: task.title,
-      type: "TEMPORARY",
-      date: todayYmd,
-      done: false,
-      createdAt: nowIso,
-      updatedAt: nowIso,
-      emergency: task.emergency ?? 5,
-    };
-    upsert(temp);
-  }
-
-  const title = dayjs(selectedDay).format("dddd, MMM D");
-
-  const todayYmd = ymd(dayjs());
-  const currentWeekStart = weekStartMonday(dayjs());
-  const currentWeekEnd = ymd(dayjs(currentWeekStart).add(6, "day"));
-
-  function isWithinThisWeek(dateYmd: string) {
-    return dateYmd >= currentWeekStart && dateYmd <= currentWeekEnd;
-  }
-
-  function canMoveFromSelectedDayToToday(task: Task) {
-    // user wants: move from day AFTER today -> today, only this week
-    if (!isWithinThisWeek(selectedDay)) return false;
-    if (selectedDay <= todayYmd) return false;
-
-    if (task.type === "TEMPORARY") {
-      return true;
-    }
-
-    if (task.type === "PERMANENT") {
-      return true;
-    }
-
-    return false;
-  }
-
-  const permanentColorMap: { [level: number]: { bg: string; border: string; text: string } } = {
-    1: { bg: "#0D47A1", border: "#08306B", text: "#FFFFFF" },
-    2: { bg: "#1565C0", border: "#0D47A1", text: "#FFFFFF" },
-    3: { bg: "#1E88E5", border: "#1565C0", text: "#FFFFFF" },
-    4: { bg: "#90CAF9", border: "#42A5F5", text: "#000000" },
-    5: { bg: "#E3F2FD", border: "#BBDEFB", text: "#000000" },
-  };
-
-  const temporaryColorMap: { [level: number]: { bg: string; border: string; text: string } } = {
-    1: { bg: "#F57F17", border: "#E65100", text: "#000000" },
-    2: { bg: "#F9A825", border: "#F57F17", text: "#000000" },
-    3: { bg: "#FDD835", border: "#FBC02D", text: "#000000" },
-    4: { bg: "#FFF59D", border: "#FDD835", text: "#000000" },
-    5: { bg: "#FFFDE7", border: "#FFF9C4", text: "#000000" },
-  };
-
-  function getTaskColors(task: Task) {
-    const level = task.emergency ?? 5;
-    const safeLevel = Math.min(5, Math.max(1, level));
-
-    const map = task.type === "PERMANENT" ? permanentColorMap : temporaryColorMap;
-    return map[safeLevel] ?? map[5];
-  }
-
-  function markAllDoneForSelectedDay() {
-    const nowIso = new Date().toISOString();
-    // first mark all temporary tasks as done
-    const temporaryIds = todays
-      .filter((t) => t.type === "TEMPORARY")
-      .map((t) => t.id);
-
-    if (temporaryIds.length > 0) {
-      props.setTasks(
-        props.tasks.map((t) => {
-          if (temporaryIds.includes(t.id)) {
-            return { ...t, done: true, updatedAt: nowIso };
-          }
-          return t;
-        })
-      );
-    }
-
-    // then mark all permanent tasks as done for this date
-    let next = completions;
-    todays.forEach((task) => {
-      if (task.type === "PERMANENT") {
-        next = markDoneForDate(next, task.id, selectedDay);
-      }
-    });
-    if (next !== completions) {
-      setCompletions(next);
-      saveCompletions(next);
+  function getColor(t: Task) {
+    switch (t.emergency) {
+      case 1:
+        return "#d32f2f";
+      case 2:
+        return "#ed6c02";
+      case 3:
+        return "#ff9800";
+      case 4:
+        return "#4caf50";
+      case 5:
+      default:
+        return "#2196f3";
     }
   }
 
   return (
-    <Box sx={{ maxWidth: 900, mx: "auto", p: 2 }}>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-        <Stack direction="row" spacing={1} alignItems="center">
+    <Box sx={{ maxWidth: 900, mx: "auto", p: { xs: 1, sm: 2 } }}>
+      <Stack
+        direction={{ xs: "column", md: "row" }}
+        justifyContent="space-between"
+        alignItems="center"
+        spacing={2}
+        sx={{ mb: 2 }}
+      >
+        <Stack direction="row" alignItems="center" spacing={1}>
           <IconButton onClick={() => setSelectedDay(ymd(dayjs(selectedDay).subtract(1, "day")))}>
             <ArrowBackIcon />
           </IconButton>
+          <Typography variant="h6" sx={{ minWidth: 160, textAlign: "center" }}>
+            {title}
+          </Typography>
           <IconButton onClick={() => setSelectedDay(ymd(dayjs(selectedDay).add(1, "day")))}>
             <ArrowForwardIcon />
           </IconButton>
-          <Button startIcon={<TodayIcon />} onClick={() => setSelectedDay(ymd(dayjs()))}>
-            Today
-          </Button>
-          <Typography variant="h6">{title}</Typography>
         </Stack>
 
-        <Button
-          variant="contained"
-          onClick={() => {
-            setEditing(undefined);
-            setDialogOpen(true);
-          }}
-        >
-          Add task
-        </Button>
-
-        <Button
-          startIcon={<CheckIcon />}
-          variant="outlined"
-          disabled={todays.length === 0}
-          onClick={() => setDoneAllConfirm({ open: true })}
-          sx={{ whiteSpace: "nowrap" }}
-        >
-          All done
-        </Button>
+        <Stack direction="row" spacing={1} flexWrap="wrap" justifyContent="center">
+          <Button variant="outlined" onClick={() => setSelectedDay(ymd(dayjs()))}>
+            Go to Today
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => {
+              setEditing(undefined);
+              setDialogOpen(true);
+            }}
+          >
+            Add Task
+          </Button>
+        </Stack>
       </Stack>
 
-      <Stack spacing={2}>
-        {todays.map((task) => {
-          const col = getTaskColors(task);
-
-          return (
-            <Card
-              key={task.id}
-              variant="outlined"
-              sx={{
-                backgroundColor: col.bg,
-                borderColor: col.border,
-                color: col.text,
-                borderWidth: 1,
-              }}
-            >
-              <CardContent
+      {todays.length === 0 ? (
+        <Typography variant="body1" sx={{ mt: 4, textAlign: "center" }}>
+          No tasks scheduled for this date.
+        </Typography>
+      ) : (
+        <Box>
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 1 }}>
+            <Button size="small" variant="text" onClick={() => setAllDoneOpen(true)}>
+              Mark All Done
+            </Button>
+          </Box>
+          {todays.map((task) => {
+            const color = getColor(task);
+            return (
+              <Card
+                key={task.id}
                 sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: 2,
+                  mb: 1,
+                  borderLeft: "6px solid",
+                  borderColor: color,
+                  opacity: task.done ? 0.6 : 1,
                 }}
               >
-                <Box>
-                  <Typography
-                    fontWeight={700}
-                    sx={{ cursor: "pointer", userSelect: "none" }}
-                    onClick={() => {
-                      setEditing(task);
-                      setDialogOpen(true);
-                    }}
+                <CardContent sx={{ p: "16px !important" }}>
+                  <Stack 
+                    direction="row" 
+                    justifyContent="space-between" 
+                    alignItems="center" 
+                    spacing={1}
+                    flexWrap="wrap" 
                   >
-                    {task.title}
-                  </Typography>
+                    <Box sx={{ maxWidth: "100%", overflow: "hidden" }}>
+                      <Typography
+                        variant="h6"
+                        sx={{ 
+                          textDecoration: task.done ? "line-through" : "none",
+                          wordBreak: "break-word"
+                        }}
+                      >
+                        {task.title}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {task.type} • Priority {task.emergency ?? 5}
+                      </Typography>
+                    </Box>
+                    <Stack direction="row" spacing={0.5} sx={{ mt: { xs: 1, sm: 0 } }}>
+                      <IconButton
+                        color="primary"
+                        onClick={() => {
+                          setEditing(task);
+                          setDialogOpen(true);
+                        }}
+                      >
+                        <TodayIcon />
+                      </IconButton>
 
-                  <Typography variant="body2" sx={{ color: col.text }}>
-                    {task.type === "PERMANENT" ? "Permanent (weekly)" : "Temporary (one-time)"}
-                  </Typography>
-                </Box>
+                      {task.type === "TEMPORARY" && selectedDay !== ymd(dayjs()) && (
+                        <IconButton
+                          color="secondary"
+                          onClick={() => moveTemporaryToToday(task)}
+                          title="Move to Today"
+                        >
+                          <SwapHorizIcon />
+                        </IconButton>
+                      )}
 
-                <Stack direction="row" spacing={1} alignItems="center">
-                  {task.type === "TEMPORARY" && (
-                    <Button startIcon={<SwapHorizIcon />} onClick={() => moveTemporaryToTomorrow(task)}>
-                      Move to tomorrow
-                    </Button>
-                  )}
-
-                  {canMoveFromSelectedDayToToday(task) && (
-                    <Button
-                      startIcon={<TodayIcon />}
-                      onClick={() => {
-                        if (task.type === "TEMPORARY") moveTemporaryToToday(task);
-                        if (task.type === "PERMANENT") movePermanentOccurrenceToToday(task);
-                      }}
-                    >
-                      Move to today
-                    </Button>
-                  )}
-
-                  <Button
-                    startIcon={<CheckIcon />}
-                    variant="outlined"
-                    onClick={() => setDoneConfirm({ open: true, task })}
-                    sx={{
-                      borderColor: col.text,
-                      color: col.text,
-                    }}
-                  >
-                    Done
-                  </Button>
-                </Stack>
-              </CardContent>
-            </Card>
-          );
-        })}
-
-        {todays.length === 0 && <Typography color="text.secondary">No tasks for this day.</Typography>}
-      </Stack>
+                      {!task.done && (
+                        <IconButton
+                          color="success"
+                          onClick={() => setMarkDoneTask(task)}
+                        >
+                          <CheckIcon />
+                        </IconButton>
+                      )}
+                    </Stack>
+                  </Stack>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </Box>
+      )}
 
       <TaskDialog
         open={dialogOpen}
@@ -355,62 +287,34 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
           setEditing(undefined);
         }}
         onSave={upsert}
-        onDelete={remove}
-        onMoveOccurrenceToToday={(task, fromDateYmd) => {
-          const todayStr = ymd(dayjs());
-          const nowIso = new Date().toISOString();
-
-          const next = markDoneForDate(completions, task.id, fromDateYmd);
-          setCompletions(next);
-          saveCompletions(next);
-
-          const temp: Task = {
-            id: globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`,
-            title: task.title,
-            type: "TEMPORARY",
-            date: todayStr,
-            done: false,
-            createdAt: nowIso,
-            updatedAt: nowIso,
-            emergency: task.emergency ?? 5,
-          };
-          upsert(temp);
+        onDelete={(id) => {
+          const t = props.tasks.find((x) => x.id === id);
+          if (t) setDeleteTask(t);
         }}
       />
 
       <ConfirmDoneDialog
-        open={doneConfirm.open}
-        title={doneConfirm.task?.title ?? ""}
-        onCancel={() => setDoneConfirm({ open: false })}
+        open={!!markDoneTask}
+        title={markDoneTask?.title || ""}
+        onCancel={() => setMarkDoneTask(undefined)}
         onConfirm={() => {
-          const t = doneConfirm.task;
-          setDoneConfirm({ open: false });
-          if (!t) return;
-
-          if (t.type === "TEMPORARY") markTemporaryDone(t);
-          if (t.type === "PERMANENT") markPermanentDoneForSelectedDate(t);
+          if (markDoneTask) doMarkDone(markDoneTask);
         }}
       />
 
       <ConfirmDeleteDialog
-        open={deleteConfirm.open}
-        title={deleteConfirm.task?.title ?? ""}
-        onCancel={() => setDeleteConfirm({ open: false })}
+        open={!!deleteTask}
+        title={deleteTask?.title || ""}
+        onCancel={() => setDeleteTask(undefined)}
         onConfirm={() => {
-          const t = deleteConfirm.task;
-          setDeleteConfirm({ open: false });
-          if (!t) return;
-          remove(t.id);
+          if (deleteTask) remove(deleteTask.id);
         }}
       />
 
       <ConfirmAllDoneDialog
-        open={doneAllConfirm.open}
-        onCancel={() => setDoneAllConfirm({ open: false })}
-        onConfirm={() => {
-          setDoneAllConfirm({ open: false });
-          markAllDoneForSelectedDay();
-        }}
+        open={allDoneOpen}
+        onCancel={() => setAllDoneOpen(false)}
+        onConfirm={markAllDone}
       />
     </Box>
   );
