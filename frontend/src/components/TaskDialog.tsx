@@ -34,7 +34,7 @@ export function TaskDialog(props: {
       return { ...props.task, emergency: props.task.emergency ?? 5 };
     }
 
-    const d = dayjs(props.defaultDateYmd);
+    const d = props.defaultDateYmd ? dayjs(props.defaultDateYmd) : dayjs();
     return {
       id: globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`,
       title: "",
