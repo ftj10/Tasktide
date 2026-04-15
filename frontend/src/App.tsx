@@ -82,7 +82,7 @@ export default function App() {
       const minutes = now.getMinutes();
 
       // Check if it is EXACTLY 10:00 AM (10) or 9:00 PM (21)
-      if ((hours === 10 || hours === 21) && minutes === 0) {
+      if (hours === 14 && minutes === 5) {
         
         // We use localStorage to ensure we only send ONE notification per hour,
         // otherwise it might trigger 60 times during that single minute!
