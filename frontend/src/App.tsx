@@ -9,6 +9,7 @@ import { loadTasks, rolloverIfNeeded, saveTasks, getToken, logoutUser, getUserna
 import { TodayPage } from "./pages/TodayPage";
 import { WeekPage } from "./pages/WeekPage";
 import { LoginPage } from "./pages/LoginPage";
+import { ReminderPage } from "./pages/ReminderPage";
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!getToken());
@@ -78,14 +79,18 @@ export default function App() {
     <>
       <AppBar position="static">
         <Toolbar>
+          {/* Add Reminder as the first button pointing to / */}
           <Button color="inherit" component={Link} to="/">
+            Reminders
+          </Button>
+          {/* Change Today to point to /today */}
+          <Button color="inherit" component={Link} to="/today">
             Today
           </Button>
           <Button color="inherit" component={Link} to="/week">
             Week
           </Button>
           
-          {/* Spacer to push logout to the right */}
           <Box sx={{ flexGrow: 1 }} />
           
           <Typography variant="body2" sx={{ mr: 2 }}>
@@ -100,7 +105,10 @@ export default function App() {
       <Container maxWidth={false}>
         <Box sx={{ py: 2 }}>
           <Routes>
-            <Route path="/" element={<TodayPage tasks={tasks} setTasks={setTasks} />} />
+            {/* Reminder is the home page now */}
+            <Route path="/" element={< ReminderPage tasks={tasks} setTasks={setTasks} />} />
+            {/* Today moves to /today */}
+            <Route path="/today" element={<TodayPage tasks={tasks} setTasks={setTasks} />} />
             <Route path="/week" element={<WeekPage tasks={tasks} setTasks={setTasks} completionsRev={0} />} />
           </Routes>
         </Box>
