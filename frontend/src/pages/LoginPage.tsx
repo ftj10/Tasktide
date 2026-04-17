@@ -13,7 +13,7 @@ import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { setAuth } from "../app/storage";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:2676";
 
 export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
   const [isRegistering, setIsRegistering] = useState(false);

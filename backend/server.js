@@ -136,5 +136,7 @@ app.post('/reminders', authenticateToken, async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+const PORT = process.env.PORT || 2676;
+app.listen(PORT, '127.0.0.1', () => {
+  console.log(`Server running on port ${PORT} at 127.0.0.1`);
+});

@@ -6,7 +6,7 @@ const WEEK_KEY = "weekly_todo_lastWeekStart_v1";
 const TOKEN_KEY = "todo_jwt_token";
 const USERNAME_KEY = "todo_username";
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:2676';
 
 // --- AUTHENTICATION HELPERS ---
 export function getToken() { return localStorage.getItem(TOKEN_KEY); }

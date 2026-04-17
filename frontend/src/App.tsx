@@ -3,13 +3,13 @@ import { AppBar, Box, Button, Container, Toolbar, Typography } from "@mui/materi
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 
-import type { Task, Reminder } from "./types"; // <-- Import Reminder
+import type { Task, Reminder } from "./types";
 import { loadTasks, rolloverIfNeeded, saveTasks, getToken, logoutUser, getUsername, loadReminders, saveReminders } from "./app/storage";
 
 import { TodayPage } from "./pages/TodayPage";
 import { WeekPage } from "./pages/WeekPage";
 import { LoginPage } from "./pages/LoginPage";
-import { ReminderPage } from "./pages/ReminderDialog";
+import { ReminderPage } from "./pages/ReminderPage";
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!getToken());
@@ -82,7 +82,7 @@ export default function App() {
       const minutes = now.getMinutes();
 
       // Check if it is EXACTLY 10:00 AM (10) or 9:00 PM (21)
-      if ((hours === 10 || hours === 21) && minutes === 0) {
+      if (hours === 15 && minutes === 58) {
         
         // We use localStorage to ensure we only send ONE notification per hour,
         // otherwise it might trigger 60 times during that single minute!
