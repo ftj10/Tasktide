@@ -19,6 +19,7 @@ export default function App() {
   const [reminders, setReminders] = useState<Reminder[]>([]);
   
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isFetchSuccessful, setIsFetchSuccessful] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -38,7 +39,7 @@ export default function App() {
           return true; 
         });
 
-        // 2. Clean Reminders (Delete if marked 'done' over 30 days ago)
+        // 2. Clean Reminders
         const cleanedReminders = serverReminders.filter((r: Reminder) => {
           if (r.done && r.updatedAt) {
              const doneDate = dayjs(r.updatedAt).format('YYYY-MM-DD');
@@ -49,24 +50,27 @@ export default function App() {
 
         setTasks(rolloverIfNeeded(cleanedTasks));
         setReminders(cleanedReminders);
+        
+        // Safety Lock: Only turn on auto-save if we got to this line without errors!
+        setIsFetchSuccessful(true); 
+
       } catch (error) {
         console.error("Failed to fetch initial data", error);
       } finally {
         setIsLoaded(true);
       }
     }
-
     fetchInitialData();
   }, [isAuthenticated]);
 
   // Save changes to server
   useEffect(() => {
-    if (isLoaded && isAuthenticated) saveTasks(tasks);
-  }, [tasks, isLoaded, isAuthenticated]);
+    if (isFetchSuccessful && isAuthenticated) saveTasks(tasks);
+  }, [tasks, isFetchSuccessful, isAuthenticated]);
 
   useEffect(() => {
-    if (isLoaded && isAuthenticated) saveReminders(reminders);
-  }, [reminders, isLoaded, isAuthenticated]);
+    if (isFetchSuccessful && isAuthenticated) saveReminders(reminders);
+  }, [reminders, isFetchSuccessful, isAuthenticated]);
 
   // --- DAILY NOTIFICATIONS ---
   useEffect(() => {
