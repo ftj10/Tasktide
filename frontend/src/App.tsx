@@ -1,6 +1,6 @@
 import { Link, Route, Routes } from "react-router-dom";
 import { AppBar, Box, Button, Container, Toolbar, Typography } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import dayjs from "dayjs";
 
 import type { Task, Reminder } from "./types";
@@ -10,16 +10,18 @@ import { TodayPage } from "./pages/TodayPage";
 import { WeekPage } from "./pages/WeekPage";
 import { LoginPage } from "./pages/LoginPage";
 import { ReminderPage } from "./pages/ReminderPage";
+import { MonthPage } from "./pages/MonthPage";
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!getToken());
   
-  // State for both lists
   const [tasks, setTasks] = useState<Task[]>([]);
   const [reminders, setReminders] = useState<Reminder[]>([]);
   
   const [isLoaded, setIsLoaded] = useState(false);
   const [isFetchSuccessful, setIsFetchSuccessful] = useState(false);
+  const isFirstTaskLoad = useRef(true);
+  const isFirstReminderLoad = useRef(true);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -33,13 +35,11 @@ export default function App() {
         
         const thirtyDaysAgo = dayjs().subtract(30, 'day').format('YYYY-MM-DD');
         
-        // 1. Clean Tasks
         const cleanedTasks = serverTasks.filter((task: Task) => {
           if (task.date) return task.date >= thirtyDaysAgo;
           return true; 
         });
 
-        // 2. Clean Reminders
         const cleanedReminders = serverReminders.filter((r: Reminder) => {
           if (r.done && r.updatedAt) {
              const doneDate = dayjs(r.updatedAt).format('YYYY-MM-DD');
@@ -51,9 +51,7 @@ export default function App() {
         setTasks(rolloverIfNeeded(cleanedTasks));
         setReminders(cleanedReminders);
         
-        // Safety Lock: Only turn on auto-save if we got to this line without errors!
         setIsFetchSuccessful(true); 
-
       } catch (error) {
         console.error("Failed to fetch initial data", error);
       } finally {
@@ -63,50 +61,54 @@ export default function App() {
     fetchInitialData();
   }, [isAuthenticated]);
 
-  // Save changes to server
   useEffect(() => {
-    if (isFetchSuccessful && isAuthenticated) saveTasks(tasks);
+    if (!isFetchSuccessful || !isAuthenticated) return;
+    
+    if (isFirstTaskLoad.current) {
+      isFirstTaskLoad.current = false;
+      return; 
+    }
+
+    saveTasks(tasks);
   }, [tasks, isFetchSuccessful, isAuthenticated]);
 
   useEffect(() => {
-    if (isFetchSuccessful && isAuthenticated) saveReminders(reminders);
+    if (!isFetchSuccessful || !isAuthenticated) return;
+
+    if (isFirstReminderLoad.current) {
+      isFirstReminderLoad.current = false;
+      return;
+    }
+
+    saveReminders(reminders);
   }, [reminders, isFetchSuccessful, isAuthenticated]);
 
-  // --- DAILY NOTIFICATIONS ---
   useEffect(() => {
-    // Ask the user for permission to send notifications
     if ("Notification" in window && Notification.permission === "default") {
       Notification.requestPermission();
     }
 
-    // Set up a timer to check the clock every 60 seconds
     const intervalId = setInterval(() => {
       const now = new Date();
       const hours = now.getHours();
       const minutes = now.getMinutes();
 
-      // Check if it is EXACTLY 10:00 AM (10) or 9:00 PM (21)
       if ((hours === 10 || hours === 21) && minutes === 0) {
         
-        // We use localStorage to ensure we only send ONE notification per hour,
-        // otherwise it might trigger 60 times during that single minute!
         const firedKey = `notified-${now.toDateString()}-${hours}`;
         if (localStorage.getItem(firedKey)) return; 
 
-        // Send the notification!
         if ("Notification" in window && Notification.permission === "granted") {
           const notification = new Notification("Daily Reminder", {
             body: "Don't forget your tasks for today.",
             icon: "/todo.svg"
           });
 
-          // 3. Make the tab jump to the front when clicked
           notification.onclick = () => {
             window.focus(); 
             notification.close();
           };
 
-          // Mark this notification as sent so it doesn't repeat
           localStorage.setItem(firedKey, "true"); 
         }
       }
@@ -121,6 +123,9 @@ export default function App() {
     setTasks([]);
     setReminders([]);
     setIsLoaded(false);
+    setIsFetchSuccessful(false);
+    isFirstTaskLoad.current = true;
+    isFirstReminderLoad.current = true;
   };
 
   if (!isAuthenticated) {
@@ -143,14 +148,17 @@ export default function App() {
     <>
       <AppBar position="static">
         <Toolbar>
-          <Button color="inherit" component={Link} to="/">
+          <Button color="inherit" component={Link} to="/reminders">
             Reminders
           </Button>
-          <Button color="inherit" component={Link} to="/today">
+          <Button color="inherit" component={Link} to="/">
             Today
           </Button>
           <Button color="inherit" component={Link} to="/week">
             Week
+          </Button>
+          <Button color="inherit" component={Link} to="/month">
+            Month
           </Button>
           
           <Box sx={{ flexGrow: 1 }} />
@@ -167,9 +175,10 @@ export default function App() {
       <Container maxWidth={false}>
         <Box sx={{ py: 2 }}>
           <Routes>
-            <Route path="/" element={<ReminderPage reminders={reminders} setReminders={setReminders} />} />
-            <Route path="/today" element={<TodayPage tasks={tasks} setTasks={setTasks} />} />
+            <Route path="/reminders" element={<ReminderPage reminders={reminders} setReminders={setReminders} />} />
+            <Route path="/" element={<TodayPage tasks={tasks} setTasks={setTasks} />} />
             <Route path="/week" element={<WeekPage tasks={tasks} setTasks={setTasks} completionsRev={0} />} />
+            <Route path="/month" element={<MonthPage tasks={tasks} setTasks={setTasks} />} />
           </Routes>
         </Box>
       </Container>
