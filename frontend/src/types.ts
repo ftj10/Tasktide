@@ -28,6 +28,8 @@ export type Task = {
 
   createdAt: string;
   updatedAt: string;
+  location?: string;
+  mapProvider?: string;
 };
 
 export type Reminder = {

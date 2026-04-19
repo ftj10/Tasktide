@@ -18,6 +18,9 @@ import { weekdayISO, weekStartMonday, ymd } from "../app/date";
 
 type Mode = "create" | "edit";
 
+// INPUT: open, mode, defaultDateYmd, task, onClose, onSave, onDelete, onMoveOccurrenceToToday
+// OUTPUT: Dialog component for creating or editing tasks
+// EFFECT: Manages local state for task fields and calls onSave with updated task data
 export function TaskDialog(props: {
   open: boolean;
   mode: Mode;
@@ -30,7 +33,6 @@ export function TaskDialog(props: {
 }) {
   const base = useMemo(() => {
     if (props.mode === "edit" && props.task) {
-      // When editing an existing task, default emergency to 5 if undefined
       return { ...props.task, emergency: props.task.emergency ?? 5 };
     }
 
@@ -53,7 +55,13 @@ export function TaskDialog(props: {
   const [weekday, setWeekday] = useState<number>(base.weekday ?? 1);
   const [date, setDate] = useState<string>(base.date ?? props.defaultDateYmd);
   const [emergency, setEmergency] = useState<number>(base.emergency ?? 5);
+  
+  const [location, setLocation] = useState(props.task?.location || "");
+  const [mapProvider, setMapProvider] = useState(props.task?.mapProvider || "google");
 
+  // INPUT: props.open, base, props.defaultDateYmd, props.task
+  // OUTPUT: None
+  // EFFECT: Updates local state variables when the dialog opens
   useEffect(() => {
     if (!props.open) return;
     setTitle(base.title);
@@ -61,10 +69,20 @@ export function TaskDialog(props: {
     setWeekday(base.weekday ?? 1);
     setDate(base.date ?? props.defaultDateYmd);
     setEmergency(base.emergency ?? 5);
-  }, [props.open, base, props.defaultDateYmd]);
+    
+    setLocation(props.task?.location || "");
+    setMapProvider(
+      props.task?.mapProvider || 
+      localStorage.getItem("defaultMapProvider") || 
+      "google"
+    );
+  }, [props.open, base, props.defaultDateYmd, props.task]);
 
   const canSave = title.trim().length > 0;
 
+  // INPUT: override (Partial<Task>)
+  // OUTPUT: Task object
+  // EFFECT: Constructs the final task object from state variables
   function buildTask(override?: Partial<Task>): Task {
     const now = new Date().toISOString();
     return {
@@ -76,11 +94,17 @@ export function TaskDialog(props: {
       done: type === "TEMPORARY" ? (base.done ?? false) : undefined,
       updatedAt: now,
       emergency: emergency,
+      location: location.trim(),
+      mapProvider: mapProvider,
       ...override,
     };
   }
 
+  // INPUT: None
+  // OUTPUT: None
+  // EFFECT: Saves the selected map provider as default, saves task, and closes dialog
   function save() {
+    localStorage.setItem("defaultMapProvider", mapProvider);
     props.onSave(buildTask());
     props.onClose();
   }
@@ -89,7 +113,6 @@ export function TaskDialog(props: {
   const currentWeekStart = weekStartMonday(dayjs());
   const currentWeekEnd = ymd(dayjs(currentWeekStart).add(6, "day"));
 
-  // TEMPORARY → move to today
   const canMoveTempToToday =
     props.mode === "edit" &&
     type === "TEMPORARY" &&
@@ -102,7 +125,6 @@ export function TaskDialog(props: {
     props.onClose();
   }
 
-  // PERMANENT → move occurrence to today
   const fromDateYmd = props.defaultDateYmd;
   const canMovePermanentOccurrenceToToday =
     props.mode === "edit" &&
@@ -132,7 +154,6 @@ export function TaskDialog(props: {
     <Dialog open={props.open} onClose={props.onClose} fullWidth maxWidth="sm">
       <DialogTitle>{props.mode === "create" ? "Add task" : "Edit task"}</DialogTitle>
 
-      {/* FORM: Enter submits */}
       <Box
         component="form"
         onSubmit={(e) => {
@@ -159,7 +180,6 @@ export function TaskDialog(props: {
             </Select>
           </FormControl>
 
-          {/* Emergency level selector */}
           <FormControl>
             <InputLabel>Emergency</InputLabel>
             <Select
@@ -199,6 +219,26 @@ export function TaskDialog(props: {
               InputLabelProps={{ shrink: true }}
             />
           )}
+
+          <TextField
+            label="Location (Optional)"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+          />
+
+          <FormControl>
+            <InputLabel>Map Provider</InputLabel>
+            <Select
+              label="Map Provider"
+              value={mapProvider}
+              onChange={(e) => setMapProvider(e.target.value)}
+            >
+              <MenuItem value="google">Google Maps</MenuItem>
+              <MenuItem value="apple">Apple Maps</MenuItem>
+              <MenuItem value="baidu">Baidu Maps</MenuItem>
+            </Select>
+          </FormControl>
+
         </DialogContent>
 
         <DialogActions>

@@ -1,3 +1,5 @@
+// frontend/src/pages/TodayPage.tsx
+
 import dayjs from "dayjs";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -15,6 +17,7 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import EditIcon from "@mui/icons-material/Edit";
 import CheckIcon from "@mui/icons-material/Check";
 import EventIcon from "@mui/icons-material/Event";
+import MapIcon from "@mui/icons-material/Map";
 
 import type { Task } from "../types";
 import { tasksForDate } from "../app/taskLogic";
@@ -32,6 +35,9 @@ import {
   type CompletionMap,
 } from "../app/completions";
 
+// INPUT: props.tasks, props.setTasks
+// OUTPUT: Renders the daily task view
+// EFFECT: Manages task CRUD operations for a specific date
 export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => void }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const urlDate = searchParams.get("date");
@@ -168,6 +174,25 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
     }
   }
 
+  // INPUT: task (Task)
+  // OUTPUT: none
+  // EFFECT: Opens a new window with the appropriate map provider URL
+  const openMap = (task: Task) => {
+    if (!task.location) return;
+    const query = encodeURIComponent(task.location);
+    let url = "";
+
+    if (task.mapProvider === "apple") {
+      url = `https://maps.apple.com/?q=${query}`;
+    } else if (task.mapProvider === "baidu") {
+      url = `https://api.map.baidu.com/geocoder?address=${query}&output=html`;
+    } else {
+      url = `https://maps.google.com/?q=${query}`;
+    }
+
+    window.open(url, "_blank");
+  };
+
   return (
     <Box sx={{ maxWidth: 900, mx: "auto", p: { xs: 1, sm: 2 } }}>
       <Stack
@@ -232,28 +257,35 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
                 }}
               >
                 <CardContent sx={{ p: "16px !important" }}>
-                  <Stack 
-                    direction={{ xs: "column", sm: "row" }} 
-                    justifyContent="space-between" 
-                    alignItems={{ xs: "flex-start", sm: "center" }} 
+                  <Stack
+                    direction={{ xs: "column", sm: "row" }}
+                    justifyContent="space-between"
+                    alignItems={{ xs: "flex-start", sm: "center" }}
                     spacing={2}
                   >
                     <Box sx={{ maxWidth: "100%", overflow: "hidden" }}>
                       <Typography
                         variant="h6"
-                        sx={{ 
+                        sx={{
                           textDecoration: task.done ? "line-through" : "none",
                           wordBreak: "break-word"
                         }}
                       >
                         {task.title}
                       </Typography>
+
                       <Typography variant="body2" color="text.secondary">
                         {task.type} • Priority {task.emergency ?? 5}
                       </Typography>
+
+
+                      {task.location && (
+                        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                          Location: {task.location}
+                        </Typography>
+                      )}
                     </Box>
 
-                    {/* Action Buttons with clear text labels */}
                     <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mt: { xs: 1, sm: 0 } }}>
                       <Button
                         size="small"
@@ -301,6 +333,18 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
                           onClick={() => setMarkDoneTask(task)}
                         >
                           Done
+                        </Button>
+                      )}
+
+                      {task.location && (
+                        <Button
+                          size="small"
+                          variant="contained"
+                          color="secondary"
+                          startIcon={<MapIcon />}
+                          onClick={() => openMap(task)}
+                        >
+                          Map
                         </Button>
                       )}
                     </Stack>
