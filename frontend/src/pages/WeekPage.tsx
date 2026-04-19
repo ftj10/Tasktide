@@ -85,7 +85,7 @@ export function WeekPage(props: {
               return (
                 <span
                   style={{ cursor: "pointer", textDecoration: "underline" }}
-                  onClick={() => navigate(`/today?date=${ymdStr}`)}
+                  onClick={() => navigate(`/?date=${ymdStr}`)}
                 >
                   {arg.text}
                 </span>

@@ -11,7 +11,7 @@ export function ReminderPage(props: { reminders: Reminder[]; setReminders: (next
   const [editing, setEditing] = useState<Reminder | undefined>();
 
   // Sort: Emergency 1 (highest) at the top
-  const sortedReminders = [...props.reminders].sort((a, b) => (a.emergency ?? 5) - (b.emergency ?? 5));
+  const sortedReminders = [...props.reminders].filter((r) => !r.done).sort((a, b) => (a.emergency ?? 5) - (b.emergency ?? 5));
 
   function upsert(reminder: Reminder) {
     props.setReminders([...props.reminders.filter((r) => r.id !== reminder.id), reminder]);
