@@ -28,4 +28,20 @@ export type Task = {
 
   createdAt: string;
   updatedAt: string;
+  location?: string;
+  mapProvider?: string;
+  startTime?: string;
+  endTime?: string;
+  description?: string;
+};
+
+
+export type Reminder = {
+  id: string;
+  title: string;
+  content: string;
+  emergency: number;
+  done: boolean;
+  createdAt: string;
+  updatedAt: string;
 };
