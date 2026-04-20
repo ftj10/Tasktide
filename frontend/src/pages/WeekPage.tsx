@@ -1,38 +1,35 @@
+// frontend/src/pages/WeekPage.tsx
+
 import { Box, Button, Stack, Typography } from "@mui/material";
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
+import AccessTimeIcon from "@mui/icons-material/AccessTime"; // Added for icons
 import dayjs from "dayjs";
+import { useTranslation } from "react-i18next";
 
 import type { Task } from "../types";
 import { toCalendarEventsForRange } from "../app/taskLogic";
 import { TaskDialog } from "../components/TaskDialog";
 import { loadCompletions } from "../app/completions";
 
-// INPUT: task (Task)
-// OUTPUT: { bg, border, text } color strings
-// EFFECT: Translates emergency level 1-5 into FullCalendar event colors
+// Helper to match colors with TodayPage exactly
 function getTaskColors(task?: Task) {
   if (task?.done) {
-    return { bg: "#9e9e9e", border: "#9e9e9e", text: "#ffffff" }; // Grey for completed tasks
+    return { bg: "#eeeeee", border: "#bdbdbd", text: "#9e9e9e" }; 
   }
   
-  switch (task?.emergency) {
-    case 1:
-      return { bg: "#d32f2f", border: "#b71c1c", text: "#ffffff" }; // 1: High Emergency (Red)
-    case 2:
-      return { bg: "#ed6c02", border: "#e65100", text: "#ffffff" }; // 2: Orange
-    case 3:
-      return { bg: "#ff9800", border: "#f57c00", text: "#000000" }; // 3: Light Orange
-    case 4:
-      return { bg: "#4caf50", border: "#388e3c", text: "#ffffff" }; // 4: Green
-    case 5:
-    default:
-      return { bg: "#81d4fa", border: "#4fc3f7", text: "#000000" }; // 5: Low Emergency (Light Blue)
-  }
+  // Using the same 1-5 palette as TodayPage
+  const palette = ["#d32f2f", "#ed6c02", "#ff9800", "#4caf50", "#2196f3"];
+  const baseColor = palette[(task?.emergency || 5) - 1];
+
+  return {
+    bg: baseColor,
+    border: baseColor, // We will use a darker variant for the left border in eventContent
+    text: "#ffffff"
+  };
 }
 
 export function WeekPage(props: {
@@ -40,8 +37,7 @@ export function WeekPage(props: {
   setTasks: (next: Task[]) => void;
   completionsRev: number;
 }) {
-  const navigate = useNavigate();
-
+  const { t } = useTranslation();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Task | undefined>();
   const [defaultDate, setDefaultDate] = useState<string | undefined>();
@@ -58,25 +54,29 @@ export function WeekPage(props: {
     return baseEvents.map((ev: any) => {
       const taskId = ev.extendedProps?.taskId;
       const task = props.tasks.find((t) => t.id === taskId);
-
-      // Grab dynamic colors based on emergency level
       const colors = getTaskColors(task);
 
+      const dateYmd = typeof ev.start === "string" 
+          ? ev.start.substring(0, 10) 
+          : dayjs(ev.start).format("YYYY-MM-DD");
+
       if (task && task.startTime) {
-        const dateYmd = typeof ev.start === "string" 
-            ? ev.start.substring(0, 10) 
-            : dayjs(ev.start).format("YYYY-MM-DD");
-        
-        const endProp = task.endTime ? { end: `${dateYmd}T${task.endTime}:00` } : {};
+        const startAt = dayjs(`${dateYmd}T${task.startTime}:00`);
+        const implicitEndAt = startAt.add(1, "hour");
+        const dayEndAt = dayjs(`${dateYmd}T23:59:00`);
+        const endAt = task.endTime
+          ? dayjs(`${dateYmd}T${task.endTime}:00`)
+          : (implicitEndAt.isAfter(dayEndAt) ? dayEndAt : implicitEndAt);
 
         return {
           ...ev,
-          start: `${dateYmd}T${task.startTime}:00`,
-          ...endProp,
+          start: startAt.format("YYYY-MM-DDTHH:mm:ss"),
+          end: endAt.format("YYYY-MM-DDTHH:mm:ss"),
           allDay: false, 
           backgroundColor: colors.bg,
           borderColor: colors.border,
           textColor: colors.text,
+          extendedProps: { ...ev.extendedProps, task } // Pass full task for rendering
         };
       }
 
@@ -86,42 +86,22 @@ export function WeekPage(props: {
         backgroundColor: colors.bg,
         borderColor: colors.border,
         textColor: colors.text,
+        extendedProps: { ...ev.extendedProps, task }
       };
     });
   }, [props.tasks, props.completionsRev]);
 
   function upsert(task: Task) {
-    props.setTasks([
-      ...props.tasks.filter((t) => t.id !== task.id),
-      task,
-    ]);
-    setDialogOpen(false);
-  }
-
-  function remove(id: string) {
-    props.setTasks(props.tasks.filter((t) => t.id !== id));
+    props.setTasks([...props.tasks.filter((t) => t.id !== task.id), task]);
     setDialogOpen(false);
   }
 
   return (
     <Box sx={{ maxWidth: 1100, mx: "auto", p: { xs: 1, md: 2 } }}>
-      <Stack 
-        direction={{ xs: "column", sm: "row" }} 
-        justifyContent="space-between" 
-        alignItems="center" 
-        spacing={2}
-        sx={{ mb: 2 }}
-      >
-        <Typography variant="h6" align="center">Weekly Schedule (Mon–Sun)</Typography>
-        <Button
-          variant="contained"
-          fullWidth={false}
-          onClick={() => {
-            setEditing(undefined);
-            setDialogOpen(true);
-          }}
-        >
-          Add task
+      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+        <Typography variant="h6">{t('week.title')}</Typography>
+        <Button variant="contained" onClick={() => { setEditing(undefined); setDialogOpen(true); }}>
+          {t('today.addTask')}
         </Button>
       </Stack>
 
@@ -130,52 +110,75 @@ export function WeekPage(props: {
           <FullCalendar
             plugins={[timeGridPlugin, dayGridPlugin, interactionPlugin]}
             initialView="dayGridWeek"
-            
+            eventDisplay="block" // CRITICAL: This removes the dots and makes timed tasks solid bars
             headerToolbar={{
               left: "prev,next today",
               center: "title",
               right: "dayGridWeek,timeGridWeek",
             }}
-            
             buttonText={{
-              dayGridWeek: 'List View',
-              timeGridWeek: 'Time Grid View'
+              today: t("week.todayButton"),
+              dayGridWeek: t("week.listView"),
+              timeGridWeek: t("week.timeGridView")
             }}
-
-            views={{
-              dayGridWeek: {
-                displayEventTime: false 
-              },
-              timeGridWeek: {
-                displayEventTime: true  
-              }
-            }}
-            
             firstDay={1}
             events={events}
-            dayHeaderContent={(arg) => {
-              const ymdStr = dayjs(arg.date).format("YYYY-MM-DD");
+            slotEventOverlap={false}
+            eventMaxStack={4}
+            eventMinHeight={28}
+            expandRows={true}
+            
+            eventContent={(eventInfo) => {
+              const task = eventInfo.event.extendedProps.task as Task;
+              const isTimed = !eventInfo.event.allDay;
+              const timeText = eventInfo.timeText;
+              
               return (
-                <span
-                  style={{ cursor: "pointer", textDecoration: "underline" }}
-                  onClick={() => navigate(`/?date=${ymdStr}`)}
-                >
-                  {arg.text}
-                </span>
+                <Box sx={{ 
+                  display: 'flex', 
+                  flexDirection: 'column',
+                  alignItems: 'stretch',
+                  gap: 0.25, 
+                  px: 0.5, 
+                  py: 0.35,
+                  overflow: 'hidden',
+                  borderRadius: '2px',
+                  minHeight: '100%',
+                  borderLeft: isTimed ? '3px solid rgba(0,0,0,0.3)' : 'none'
+                }}>
+                  {isTimed ? (
+                    <Stack direction="row" spacing={0.5} alignItems="center" sx={{ minWidth: 0 }}>
+                      <AccessTimeIcon sx={{ fontSize: 12, color: 'inherit', flexShrink: 0 }} />
+                      <Typography variant="caption" sx={{ fontSize: 10, fontWeight: 'bold', lineHeight: 1.1, whiteSpace: 'nowrap' }}>
+                        {timeText}
+                      </Typography>
+                    </Stack>
+                  ) : null}
+                  <Typography variant="caption" sx={{ 
+                    fontSize: 11, 
+                    fontWeight: isTimed ? 'normal' : 'bold',
+                    textDecoration: task?.done ? 'line-through' : 'none',
+                    whiteSpace: isTimed ? 'normal' : 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    lineHeight: 1.15,
+                    display: '-webkit-box',
+                    WebkitBoxOrient: 'vertical',
+                    WebkitLineClamp: isTimed ? 2 : 1
+                  }}>
+                    {eventInfo.event.title}
+                  </Typography>
+                </Box>
               );
             }}
+
             eventClick={(info) => {
               const taskId = info.event.extendedProps.taskId as string;
               const task = props.tasks.find((t) => t.id === taskId);
               if (!task) return;
               setEditing(task);
-              const startStr = info.event.startStr.slice(0, 10);
-              setDefaultDate(startStr);
+              setDefaultDate(info.event.startStr.slice(0, 10));
               setDialogOpen(true);
-            }}
-            dateClick={(info) => {
-              const date = info.dateStr.slice(0, 10);
-              setDefaultDate(date);
             }}
             height="auto"
             slotMinTime="06:00:00"
@@ -189,12 +192,9 @@ export function WeekPage(props: {
         mode={editing ? "edit" : "create"}
         task={editing}
         defaultDateYmd={defaultDate || ""}
-        onClose={() => {
-          setDialogOpen(false);
-          setEditing(undefined);
-        }}
+        onClose={() => { setDialogOpen(false); setEditing(undefined); }}
         onSave={upsert}
-        onDelete={remove}
+        onDelete={(id) => props.setTasks(props.tasks.filter(t => t.id !== id))}
       />
     </Box>
   );

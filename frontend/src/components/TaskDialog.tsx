@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import type { Task, TaskType } from "../types";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { weekdayISO, weekStartMonday, ymd } from "../app/date";
 
 type Mode = "create" | "edit";
@@ -32,6 +33,7 @@ export function TaskDialog(props: {
   onDelete?: (id: string) => void;
   onMoveOccurrenceToToday?: (task: Task, fromDateYmd: string) => void;
 }) {
+  const { t } = useTranslation();
   const base = useMemo(() => {
     if (props.mode === "edit" && props.task) {
       return { ...props.task, emergency: props.task.emergency ?? 5 };
@@ -157,18 +159,18 @@ export function TaskDialog(props: {
   }
 
   const weekdayItems = [
-    { v: 1, label: "Monday" },
-    { v: 2, label: "Tuesday" },
-    { v: 3, label: "Wednesday" },
-    { v: 4, label: "Thursday" },
-    { v: 5, label: "Friday" },
-    { v: 6, label: "Saturday" },
-    { v: 7, label: "Sunday" },
+    { v: 1, label: t("dialog.weekdays.monday") },
+    { v: 2, label: t("dialog.weekdays.tuesday") },
+    { v: 3, label: t("dialog.weekdays.wednesday") },
+    { v: 4, label: t("dialog.weekdays.thursday") },
+    { v: 5, label: t("dialog.weekdays.friday") },
+    { v: 6, label: t("dialog.weekdays.saturday") },
+    { v: 7, label: t("dialog.weekdays.sunday") },
   ];
 
   return (
     <Dialog open={props.open} onClose={props.onClose} fullWidth maxWidth="sm">
-      <DialogTitle>{props.mode === "create" ? "Add task" : "Edit task"}</DialogTitle>
+      <DialogTitle>{props.mode === "create" ? t("dialog.addTaskTitle") : t("dialog.editTaskTitle")}</DialogTitle>
 
       <Box
         component="form"
@@ -180,7 +182,7 @@ export function TaskDialog(props: {
       >
         <DialogContent sx={{ display: "grid", gap: 3, pt: 2 }}>
           <TextField
-            label="Task name"
+            label={t("dialog.taskName")}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             autoFocus
@@ -189,33 +191,33 @@ export function TaskDialog(props: {
           />
 
           <FormControl>
-            <InputLabel>Type</InputLabel>
-            <Select label="Type" value={type} onChange={(e) => setType(e.target.value as TaskType)}>
-              <MenuItem value="PERMANENT">repeat every week</MenuItem>
-              <MenuItem value="TEMPORARY">one-time</MenuItem>
+            <InputLabel>{t("common.type")}</InputLabel>
+            <Select label={t("common.type")} value={type} onChange={(e) => setType(e.target.value as TaskType)}>
+              <MenuItem value="PERMANENT">{t("dialog.repeatWeekly")}</MenuItem>
+              <MenuItem value="TEMPORARY">{t("dialog.oneTime")}</MenuItem>
             </Select>
           </FormControl>
 
           <FormControl>
-            <InputLabel>Emergency</InputLabel>
+            <InputLabel>{t("common.emergency")}</InputLabel>
             <Select
-              label="Emergency"
+              label={t("common.emergency")}
               value={emergency}
               onChange={(e) => setEmergency(Number(e.target.value))}
             >
-              <MenuItem value={1}>1 (Highest)</MenuItem>
+              <MenuItem value={1}>{t("dialog.highest", { value: 1 })}</MenuItem>
               <MenuItem value={2}>2</MenuItem>
               <MenuItem value={3}>3</MenuItem>
               <MenuItem value={4}>4</MenuItem>
-              <MenuItem value={5}>5 (Lowest)</MenuItem>
+              <MenuItem value={5}>{t("dialog.lowest", { value: 5 })}</MenuItem>
             </Select>
           </FormControl>
 
           {type === "PERMANENT" ? (
             <FormControl>
-              <InputLabel>Weekday</InputLabel>
+              <InputLabel>{t("common.weekday")}</InputLabel>
               <Select
-                label="Weekday"
+                label={t("common.weekday")}
                 value={weekday}
                 onChange={(e) => setWeekday(Number(e.target.value))}
               >
@@ -228,7 +230,7 @@ export function TaskDialog(props: {
             </FormControl>
           ) : (
             <TextField
-              label="Date"
+              label={t("common.date")}
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
@@ -236,58 +238,53 @@ export function TaskDialog(props: {
             />
           )}
 
-          {/* Start and End Time Fields */}
           <Stack direction="row" spacing={2}>
             <TextField
-              label="Start Time (Optional)"
+              label={t("common.startTimeOptional")}
               type="time"
               value={startTime}
               onChange={(e) => {
                 setStartTime(e.target.value);
-                // Automatically clear End Time if Start Time is deleted
                 if (!e.target.value) setEndTime("");
               }}
               InputLabelProps={{ shrink: true }}
               fullWidth
             />
             <TextField
-              label="End Time (Optional)"
+              label={t("common.endTimeOptional")}
               type="time"
               value={endTime}
               onChange={(e) => setEndTime(e.target.value)}
               InputLabelProps={{ shrink: true }}
-              disabled={!startTime} // Disabled if no Start Time
+              disabled={!startTime}
               fullWidth
             />
           </Stack>
 
-          {/* Description Field */}
           <TextField
-            label="Description (Optional)"
+            label={t("common.descriptionOptional")}
             multiline
             rows={3}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
 
-          {/* Location Field */}
           <TextField
-            label="Location (Optional)"
+            label={t("common.locationOptional")}
             value={location}
             onChange={(e) => setLocation(e.target.value)}
           />
 
-          {/* Map Provider Field */}
           <FormControl>
-            <InputLabel>Map Provider</InputLabel>
+            <InputLabel>{t("common.mapProvider")}</InputLabel>
             <Select
-              label="Map Provider"
+              label={t("common.mapProvider")}
               value={mapProvider}
               onChange={(e) => setMapProvider(e.target.value)}
             >
-              <MenuItem value="google">Google Maps</MenuItem>
-              <MenuItem value="apple">Apple Maps</MenuItem>
-              <MenuItem value="baidu">Baidu Maps</MenuItem>
+              <MenuItem value="google">{t("dialog.mapProviders.google")}</MenuItem>
+              <MenuItem value="apple">{t("dialog.mapProviders.apple")}</MenuItem>
+              <MenuItem value="baidu">{t("dialog.mapProviders.baidu")}</MenuItem>
             </Select>
           </FormControl>
 
@@ -302,23 +299,23 @@ export function TaskDialog(props: {
                 props.onClose();
               }}
             >
-              Delete
+              {t("common.delete")}
             </Button>
           ) : (
             <span />
           )}
 
-          {canMoveTempToToday ? <Button onClick={moveTempToToday}>Move to today</Button> : <span />}
+          {canMoveTempToToday ? <Button onClick={moveTempToToday}>{t("common.moveToToday")}</Button> : <span />}
 
           {canMovePermanentOccurrenceToToday ? (
-            <Button onClick={movePermanentOccurrenceToToday}>Move occurrence to today</Button>
+            <Button onClick={movePermanentOccurrenceToToday}>{t("common.moveOccurrenceToToday")}</Button>
           ) : (
             <span />
           )}
 
-          <Button onClick={props.onClose}>Cancel</Button>
+          <Button onClick={props.onClose}>{t("common.cancel")}</Button>
           <Button variant="contained" disabled={!canSave} type="submit">
-            Save
+            {props.mode === "create" ? t("common.add") : t("common.save")}
           </Button>
         </DialogActions>
       </Box>

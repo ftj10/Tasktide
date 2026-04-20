@@ -2,6 +2,7 @@ import { Link, Route, Routes } from "react-router-dom";
 import { AppBar, Box, Button, Container, Toolbar, Typography } from "@mui/material";
 import { useEffect, useState, useRef } from "react";
 import dayjs from "dayjs";
+import { useTranslation } from "react-i18next";
 
 import type { Task, Reminder } from "./types";
 import { loadTasks, rolloverIfNeeded, saveTasks, getToken, logoutUser, getUsername, loadReminders, saveReminders } from "./app/storage";
@@ -18,17 +19,16 @@ import { MonthPage } from "./pages/MonthPage";
 // OUTPUT: Main React application component
 // EFFECT: Manages authentication state, synchronizes tasks/reminders with the backend, and schedules periodic background notifications
 export default function App() {
+  const { t, i18n } = useTranslation();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!getToken());
-  
   const [tasks, setTasks] = useState<Task[]>([]);
   const [reminders, setReminders] = useState<Reminder[]>([]);
-  
   const [isLoaded, setIsLoaded] = useState(false);
   const [isFetchSuccessful, setIsFetchSuccessful] = useState(false);
   const isFirstTaskLoad = useRef(true);
   const isFirstReminderLoad = useRef(true);
-
   const tasksRef = useRef<Task[]>([]);
+  const currentLanguage = i18n.resolvedLanguage?.startsWith("zh") ? "zh" : "en";
 
   useEffect(() => {
     tasksRef.current = tasks;
@@ -112,8 +112,8 @@ export default function App() {
         
         if (!localStorage.getItem(firedKey)) {
           if ("Notification" in window && Notification.permission === "granted") {
-            const notification = new Notification("Daily Reminder", {
-              body: "Don't forget your tasks for today.",
+            const notification = new Notification(t("notifications.dailyReminderTitle"), {
+              body: t("notifications.dailyReminderBody"),
               icon: "/todo.svg"
             });
 
@@ -142,8 +142,13 @@ export default function App() {
             
             if (!localStorage.getItem(firedKey)) {
               if ("Notification" in window && Notification.permission === "granted") {
-                const notification = new Notification(`Task Starting Soon: ${task.title}`, {
-                  body: `Starts at ${dayjs(`2000-01-01T${task.startTime}`).format("h:mm A")}`,
+                const notification = new Notification(t("notifications.taskStartingSoonTitle", { title: task.title }), {
+                  body: t("notifications.taskStartingSoonBody", {
+                    time: new Intl.DateTimeFormat(currentLanguage, {
+                      hour: "numeric",
+                      minute: "2-digit",
+                    }).format(new Date(`2000-01-01T${task.startTime}`))
+                  }),
                   icon: "/todo.svg"
                 });
                 
@@ -162,7 +167,7 @@ export default function App() {
     }, 60000);
 
     return () => clearInterval(intervalId);
-  }, []);
+  }, [currentLanguage, t]);
 
   // INPUT: none
   // OUTPUT: none
@@ -178,6 +183,10 @@ export default function App() {
     isFirstReminderLoad.current = true;
   };
 
+  function handleLanguageToggle() {
+    void i18n.changeLanguage(currentLanguage === "en" ? "zh" : "en");
+  }
+
   if (!isAuthenticated) {
     return (
       <Container maxWidth="sm">
@@ -189,7 +198,7 @@ export default function App() {
   if (!isLoaded) {
     return (
       <Box sx={{ p: 4, textAlign: 'center' }}>
-        <Typography variant="h6">Loading your data...</Typography>
+        <Typography variant="h6">{t("app.loading")}</Typography>
       </Box>
     );
   }
@@ -199,25 +208,28 @@ export default function App() {
       <AppBar position="static">
         <Toolbar>
           <Button color="inherit" component={Link} to="/reminders">
-            Reminders
+            {t("nav.reminders")}
           </Button>
           <Button color="inherit" component={Link} to="/">
-            Today
+            {t("nav.today")}
           </Button>
           <Button color="inherit" component={Link} to="/week">
-            Week
+            {t("nav.week")}
           </Button>
           <Button color="inherit" component={Link} to="/month">
-            Month
+            {t("nav.month")}
           </Button>
-          
+
           <Box sx={{ flexGrow: 1 }} />
-          
+
+          <Button color="inherit" onClick={handleLanguageToggle} sx={{ mr: 1 }}>
+            {currentLanguage === "en" ? "中文" : "EN"}
+          </Button>
           <Typography variant="body2" sx={{ mr: 2 }}>
-            Hi, {getUsername()}!
+            {t("nav.greeting", { name: getUsername() })}
           </Typography>
           <Button color="inherit" onClick={handleLogout} variant="outlined" size="small">
-            Logout
+            {t("nav.logout")}
           </Button>
         </Toolbar>
       </AppBar>

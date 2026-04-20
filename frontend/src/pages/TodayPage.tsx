@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   Box,
   Button,
@@ -38,8 +39,10 @@ import {
 // OUTPUT: Renders the daily task view
 // EFFECT: Groups tasks into "All-Day" and "Timed", ranks them correctly, and manages CRUD operations
 export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => void }) {
+  const { t, i18n } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const urlDate = searchParams.get("date");
+  const currentLanguage = i18n.resolvedLanguage?.startsWith("zh") ? "zh" : "en";
 
   const [selectedDay, setSelectedDay] = useState<string>(
     urlDate || ymd(dayjs())
@@ -70,9 +73,12 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
   }, []);
 
   const title = useMemo(() => {
-    const d = dayjs(selectedDay);
-    return d.format("dddd, MMM D");
-  }, [selectedDay]);
+    return new Intl.DateTimeFormat(currentLanguage, {
+      weekday: "long",
+      month: "short",
+      day: "numeric",
+    }).format(dayjs(selectedDay).toDate());
+  }, [currentLanguage, selectedDay]);
 
   // INPUT: props.tasks, selectedDay, completions
   // OUTPUT: { allDayTasks: Task[], timedTasks: Task[] }
@@ -169,6 +175,19 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
     }
   }
 
+  function getTaskTypeLabel(task: Task) {
+    return task.type === "TEMPORARY"
+      ? t("today.taskTypes.temporary")
+      : t("today.taskTypes.permanent");
+  }
+
+  function formatTaskTime(value: string) {
+    return new Intl.DateTimeFormat(currentLanguage, {
+      hour: "numeric",
+      minute: "2-digit",
+    }).format(new Date(`2000-01-01T${value}`));
+  }
+
   const openMap = (task: Task) => {
     if (!task.location) return;
     const query = encodeURIComponent(task.location);
@@ -206,15 +225,18 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
               </Typography>
 
               <Typography variant="body2" color="text.secondary">
-                {task.type} • Priority {task.emergency ?? 5}
+                {t("today.taskMeta", {
+                  type: getTaskTypeLabel(task),
+                  priority: task.emergency ?? 5,
+                })}
               </Typography>
 
               {task.startTime && (
                 <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mt: 0.5 }}>
                   <AccessTimeIcon fontSize="small" color="action" />
                   <Typography variant="body2" color="text.primary" fontWeight="bold">
-                    {dayjs(`2000-01-01T${task.startTime}`).format("h:mm A")}
-                    {task.endTime && ` - ${dayjs(`2000-01-01T${task.endTime}`).format("h:mm A")}`}
+                    {formatTaskTime(task.startTime)}
+                    {task.endTime && ` - ${formatTaskTime(task.endTime)}`}
                   </Typography>
                 </Stack>
               )}
@@ -227,26 +249,26 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
 
               {task.location && (
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                  Location: {task.location}
+                  {t("today.locationLabel", { location: task.location })}
                 </Typography>
               )}
             </Box>
 
             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mt: { xs: 1, sm: 0 } }}>
               <Button size="small" variant="outlined" color="primary" startIcon={<EditIcon />} onClick={() => { setEditing(task); setDialogOpen(true); }}>
-                Modify
+                {t("today.modify")}
               </Button>
               {task.type === "TEMPORARY" && !isToday && (
-                <Button size="small" variant="outlined" color="secondary" startIcon={<EventIcon />} onClick={() => moveTemporaryToToday(task)}>To Today</Button>
+                <Button size="small" variant="outlined" color="secondary" startIcon={<EventIcon />} onClick={() => moveTemporaryToToday(task)}>{t("today.toToday")}</Button>
               )}
               {task.type === "TEMPORARY" && !isTomorrow && (
-                <Button size="small" variant="outlined" color="secondary" startIcon={<EventIcon />} onClick={() => moveTemporaryToTomorrow(task)}>To Tomorrow</Button>
+                <Button size="small" variant="outlined" color="secondary" startIcon={<EventIcon />} onClick={() => moveTemporaryToTomorrow(task)}>{t("today.toTomorrow")}</Button>
               )}
               {!task.done && (
-                <Button size="small" variant="contained" color="success" startIcon={<CheckIcon />} onClick={() => setMarkDoneTask(task)}>Done</Button>
+                <Button size="small" variant="contained" color="success" startIcon={<CheckIcon />} onClick={() => setMarkDoneTask(task)}>{t("common.done")}</Button>
               )}
               {task.location && (
-                <Button size="small" variant="contained" color="secondary" startIcon={<MapIcon />} onClick={() => openMap(task)}>Map</Button>
+                <Button size="small" variant="contained" color="secondary" startIcon={<MapIcon />} onClick={() => openMap(task)}>{t("today.map")}</Button>
               )}
             </Stack>
           </Stack>
@@ -259,37 +281,37 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
     <Box sx={{ maxWidth: 900, mx: "auto", p: { xs: 1, sm: 2 } }}>
       <Stack direction={{ xs: "column", md: "row" }} justifyContent="space-between" alignItems="center" spacing={2} sx={{ mb: 2 }}>
         <Stack direction="row" alignItems="center" spacing={1}>
-          <IconButton onClick={() => setSelectedDay(ymd(dayjs(selectedDay).subtract(1, "day")))}>
+          <IconButton aria-label={t("today.previousDay")} onClick={() => setSelectedDay(ymd(dayjs(selectedDay).subtract(1, "day")))}>
             <ArrowBackIcon />
           </IconButton>
           <Typography variant="h6" sx={{ minWidth: 160, textAlign: "center" }}>
             {title}
           </Typography>
-          <IconButton onClick={() => setSelectedDay(ymd(dayjs(selectedDay).add(1, "day")))}>
+          <IconButton aria-label={t("today.nextDay")} onClick={() => setSelectedDay(ymd(dayjs(selectedDay).add(1, "day")))}>
             <ArrowForwardIcon />
           </IconButton>
         </Stack>
 
         <Stack direction="row" spacing={1} flexWrap="wrap" justifyContent="center">
-          <Button variant="outlined" onClick={() => setSelectedDay(ymd(dayjs()))}>Go to Today</Button>
-          <Button variant="contained" onClick={() => { setEditing(undefined); setDialogOpen(true); }}>Add Task</Button>
+          <Button variant="outlined" onClick={() => setSelectedDay(ymd(dayjs()))}>{t("today.goToToday")}</Button>
+          <Button variant="contained" onClick={() => { setEditing(undefined); setDialogOpen(true); }}>{t("today.addTask")}</Button>
         </Stack>
       </Stack>
 
       {(allDayTasks.length === 0 && timedTasks.length === 0) ? (
         <Typography variant="body1" sx={{ mt: 4, textAlign: "center" }}>
-          No tasks scheduled for this date.
+          {t("today.noTasks")}
         </Typography>
       ) : (
         <Box>
           <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 1 }}>
-            <Button size="small" variant="text" onClick={() => setAllDoneOpen(true)}>Mark All Done</Button>
+            <Button size="small" variant="text" onClick={() => setAllDoneOpen(true)}>{t("today.markAllDone")}</Button>
           </Box>
 
           {allDayTasks.length > 0 && (
             <Box sx={{ mb: 4 }}>
               <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 1, color: "text.secondary" }}>
-                All-Day Tasks
+                {t("today.allDay")}
               </Typography>
               {allDayTasks.map(renderTaskCard)}
             </Box>
@@ -298,7 +320,7 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
           {timedTasks.length > 0 && (
             <Box>
               <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 1, color: "text.secondary" }}>
-                Scheduled Tasks
+                {t("today.scheduled")}
               </Typography>
               {timedTasks.map(renderTaskCard)}
             </Box>

@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 import { useState, useMemo, useEffect } from "react";
 import { Box, Button, IconButton, Stack, Typography, Paper } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
@@ -11,6 +12,7 @@ import { ymd } from "../app/date";
 import { COMPLETIONS_KEY, loadCompletions, type CompletionMap } from "../app/completions";
 
 export function MonthPage(props: { tasks: Task[]; setTasks: (next: Task[]) => void }) {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [currentMonth, setCurrentMonth] = useState(dayjs().startOf("month"));
   const [completions, setCompletions] = useState<CompletionMap>(loadCompletions());
@@ -24,9 +26,13 @@ export function MonthPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
-  const monthLabel = currentMonth.format("MMMM YYYY");
+  const currentLanguage = i18n.resolvedLanguage?.startsWith("zh") ? "zh" : "en";
 
-  // Calculate the exact grid of days (padding the start/end of the month to fit a 7-day grid)
+  const monthLabel = new Intl.DateTimeFormat(currentLanguage, {
+    month: "long",
+    year: "numeric",
+  }).format(currentMonth.toDate());
+
   const calendarDays = useMemo(() => {
     const start = currentMonth.startOf("month").startOf("week");
     const end = currentMonth.endOf("month").endOf("week");
@@ -39,11 +45,18 @@ export function MonthPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
     return days;
   }, [currentMonth]);
 
-  const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const weekDays = [
+    t("month.weekdays.sun"),
+    t("month.weekdays.mon"),
+    t("month.weekdays.tue"),
+    t("month.weekdays.wed"),
+    t("month.weekdays.thu"),
+    t("month.weekdays.fri"),
+    t("month.weekdays.sat"),
+  ];
 
   return (
     <Box sx={{ maxWidth: 1000, mx: "auto", p: { xs: 1, sm: 2 } }}>
-      {/* Month Navigation Header */}
       <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
         <IconButton onClick={() => setCurrentMonth(currentMonth.subtract(1, "month"))}>
           <ArrowBackIcon />
@@ -56,32 +69,26 @@ export function MonthPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
 
       <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
         <Button variant="outlined" onClick={() => setCurrentMonth(dayjs().startOf("month"))}>
-          Jump to Current Month
+          {t("month.jumpToCurrentMonth")}
         </Button>
       </Box>
 
-      {/* Responsive Calendar Grid */}
       <Box sx={{
         display: "grid",
         gridTemplateColumns: "repeat(7, 1fr)",
         gap: { xs: 0.5, sm: 1 }
       }}>
-        {/* Days of the Week Header */}
         {weekDays.map(wd => (
           <Typography key={wd} align="center" fontWeight="bold" sx={{ mb: 1, fontSize: { xs: "0.75rem", sm: "1rem" }}}>
             {wd}
           </Typography>
         ))}
 
-        {/* Calendar Day Cells */}
         {calendarDays.map((d) => {
           const dateStr = ymd(d);
           const isCurrentMonth = d.month() === currentMonth.month();
           const isToday = dateStr === ymd(dayjs());
-          
-          // Identify weekends: Sunday is 0, Saturday is 6
           const isWeekend = d.day() === 0 || d.day() === 6;
-          
           const dayTasks = tasksForDate(props.tasks, dateStr, completions);
 
           return (
@@ -91,10 +98,6 @@ export function MonthPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
               sx={{
                 minHeight: { xs: 80, sm: 110 },
                 p: { xs: 0.5, sm: 1 },
-                // Background color logic: 
-                // 1. Blue for today 
-                // 2. Light Green for weekends 
-                // 3. Default paper color for weekdays
                 bgcolor: isToday 
                   ? "rgba(33, 150, 243, 0.1)" 
                   : isWeekend 
@@ -141,7 +144,7 @@ export function MonthPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
                 
                 {dayTasks.length > 3 && (
                   <Typography variant="caption" color="text.secondary" align="center" sx={{ fontSize: "0.65rem" }}>
-                    +{dayTasks.length - 3} more
+                    {t("month.moreTasks", { count: dayTasks.length - 3 })}
                   </Typography>
                 )}
               </Stack>

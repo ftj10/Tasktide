@@ -2,15 +2,16 @@ import { useState } from "react";
 import { Box, Button, Card, CardContent, Stack, Typography } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import CheckIcon from "@mui/icons-material/Check";
+import { useTranslation } from "react-i18next";
 
 import type { Reminder } from "../types";
 import { ReminderDialog } from "../components/ReminderDialog";
 
 export function ReminderPage(props: { reminders: Reminder[]; setReminders: (next: Reminder[]) => void }) {
+  const { t } = useTranslation();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Reminder | undefined>();
 
-  // Sort: Emergency 1 (highest) at the top
   const sortedReminders = [...props.reminders].filter((r) => !r.done).sort((a, b) => (a.emergency ?? 5) - (b.emergency ?? 5));
 
   function upsert(reminder: Reminder) {
@@ -35,15 +36,15 @@ export function ReminderPage(props: { reminders: Reminder[]; setReminders: (next
   return (
     <Box sx={{ maxWidth: 900, mx: "auto", p: { xs: 1, sm: 2 } }}>
       <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-        <Typography variant="h5" fontWeight="bold">Active Reminders</Typography>
+        <Typography variant="h5" fontWeight="bold">{t("reminder.title")}</Typography>
         <Button variant="contained" onClick={() => { setEditing(undefined); setDialogOpen(true); }}>
-          Add Reminder
+          {t("reminder.addReminder")}
         </Button>
       </Stack>
 
       {sortedReminders.length === 0 ? (
         <Typography variant="body1" sx={{ mt: 4, textAlign: "center", color: "text.secondary" }}>
-          You have no active reminders!
+          {t("reminder.empty")}
         </Typography>
       ) : (
         <Box>
@@ -61,17 +62,17 @@ export function ReminderPage(props: { reminders: Reminder[]; setReminders: (next
                       </Typography>
                     )}
                     <Typography variant="caption" sx={{ display: 'block', mt: 1, fontWeight: 'bold' }}>
-                      Priority: {reminder.emergency}
+                      {t("reminder.priority", { value: reminder.emergency })}
                     </Typography>
                   </Box>
 
                   <Stack direction="row" spacing={1} alignItems="flex-start">
                     <Button size="small" variant="outlined" startIcon={<EditIcon />} onClick={() => { setEditing(reminder); setDialogOpen(true); }}>
-                      Modify
+                      {t("reminder.modify")}
                     </Button>
                     {!reminder.done && (
                       <Button size="small" variant="contained" color="success" startIcon={<CheckIcon />} onClick={() => doMarkDone(reminder)}>
-                        Done
+                        {t("common.done")}
                       </Button>
                     )}
                   </Stack>

@@ -12,6 +12,7 @@ import {
     TextField,
     Stack,
 } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import type { Reminder } from "../types";
 
 type Props = {
@@ -23,6 +24,7 @@ type Props = {
 };
 
 export function ReminderDialog({ open, mode, reminder, onClose, onSave }: Props) {
+    const { t } = useTranslation();
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const [emergency, setEmergency] = useState<number>(5);
@@ -60,18 +62,18 @@ export function ReminderDialog({ open, mode, reminder, onClose, onSave }: Props)
 
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-            <DialogTitle>{mode === "create" ? "Create Reminder" : "Edit Reminder"}</DialogTitle>
+            <DialogTitle>{mode === "create" ? t("reminder.createTitle") : t("reminder.editTitle")}</DialogTitle>
             <DialogContent dividers>
                 <Stack spacing={2} sx={{ mt: 1 }}>
                     <TextField
-                        label="Title"
+                        label={t("reminder.reminderTitle")}
                         fullWidth
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         autoFocus
                     />
                     <TextField
-                        label="Notes (Optional)"
+                        label={t("reminder.notesOptional")}
                         fullWidth
                         multiline
                         rows={3}
@@ -79,10 +81,10 @@ export function ReminderDialog({ open, mode, reminder, onClose, onSave }: Props)
                         onChange={(e) => setContent(e.target.value)}
                     />
                     <FormControl fullWidth>
-                        <InputLabel>Emergency (1=Highest, 5=Lowest)</InputLabel>
+                        <InputLabel>{t("reminder.emergencyField")}</InputLabel>
                         <Select
                             value={emergency}
-                            label="Emergency (1=Highest, 5=Lowest)"
+                            label={t("reminder.emergencyField")}
                             onChange={(e) => setEmergency(Number(e.target.value))}
                         >
                             {[1, 2, 3, 4, 5].map((val) => (
@@ -95,8 +97,8 @@ export function ReminderDialog({ open, mode, reminder, onClose, onSave }: Props)
                 </Stack>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onClose} color="inherit">Cancel</Button>
-                <Button onClick={handleSave} variant="contained" disabled={!title.trim()}>Save</Button>
+                <Button onClick={onClose} color="inherit">{t("common.cancel")}</Button>
+                <Button onClick={handleSave} variant="contained" disabled={!title.trim()}>{t("common.save")}</Button>
             </DialogActions>
         </Dialog>
     );

@@ -1,28 +1,23 @@
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
-/**
- * A simple confirmation dialog for marking all tasks on a day as done.
- *
- * Props:
- * - open: whether the dialog is visible.
- * - onCancel: callback to dismiss the dialog without taking action.
- * - onConfirm: callback to mark all tasks as done.
- */
 export function ConfirmAllDoneDialog(props: {
   open: boolean;
   onCancel: () => void;
   onConfirm: () => void;
 }) {
+  const { t } = useTranslation();
+
   return (
     <Dialog open={props.open} onClose={props.onCancel}>
-      <DialogTitle>Confirm</DialogTitle>
+      <DialogTitle>{t("common.confirm")}</DialogTitle>
       <DialogContent>
-        <Typography>Mark all tasks for this day as done?</Typography>
+        <Typography>{t("dialog.allDoneMessage")}</Typography>
       </DialogContent>
       <DialogActions>
-        <Button onClick={props.onCancel}>Cancel</Button>
+        <Button onClick={props.onCancel}>{t("common.cancel")}</Button>
         <Button variant="contained" onClick={props.onConfirm}>
-          All done
+          {t("dialog.allDoneAction")}
         </Button>
       </DialogActions>
     </Dialog>
