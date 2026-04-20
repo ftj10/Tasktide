@@ -191,8 +191,8 @@ export function TaskDialog(props: {
           <FormControl>
             <InputLabel>Type</InputLabel>
             <Select label="Type" value={type} onChange={(e) => setType(e.target.value as TaskType)}>
-              <MenuItem value="PERMANENT">Permanent (every week)</MenuItem>
-              <MenuItem value="TEMPORARY">Temporary (one-time)</MenuItem>
+              <MenuItem value="PERMANENT">repeat every week</MenuItem>
+              <MenuItem value="TEMPORARY">one-time</MenuItem>
             </Select>
           </FormControl>
 
