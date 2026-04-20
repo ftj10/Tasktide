@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next";
 import type { Task } from "../types";
 import { toCalendarEventsForRange } from "../app/taskLogic";
 import { TaskDialog } from "../components/TaskDialog";
+import { ConfirmDeleteDialog } from "../components/ConfirmDeleteDialog";
 import { loadCompletions } from "../app/completions";
 
 // Helper to match colors with TodayPage exactly
@@ -40,6 +41,7 @@ export function WeekPage(props: {
   const { t } = useTranslation();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Task | undefined>();
+  const [deleteTask, setDeleteTask] = useState<Task | undefined>();
   const [defaultDate, setDefaultDate] = useState<string | undefined>();
 
   const events = useMemo(() => {
@@ -94,6 +96,13 @@ export function WeekPage(props: {
   function upsert(task: Task) {
     props.setTasks([...props.tasks.filter((t) => t.id !== task.id), task]);
     setDialogOpen(false);
+  }
+
+  function remove(id: string) {
+    props.setTasks(props.tasks.filter((t) => t.id !== id));
+    setDeleteTask(undefined);
+    setDialogOpen(false);
+    setEditing(undefined);
   }
 
   return (
@@ -194,7 +203,18 @@ export function WeekPage(props: {
         defaultDateYmd={defaultDate || ""}
         onClose={() => { setDialogOpen(false); setEditing(undefined); }}
         onSave={upsert}
-        onDelete={(id) => props.setTasks(props.tasks.filter(t => t.id !== id))}
+        onDelete={(id) => {
+          const task = props.tasks.find((item) => item.id === id);
+          if (task) setDeleteTask(task);
+        }}
+      />
+      <ConfirmDeleteDialog
+        open={!!deleteTask}
+        title={deleteTask?.title || ""}
+        onCancel={() => setDeleteTask(undefined)}
+        onConfirm={() => {
+          if (deleteTask) remove(deleteTask.id);
+        }}
       />
     </Box>
   );

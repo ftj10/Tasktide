@@ -66,6 +66,7 @@ export function TaskDialog(props: {
   const [startTime, setStartTime] = useState(props.task?.startTime || "");
   const [endTime, setEndTime] = useState(props.task?.endTime || "");
   const [mapProvider, setMapProvider] = useState(props.task?.mapProvider || "google");
+  const hasInvalidEndTime = Boolean(startTime && endTime && endTime < startTime);
 
   // INPUT: props.open, base, props.defaultDateYmd, props.task
   // OUTPUT: None
@@ -90,7 +91,7 @@ export function TaskDialog(props: {
     );
   }, [props.open, base, props.defaultDateYmd, props.task]);
 
-  const canSave = title.trim().length > 0;
+  const canSave = title.trim().length > 0 && !hasInvalidEndTime;
 
   // INPUT: override (Partial<Task>)
   // OUTPUT: Task object
@@ -257,6 +258,8 @@ export function TaskDialog(props: {
               onChange={(e) => setEndTime(e.target.value)}
               InputLabelProps={{ shrink: true }}
               disabled={!startTime}
+              error={hasInvalidEndTime}
+              helperText={hasInvalidEndTime ? t("dialog.endTimeError") : " "}
               fullWidth
             />
           </Stack>
@@ -296,7 +299,6 @@ export function TaskDialog(props: {
               color="error"
               onClick={() => {
                 props.onDelete?.(props.task!.id);
-                props.onClose();
               }}
             >
               {t("common.delete")}

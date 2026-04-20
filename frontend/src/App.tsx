@@ -14,12 +14,14 @@ import { WeekPage } from "./pages/WeekPage";
 import { LoginPage } from "./pages/LoginPage";
 import { ReminderPage } from "./pages/ReminderPage";
 import { MonthPage } from "./pages/MonthPage";
+import { ReleaseNotesCenter } from "./components/ReleaseNotesCenter";
 
 // INPUT: none
 // OUTPUT: Main React application component
 // EFFECT: Manages authentication state, synchronizes tasks/reminders with the backend, and schedules periodic background notifications
 export default function App() {
   const { t, i18n } = useTranslation();
+  const username = getUsername() || "";
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!getToken());
   const [tasks, setTasks] = useState<Task[]>([]);
   const [reminders, setReminders] = useState<Reminder[]>([]);
@@ -222,11 +224,12 @@ export default function App() {
 
           <Box sx={{ flexGrow: 1 }} />
 
+          {username ? <ReleaseNotesCenter username={username} /> : null}
           <Button color="inherit" onClick={handleLanguageToggle} sx={{ mr: 1 }}>
             {currentLanguage === "en" ? "中文" : "EN"}
           </Button>
           <Typography variant="body2" sx={{ mr: 2 }}>
-            {t("nav.greeting", { name: getUsername() })}
+            {t("nav.greeting", { name: username })}
           </Typography>
           <Button color="inherit" onClick={handleLogout} variant="outlined" size="small">
             {t("nav.logout")}

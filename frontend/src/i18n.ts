@@ -11,6 +11,7 @@ const resources = {
       common: {
         confirm: "Confirm",
         cancel: "Cancel",
+        close: "Close",
         delete: "Delete",
         done: "Done",
         save: "Save",
@@ -93,6 +94,14 @@ const resources = {
         notesOptional: "Notes (Optional)",
         emergencyField: "Emergency (1=Highest, 5=Lowest)"
       },
+      release: {
+        toolbar: "Updates",
+        dialogTitle: "What's New",
+        historyTitle: "Release History",
+        viewHistory: "View History",
+        latestBadge: "Latest",
+        releasedOn: "Released {{date}}"
+      },
       dialog: {
         doneMessage: "Mark \"{{title}}\" as done?",
         deleteMessage: "Delete \"{{title}}\"?",
@@ -101,6 +110,7 @@ const resources = {
         addTaskTitle: "Add task",
         editTaskTitle: "Edit task",
         taskName: "Task name",
+        endTimeError: "End time must be equal to or later than start time.",
         repeatWeekly: "Repeat every week",
         oneTime: "One-time",
         highest: "{{value}} (Highest)",
@@ -130,6 +140,7 @@ const resources = {
       common: {
         confirm: "确认",
         cancel: "取消",
+        close: "关闭",
         delete: "删除",
         done: "完成",
         save: "保存",
@@ -201,7 +212,7 @@ const resources = {
         }
       },
       reminder: {
-        title: "提醒",
+        title: "进行中的提醒",
         addReminder: "添加提醒",
         empty: "目前没有进行中的提醒！",
         priority: "优先级：{{value}}",
@@ -212,6 +223,14 @@ const resources = {
         notesOptional: "备注（可选）",
         emergencyField: "紧急程度（1=最高，5=最低）"
       },
+      release: {
+        toolbar: "更新",
+        dialogTitle: "最新更新",
+        historyTitle: "更新历史",
+        viewHistory: "查看历史",
+        latestBadge: "最新",
+        releasedOn: "发布时间 {{date}}"
+      },
       dialog: {
         doneMessage: "将“{{title}}”标记为完成？",
         deleteMessage: "删除“{{title}}”？",
@@ -220,6 +239,7 @@ const resources = {
         addTaskTitle: "添加任务",
         editTaskTitle: "编辑任务",
         taskName: "任务名称",
+        endTimeError: "结束时间必须等于或晚于开始时间。",
         repeatWeekly: "每周重复",
         oneTime: "一次性任务",
         highest: "{{value}}（最高）",
