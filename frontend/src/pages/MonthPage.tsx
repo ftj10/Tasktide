@@ -78,6 +78,10 @@ export function MonthPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
           const dateStr = ymd(d);
           const isCurrentMonth = d.month() === currentMonth.month();
           const isToday = dateStr === ymd(dayjs());
+          
+          // Identify weekends: Sunday is 0, Saturday is 6
+          const isWeekend = d.day() === 0 || d.day() === 6;
+          
           const dayTasks = tasksForDate(props.tasks, dateStr, completions);
 
           return (
@@ -87,18 +91,26 @@ export function MonthPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
               sx={{
                 minHeight: { xs: 80, sm: 110 },
                 p: { xs: 0.5, sm: 1 },
-                bgcolor: isToday ? "rgba(33, 150, 243, 0.08)" : "background.paper", // Light blue highlight for today
-                opacity: isCurrentMonth ? 1 : 0.4, // Fade out days from prev/next months
+                // Background color logic: 
+                // 1. Blue for today 
+                // 2. Light Green for weekends 
+                // 3. Default paper color for weekdays
+                bgcolor: isToday 
+                  ? "rgba(33, 150, 243, 0.1)" 
+                  : isWeekend 
+                    ? "#f9fff0"
+                    : "background.paper", 
+                opacity: isCurrentMonth ? 1 : 0.4,
                 cursor: "pointer",
                 transition: "background-color 0.2s",
                 '&:hover': { bgcolor: "action.hover" }
               }}
-              onClick={() => navigate(`/?date=${dateStr}`)} // Clicking a day jumps to TodayPage for that exact date
+              onClick={() => navigate(`/?date=${dateStr}`)}
             >
               <Typography
                 variant="body2"
                 fontWeight={isToday ? "bold" : "normal"}
-                color={isToday ? "primary" : "text.primary"}
+                color={isToday ? "primary" : isWeekend ? "success.main" : "text.primary"}
                 align="right"
               >
                 {d.date()}
@@ -118,7 +130,7 @@ export function MonthPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
                       bgcolor: t.done ? "action.disabledBackground" : "primary.light",
                       color: t.done ? "text.disabled" : "primary.contrastText",
                       px: 0.5,
-                      borderRadius: 1,
+                      borderRadius: 0.5,
                       textDecoration: t.done ? "line-through" : "none",
                       fontSize: { xs: "0.6rem", sm: "0.75rem" }
                     }}
@@ -127,7 +139,6 @@ export function MonthPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
                   </Typography>
                 ))}
                 
-                {/* If more than 3 tasks exist, show a "+X more" label so the box doesn't overflow */}
                 {dayTasks.length > 3 && (
                   <Typography variant="caption" color="text.secondary" align="center" sx={{ fontSize: "0.65rem" }}>
                     +{dayTasks.length - 3} more
