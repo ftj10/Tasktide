@@ -5,6 +5,8 @@ import dayjs from "dayjs";
 
 import type { Task, Reminder } from "./types";
 import { loadTasks, rolloverIfNeeded, saveTasks, getToken, logoutUser, getUsername, loadReminders, saveReminders } from "./app/storage";
+import { tasksForDate } from "./app/taskLogic";
+import { loadCompletions } from "./app/completions";
 
 import { TodayPage } from "./pages/TodayPage";
 import { WeekPage } from "./pages/WeekPage";
@@ -12,6 +14,9 @@ import { LoginPage } from "./pages/LoginPage";
 import { ReminderPage } from "./pages/ReminderPage";
 import { MonthPage } from "./pages/MonthPage";
 
+// INPUT: none
+// OUTPUT: Main React application component
+// EFFECT: Manages authentication state, synchronizes tasks/reminders with the backend, and schedules periodic background notifications
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!getToken());
   
@@ -23,9 +28,18 @@ export default function App() {
   const isFirstTaskLoad = useRef(true);
   const isFirstReminderLoad = useRef(true);
 
+  const tasksRef = useRef<Task[]>([]);
+
+  useEffect(() => {
+    tasksRef.current = tasks;
+  }, [tasks]);
+
   useEffect(() => {
     if (!isAuthenticated) return;
 
+    // INPUT: none
+    // OUTPUT: none
+    // EFFECT: Fetches tasks and reminders from the server, filters out items older than 30 days, and initializes state
     async function fetchInitialData() {
       try {
         const [serverTasks, serverReminders] = await Promise.all([
@@ -53,7 +67,7 @@ export default function App() {
         
         setIsFetchSuccessful(true); 
       } catch (error) {
-        console.error("Failed to fetch initial data", error);
+        console.error(error);
       } finally {
         setIsLoaded(true);
       }
@@ -94,29 +108,65 @@ export default function App() {
       const minutes = now.getMinutes();
 
       if ((hours === 10 || hours === 21) && minutes === 0) {
-        
         const firedKey = `notified-${now.toDateString()}-${hours}`;
-        if (localStorage.getItem(firedKey)) return; 
+        
+        if (!localStorage.getItem(firedKey)) {
+          if ("Notification" in window && Notification.permission === "granted") {
+            const notification = new Notification("Daily Reminder", {
+              body: "Don't forget your tasks for today.",
+              icon: "/todo.svg"
+            });
 
-        if ("Notification" in window && Notification.permission === "granted") {
-          const notification = new Notification("Daily Reminder", {
-            body: "Don't forget your tasks for today.",
-            icon: "/todo.svg"
-          });
+            notification.onclick = () => {
+              window.focus(); 
+              notification.close();
+            };
 
-          notification.onclick = () => {
-            window.focus(); 
-            notification.close();
-          };
-
-          localStorage.setItem(firedKey, "true"); 
+            localStorage.setItem(firedKey, "true"); 
+          }
         }
       }
+
+      const todayYmd = dayjs(now).format("YYYY-MM-DD");
+      const currentCompletions = loadCompletions();
+      const todayTasks = tasksForDate(tasksRef.current, todayYmd, currentCompletions);
+
+      todayTasks.forEach(task => {
+        if (task.startTime && !task.done) {
+          const [startHour, startMinute] = task.startTime.split(':').map(Number);
+          const taskTimeInMinutes = startHour * 60 + startMinute;
+          const nowInMinutes = hours * 60 + minutes;
+
+          if (taskTimeInMinutes - nowInMinutes === 15) {
+            const firedKey = `task-notified-${task.id}-${todayYmd}`;
+            
+            if (!localStorage.getItem(firedKey)) {
+              if ("Notification" in window && Notification.permission === "granted") {
+                const notification = new Notification(`Task Starting Soon: ${task.title}`, {
+                  body: `Starts at ${dayjs(`2000-01-01T${task.startTime}`).format("h:mm A")}`,
+                  icon: "/todo.svg"
+                });
+                
+                notification.onclick = () => {
+                  window.focus();
+                  notification.close();
+                };
+                
+                localStorage.setItem(firedKey, "true");
+              }
+            }
+          }
+        }
+      });
+
     }, 60000);
 
     return () => clearInterval(intervalId);
   }, []);
 
+  // INPUT: none
+  // OUTPUT: none
+  // EFFECT: Clears the local storage token, resets all component states, and redirects to the login screen
   const handleLogout = () => {
     logoutUser();
     setIsAuthenticated(false);
