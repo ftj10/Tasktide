@@ -1,5 +1,3 @@
-// frontend/src/pages/TodayPage.tsx
-
 import dayjs from "dayjs";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -18,6 +16,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import CheckIcon from "@mui/icons-material/Check";
 import EventIcon from "@mui/icons-material/Event";
 import MapIcon from "@mui/icons-material/Map";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
 
 import type { Task } from "../types";
 import { tasksForDate } from "../app/taskLogic";
@@ -37,7 +36,7 @@ import {
 
 // INPUT: props.tasks, props.setTasks
 // OUTPUT: Renders the daily task view
-// EFFECT: Manages task CRUD operations for a specific date
+// EFFECT: Groups tasks into "All-Day" and "Timed", ranks them correctly, and manages CRUD operations
 export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => void }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const urlDate = searchParams.get("date");
@@ -75,8 +74,18 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
     return d.format("dddd, MMM D");
   }, [selectedDay]);
 
-  const todays = useMemo(() => {
-    return tasksForDate(props.tasks, selectedDay, completions);
+  // INPUT: props.tasks, selectedDay, completions
+  // OUTPUT: { allDayTasks: Task[], timedTasks: Task[] }
+  // EFFECT: Splits tasks into two arrays and sorts them based on user constraints (All Day by Emergency, Timed by Time)
+  const { allDayTasks, timedTasks } = useMemo(() => {
+    const raw = tasksForDate(props.tasks, selectedDay, completions);
+    // All-Day: Has NO start time. Rank by emergency.
+    const allDay = raw.filter(t => !t.startTime).sort((a, b) => (a.emergency ?? 5) - (b.emergency ?? 5));
+
+    // Timed: Has start time. Rank ONLY by time chronologically (ignoring emergency order).
+    const timed = raw.filter(t => !!t.startTime).sort((a, b) => a.startTime!.localeCompare(b.startTime!));
+
+    return { allDayTasks: allDay, timedTasks: timed };
   }, [props.tasks, selectedDay, completions]);
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -111,7 +120,8 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
   }
 
   function markAllDone() {
-    const temporaryIds = todays.filter((t) => t.type === "TEMPORARY").map((t) => t.id);
+    const raw = tasksForDate(props.tasks, selectedDay, completions);
+    const temporaryIds = raw.filter((t) => t.type === "TEMPORARY").map((t) => t.id);
     let nextTasks = props.tasks;
     if (temporaryIds.length > 0) {
       nextTasks = nextTasks.map((t) => {
@@ -122,7 +132,7 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
       });
     }
 
-    const permanentIds = todays.filter((t) => t.type === "PERMANENT").map((t) => t.id);
+    const permanentIds = raw.filter((t) => t.type === "PERMANENT").map((t) => t.id);
     let nextCompletions = completions;
     for (const pid of permanentIds) {
       nextCompletions = markDoneForDate(nextCompletions, pid, selectedDay);
@@ -139,44 +149,26 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
   function moveTemporaryToToday(task: Task) {
     if (task.type !== "TEMPORARY") return;
     const todayYmd = ymd(dayjs());
-    upsert({
-      ...task,
-      date: todayYmd,
-      done: false,
-      updatedAt: new Date().toISOString(),
-    });
+    upsert({ ...task, date: todayYmd, done: false, updatedAt: new Date().toISOString() });
   }
 
   function moveTemporaryToTomorrow(task: Task) {
     if (task.type !== "TEMPORARY") return;
     const tomorrowYmd = ymd(dayjs().add(1, "day"));
-    upsert({
-      ...task,
-      date: tomorrowYmd,
-      done: false,
-      updatedAt: new Date().toISOString(),
-    });
+    upsert({ ...task, date: tomorrowYmd, done: false, updatedAt: new Date().toISOString() });
   }
 
   function getColor(t: Task) {
     switch (t.emergency) {
-      case 1:
-        return "#d32f2f";
-      case 2:
-        return "#ed6c02";
-      case 3:
-        return "#ff9800";
-      case 4:
-        return "#4caf50";
+      case 1: return "#d32f2f";
+      case 2: return "#ed6c02";
+      case 3: return "#ff9800";
+      case 4: return "#4caf50";
       case 5:
-      default:
-        return "#2196f3";
+      default: return "#2196f3";
     }
   }
 
-  // INPUT: task (Task)
-  // OUTPUT: none
-  // EFFECT: Opens a new window with the appropriate map provider URL
   const openMap = (task: Task) => {
     if (!task.location) return;
     const query = encodeURIComponent(task.location);
@@ -193,15 +185,79 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
     window.open(url, "_blank");
   };
 
+  // INPUT: task (Task)
+  // OUTPUT: Renders a single material card
+  // EFFECT: Dynamically shows map, time, description based on existence of properties
+  const renderTaskCard = (task: Task) => {
+    const color = getColor(task);
+    const isToday = selectedDay === ymd(dayjs());
+    const isTomorrow = selectedDay === ymd(dayjs().add(1, "day"));
+
+    return (
+      <Card
+        key={task.id}
+        sx={{ mb: 1, borderLeft: "6px solid", borderColor: color, opacity: task.done ? 0.6 : 1 }}
+      >
+        <CardContent sx={{ p: "16px !important" }}>
+          <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems={{ xs: "flex-start", sm: "center" }} spacing={2}>
+            <Box sx={{ maxWidth: "100%", overflow: "hidden" }}>
+              <Typography variant="h6" sx={{ textDecoration: task.done ? "line-through" : "none", wordBreak: "break-word" }}>
+                {task.title}
+              </Typography>
+
+              <Typography variant="body2" color="text.secondary">
+                {task.type} • Priority {task.emergency ?? 5}
+              </Typography>
+
+              {task.startTime && (
+                <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mt: 0.5 }}>
+                  <AccessTimeIcon fontSize="small" color="action" />
+                  <Typography variant="body2" color="text.primary" fontWeight="bold">
+                    {dayjs(`2000-01-01T${task.startTime}`).format("h:mm A")}
+                    {task.endTime && ` - ${dayjs(`2000-01-01T${task.endTime}`).format("h:mm A")}`}
+                  </Typography>
+                </Stack>
+              )}
+
+              {task.description && (
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, whiteSpace: "pre-wrap" }}>
+                  {task.description}
+                </Typography>
+              )}
+
+              {task.location && (
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                  Location: {task.location}
+                </Typography>
+              )}
+            </Box>
+
+            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mt: { xs: 1, sm: 0 } }}>
+              <Button size="small" variant="outlined" color="primary" startIcon={<EditIcon />} onClick={() => { setEditing(task); setDialogOpen(true); }}>
+                Modify
+              </Button>
+              {task.type === "TEMPORARY" && !isToday && (
+                <Button size="small" variant="outlined" color="secondary" startIcon={<EventIcon />} onClick={() => moveTemporaryToToday(task)}>To Today</Button>
+              )}
+              {task.type === "TEMPORARY" && !isTomorrow && (
+                <Button size="small" variant="outlined" color="secondary" startIcon={<EventIcon />} onClick={() => moveTemporaryToTomorrow(task)}>To Tomorrow</Button>
+              )}
+              {!task.done && (
+                <Button size="small" variant="contained" color="success" startIcon={<CheckIcon />} onClick={() => setMarkDoneTask(task)}>Done</Button>
+              )}
+              {task.location && (
+                <Button size="small" variant="contained" color="secondary" startIcon={<MapIcon />} onClick={() => openMap(task)}>Map</Button>
+              )}
+            </Stack>
+          </Stack>
+        </CardContent>
+      </Card>
+    );
+  };
+
   return (
     <Box sx={{ maxWidth: 900, mx: "auto", p: { xs: 1, sm: 2 } }}>
-      <Stack
-        direction={{ xs: "column", md: "row" }}
-        justifyContent="space-between"
-        alignItems="center"
-        spacing={2}
-        sx={{ mb: 2 }}
-      >
+      <Stack direction={{ xs: "column", md: "row" }} justifyContent="space-between" alignItems="center" spacing={2} sx={{ mb: 2 }}>
         <Stack direction="row" alignItems="center" spacing={1}>
           <IconButton onClick={() => setSelectedDay(ymd(dayjs(selectedDay).subtract(1, "day")))}>
             <ArrowBackIcon />
@@ -215,144 +271,38 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
         </Stack>
 
         <Stack direction="row" spacing={1} flexWrap="wrap" justifyContent="center">
-          <Button variant="outlined" onClick={() => setSelectedDay(ymd(dayjs()))}>
-            Go to Today
-          </Button>
-          <Button
-            variant="contained"
-            onClick={() => {
-              setEditing(undefined);
-              setDialogOpen(true);
-            }}
-          >
-            Add Task
-          </Button>
+          <Button variant="outlined" onClick={() => setSelectedDay(ymd(dayjs()))}>Go to Today</Button>
+          <Button variant="contained" onClick={() => { setEditing(undefined); setDialogOpen(true); }}>Add Task</Button>
         </Stack>
       </Stack>
 
-      {todays.length === 0 ? (
+      {(allDayTasks.length === 0 && timedTasks.length === 0) ? (
         <Typography variant="body1" sx={{ mt: 4, textAlign: "center" }}>
           No tasks scheduled for this date.
         </Typography>
       ) : (
         <Box>
           <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 1 }}>
-            <Button size="small" variant="text" onClick={() => setAllDoneOpen(true)}>
-              Mark All Done
-            </Button>
+            <Button size="small" variant="text" onClick={() => setAllDoneOpen(true)}>Mark All Done</Button>
           </Box>
-          {todays.map((task) => {
-            const color = getColor(task);
-            const isToday = selectedDay === ymd(dayjs());
-            const isTomorrow = selectedDay === ymd(dayjs().add(1, "day"));
 
-            return (
-              <Card
-                key={task.id}
-                sx={{
-                  mb: 1,
-                  borderLeft: "6px solid",
-                  borderColor: color,
-                  opacity: task.done ? 0.6 : 1,
-                }}
-              >
-                <CardContent sx={{ p: "16px !important" }}>
-                  <Stack
-                    direction={{ xs: "column", sm: "row" }}
-                    justifyContent="space-between"
-                    alignItems={{ xs: "flex-start", sm: "center" }}
-                    spacing={2}
-                  >
-                    <Box sx={{ maxWidth: "100%", overflow: "hidden" }}>
-                      <Typography
-                        variant="h6"
-                        sx={{
-                          textDecoration: task.done ? "line-through" : "none",
-                          wordBreak: "break-word"
-                        }}
-                      >
-                        {task.title}
-                      </Typography>
+          {allDayTasks.length > 0 && (
+            <Box sx={{ mb: 4 }}>
+              <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 1, color: "text.secondary" }}>
+                All-Day Tasks
+              </Typography>
+              {allDayTasks.map(renderTaskCard)}
+            </Box>
+          )}
 
-                      <Typography variant="body2" color="text.secondary">
-                        {task.type} • Priority {task.emergency ?? 5}
-                      </Typography>
-
-
-                      {task.location && (
-                        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                          Location: {task.location}
-                        </Typography>
-                      )}
-                    </Box>
-
-                    <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mt: { xs: 1, sm: 0 } }}>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        color="primary"
-                        startIcon={<EditIcon />}
-                        onClick={() => {
-                          setEditing(task);
-                          setDialogOpen(true);
-                        }}
-                      >
-                        Modify
-                      </Button>
-
-                      {task.type === "TEMPORARY" && !isToday && (
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          color="secondary"
-                          startIcon={<EventIcon />}
-                          onClick={() => moveTemporaryToToday(task)}
-                        >
-                          To Today
-                        </Button>
-                      )}
-
-                      {task.type === "TEMPORARY" && !isTomorrow && (
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          color="secondary"
-                          startIcon={<EventIcon />}
-                          onClick={() => moveTemporaryToTomorrow(task)}
-                        >
-                          To Tomorrow
-                        </Button>
-                      )}
-
-                      {!task.done && (
-                        <Button
-                          size="small"
-                          variant="contained"
-                          color="success"
-                          startIcon={<CheckIcon />}
-                          onClick={() => setMarkDoneTask(task)}
-                        >
-                          Done
-                        </Button>
-                      )}
-
-                      {task.location && (
-                        <Button
-                          size="small"
-                          variant="contained"
-                          color="secondary"
-                          startIcon={<MapIcon />}
-                          onClick={() => openMap(task)}
-                        >
-                          Map
-                        </Button>
-                      )}
-                    </Stack>
-                  </Stack>
-                </CardContent>
-              </Card>
-            );
-          })}
+          {timedTasks.length > 0 && (
+            <Box>
+              <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 1, color: "text.secondary" }}>
+                Scheduled Tasks
+              </Typography>
+              {timedTasks.map(renderTaskCard)}
+            </Box>
+          )}
         </Box>
       )}
 
@@ -361,40 +311,14 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
         mode={editing ? "edit" : "create"}
         task={editing}
         defaultDateYmd={selectedDay}
-        onClose={() => {
-          setDialogOpen(false);
-          setEditing(undefined);
-        }}
+        onClose={() => { setDialogOpen(false); setEditing(undefined); }}
         onSave={upsert}
-        onDelete={(id) => {
-          const t = props.tasks.find((x) => x.id === id);
-          if (t) setDeleteTask(t);
-        }}
+        onDelete={(id) => { const t = props.tasks.find((x) => x.id === id); if (t) setDeleteTask(t); }}
       />
 
-      <ConfirmDoneDialog
-        open={!!markDoneTask}
-        title={markDoneTask?.title || ""}
-        onCancel={() => setMarkDoneTask(undefined)}
-        onConfirm={() => {
-          if (markDoneTask) doMarkDone(markDoneTask);
-        }}
-      />
-
-      <ConfirmDeleteDialog
-        open={!!deleteTask}
-        title={deleteTask?.title || ""}
-        onCancel={() => setDeleteTask(undefined)}
-        onConfirm={() => {
-          if (deleteTask) remove(deleteTask.id);
-        }}
-      />
-
-      <ConfirmAllDoneDialog
-        open={allDoneOpen}
-        onCancel={() => setAllDoneOpen(false)}
-        onConfirm={markAllDone}
-      />
+      <ConfirmDoneDialog open={!!markDoneTask} title={markDoneTask?.title || ""} onCancel={() => setMarkDoneTask(undefined)} onConfirm={() => { if (markDoneTask) doMarkDone(markDoneTask); }} />
+      <ConfirmDeleteDialog open={!!deleteTask} title={deleteTask?.title || ""} onCancel={() => setDeleteTask(undefined)} onConfirm={() => { if (deleteTask) remove(deleteTask.id); }} />
+      <ConfirmAllDoneDialog open={allDoneOpen} onCancel={() => setAllDoneOpen(false)} onConfirm={markAllDone} />
     </Box>
   );
 }

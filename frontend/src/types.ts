@@ -30,12 +30,16 @@ export type Task = {
   updatedAt: string;
   location?: string;
   mapProvider?: string;
+  startTime?: string;
+  endTime?: string;
+  description?: string;
 };
+
 
 export type Reminder = {
   id: string;
   title: string;
-  content: string; // The notes
+  content: string;
   emergency: number;
   done: boolean;
   createdAt: string;

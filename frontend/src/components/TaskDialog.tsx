@@ -11,6 +11,7 @@ import {
   Select,
   MenuItem,
   Box,
+  Stack,
 } from "@mui/material";
 import type { Task, TaskType } from "../types";
 import { useEffect, useMemo, useState } from "react";
@@ -50,13 +51,18 @@ export function TaskDialog(props: {
     } satisfies Task;
   }, [props.mode, props.task, props.defaultDateYmd, props.open]);
 
+  // Core Fields
   const [title, setTitle] = useState(base.title);
   const [type, setType] = useState<TaskType>(base.type);
   const [weekday, setWeekday] = useState<number>(base.weekday ?? 1);
   const [date, setDate] = useState<string>(base.date ?? props.defaultDateYmd);
   const [emergency, setEmergency] = useState<number>(base.emergency ?? 5);
-  
+
+  // Extra Fields
   const [location, setLocation] = useState(props.task?.location || "");
+  const [description, setDescription] = useState(props.task?.description || "");
+  const [startTime, setStartTime] = useState(props.task?.startTime || "");
+  const [endTime, setEndTime] = useState(props.task?.endTime || "");
   const [mapProvider, setMapProvider] = useState(props.task?.mapProvider || "google");
 
   // INPUT: props.open, base, props.defaultDateYmd, props.task
@@ -69,11 +75,15 @@ export function TaskDialog(props: {
     setWeekday(base.weekday ?? 1);
     setDate(base.date ?? props.defaultDateYmd);
     setEmergency(base.emergency ?? 5);
-    
+
+    // Load existing extra fields if editing, or default to blank
     setLocation(props.task?.location || "");
+    setDescription(props.task?.description || "");
+    setStartTime(props.task?.startTime || "");
+    setEndTime(props.task?.endTime || "");
     setMapProvider(
-      props.task?.mapProvider || 
-      localStorage.getItem("defaultMapProvider") || 
+      props.task?.mapProvider ||
+      localStorage.getItem("defaultMapProvider") ||
       "google"
     );
   }, [props.open, base, props.defaultDateYmd, props.task]);
@@ -94,8 +104,14 @@ export function TaskDialog(props: {
       done: type === "TEMPORARY" ? (base.done ?? false) : undefined,
       updatedAt: now,
       emergency: emergency,
+
+      // Inject the extra fields into the final save object
       location: location.trim(),
+      description: description.trim(),
+      startTime: startTime,
+      endTime: endTime,
       mapProvider: mapProvider,
+
       ...override,
     };
   }
@@ -220,12 +236,48 @@ export function TaskDialog(props: {
             />
           )}
 
+          {/* Start and End Time Fields */}
+          <Stack direction="row" spacing={2}>
+            <TextField
+              label="Start Time (Optional)"
+              type="time"
+              value={startTime}
+              onChange={(e) => {
+                setStartTime(e.target.value);
+                // Automatically clear End Time if Start Time is deleted
+                if (!e.target.value) setEndTime("");
+              }}
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+            />
+            <TextField
+              label="End Time (Optional)"
+              type="time"
+              value={endTime}
+              onChange={(e) => setEndTime(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+              disabled={!startTime} // Disabled if no Start Time
+              fullWidth
+            />
+          </Stack>
+
+          {/* Description Field */}
+          <TextField
+            label="Description (Optional)"
+            multiline
+            rows={3}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+
+          {/* Location Field */}
           <TextField
             label="Location (Optional)"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
           />
 
+          {/* Map Provider Field */}
           <FormControl>
             <InputLabel>Map Provider</InputLabel>
             <Select
