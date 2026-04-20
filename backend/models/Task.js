@@ -11,14 +11,13 @@ const taskSchema = new mongoose.Schema({
   weekday: { type: Number },
   done: { type: Boolean, default: false },
   emergency: { type: Number, default: 5 },
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 
   location: { type: String, default: "" },
   mapProvider: { type: String, default: "google" },
   startTime: { type: String, default: "" },
   endTime: { type: String, default: "" },
   description: { type: String, default: "" }
-
 }, { timestamps: true });
 
 module.exports = mongoose.model('Task', taskSchema);
