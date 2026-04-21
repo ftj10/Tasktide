@@ -1,4 +1,4 @@
-import type { Task } from "../types";
+import type { HelpQuestion, Task } from "../types";
 import dayjs from "dayjs";
 import { weekStartMonday } from "./date";
 
@@ -95,6 +95,39 @@ export async function saveReminders(reminders: any[]): Promise<void> {
     });
   } catch (error) {
     console.error("Failed to save reminders", error);
+  }
+}
+
+export async function loadHelpQuestions(): Promise<HelpQuestion[]> {
+  const token = getToken();
+  if (!token) return [];
+  try {
+    const response = await fetch(`${API_URL}/help-questions`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!response.ok) throw new Error("Network response was not ok");
+    return await response.json();
+  } catch (error) {
+    console.error("Failed to load help questions", error);
+    return [];
+  }
+}
+
+export async function createHelpQuestion(question: { id: string; question: string; createdAt: string }): Promise<void> {
+  const token = getToken();
+  if (!token) return;
+  try {
+    const response = await fetch(`${API_URL}/help-questions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(question),
+    });
+    if (!response.ok) throw new Error("Network response was not ok");
+  } catch (error) {
+    console.error("Failed to save help question", error);
   }
 }
 

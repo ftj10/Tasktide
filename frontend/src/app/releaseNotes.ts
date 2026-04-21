@@ -11,6 +11,35 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-04-20-help-center-and-public-questions",
+    version: "v1.4.0",
+    releasedAt: "2026-04-20",
+    title: {
+      en: "Help center and public questions",
+      zh: "帮助中心与公开问题"
+    },
+    summary: {
+      en: "The app now includes a help center with usage instructions, FAQ content, and a shared question board for all users.",
+      zh: "应用现已提供帮助中心，包含使用说明、常见问答，以及所有用户可见的共享提问区。"
+    },
+    changes: {
+      en: [
+        "Added a Help page with step-by-step instructions for using the planner.",
+        "Added a FAQ section for common workflow questions.",
+        "Added a shared question form backed by MongoDB so every signed-in user can see submitted questions.",
+        "Week view now lets you click a date header to jump to that day in Today.",
+        "Clicking a blank area in Week view now sets the default date for the next new task."
+      ],
+      zh: [
+        "新增 Help 页面，提供逐步使用说明。",
+        "新增 FAQ 常见问答区。",
+        "新增基于 MongoDB 的共享提问功能，所有已登录用户都能看到提交的问题。",
+        "Week 页面现在支持点击日期标题直接跳转到对应的 Today 页面。",
+        "现在点击 Week 页面中的空白区域后，下一次新增任务会默认带入该日期。"
+      ]
+    }
+  },
+  {
     id: "2026-04-20-month-page-past-day-marker",
     version: "v1.3.1",
     releasedAt: "2026-04-20",

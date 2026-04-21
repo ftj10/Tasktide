@@ -15,6 +15,7 @@ import { LoginPage } from "./pages/LoginPage";
 import { ReminderPage } from "./pages/ReminderPage";
 import { MonthPage } from "./pages/MonthPage";
 import { ReleaseNotesCenter } from "./components/ReleaseNotesCenter";
+import { HelpPage } from "./pages/HelpPage";
 
 // INPUT: none
 // OUTPUT: Main React application component
@@ -221,6 +222,9 @@ export default function App() {
           <Button color="inherit" component={Link} to="/month">
             {t("nav.month")}
           </Button>
+          <Button color="inherit" component={Link} to="/help">
+            {t("nav.help")}
+          </Button>
 
           <Box sx={{ flexGrow: 1 }} />
 
@@ -244,6 +248,7 @@ export default function App() {
             <Route path="/" element={<TodayPage tasks={tasks} setTasks={setTasks} />} />
             <Route path="/week" element={<WeekPage tasks={tasks} setTasks={setTasks} completionsRev={0} />} />
             <Route path="/month" element={<MonthPage tasks={tasks} setTasks={setTasks} />} />
+            <Route path="/help" element={<HelpPage />} />
           </Routes>
         </Box>
       </Container>

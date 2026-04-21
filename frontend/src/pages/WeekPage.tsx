@@ -2,6 +2,7 @@
 
 import { Box, Button, Stack, Typography } from "@mui/material";
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -39,6 +40,7 @@ export function WeekPage(props: {
   completionsRev: number;
 }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Task | undefined>();
   const [deleteTask, setDeleteTask] = useState<Task | undefined>();
@@ -130,6 +132,10 @@ export function WeekPage(props: {
               dayGridWeek: t("week.listView"),
               timeGridWeek: t("week.timeGridView")
             }}
+            navLinks={true}
+            navLinkDayClick={(date) => {
+              navigate(`/?date=${dayjs(date).format("YYYY-MM-DD")}`);
+            }}
             firstDay={1}
             events={events}
             slotEventOverlap={false}
@@ -188,6 +194,9 @@ export function WeekPage(props: {
               setEditing(task);
               setDefaultDate(info.event.startStr.slice(0, 10));
               setDialogOpen(true);
+            }}
+            dateClick={(info) => {
+              setDefaultDate(info.dateStr.slice(0, 10));
             }}
             height="auto"
             slotMinTime="06:00:00"

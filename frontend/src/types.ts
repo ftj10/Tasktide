@@ -45,3 +45,10 @@ export type Reminder = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type HelpQuestion = {
+  id: string;
+  username: string;
+  question: string;
+  createdAt: string;
+};

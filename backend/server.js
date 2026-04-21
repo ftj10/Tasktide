@@ -8,6 +8,7 @@ const jwt = require('jsonwebtoken');
 const Task = require('./models/Task');
 const User = require('./models/User');
 const Reminder = require('./models/Reminder');
+const HelpQuestion = require('./models/HelpQuestion');
 
 const app = express();
 app.use(cors());
@@ -114,6 +115,36 @@ app.post('/reminders', authenticateToken, async (req, res) => {
       await Reminder.insertMany(remindersWithUser);
     }
     res.status(200).json({ message: "Saved" });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to save" });
+  }
+});
+
+app.get('/help-questions', authenticateToken, async (req, res) => {
+  try {
+    const questions = await HelpQuestion.find({}, { _id: 0, __v: 0 }).sort({ createdAt: -1 });
+    res.status(200).json(questions);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch" });
+  }
+});
+
+app.post('/help-questions', authenticateToken, async (req, res) => {
+  try {
+    const { id, question, createdAt } = req.body;
+    if (!question || !String(question).trim()) {
+      return res.status(400).json({ error: "Question is required" });
+    }
+
+    const newQuestion = new HelpQuestion({
+      id,
+      username: req.user.username,
+      question: String(question).trim(),
+      createdAt,
+    });
+
+    await newQuestion.save();
+    res.status(201).json({ message: "Saved" });
   } catch (err) {
     res.status(500).json({ error: "Failed to save" });
   }
