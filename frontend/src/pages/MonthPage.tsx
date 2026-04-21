@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import CheckIcon from "@mui/icons-material/Check";
 
 import type { Task } from "../types";
 import { tasksForDate } from "../app/taskLogic";
@@ -88,6 +89,7 @@ export function MonthPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
           const dateStr = ymd(d);
           const isCurrentMonth = d.month() === currentMonth.month();
           const isToday = dateStr === ymd(dayjs());
+          const isPastDay = d.endOf("day").isBefore(dayjs());
           const isWeekend = d.day() === 0 || d.day() === 6;
           const dayTasks = tasksForDate(props.tasks, dateStr, completions);
 
@@ -110,14 +112,19 @@ export function MonthPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
               }}
               onClick={() => navigate(`/?date=${dateStr}`)}
             >
-              <Typography
-                variant="body2"
-                fontWeight={isToday ? "bold" : "normal"}
-                color={isToday ? "primary" : isWeekend ? "success.main" : "text.primary"}
-                align="right"
-              >
-                {d.date()}
-              </Typography>
+              <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 0.25 }}>
+                {isPastDay && !isToday ? (
+                  <CheckIcon sx={{ fontSize: { xs: 12, sm: 14 }, color: "error.main" }} />
+                ) : null}
+                <Typography
+                  variant="body2"
+                  fontWeight={isToday ? "bold" : "normal"}
+                  color={isToday ? "primary" : isWeekend ? "success.main" : "text.primary"}
+                  align="right"
+                >
+                  {d.date()}
+                </Typography>
+              </Box>
 
               {/* Task Indicators */}
               <Stack spacing={0.5} sx={{ mt: 1 }}>

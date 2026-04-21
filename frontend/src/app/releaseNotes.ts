@@ -11,6 +11,29 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-04-20-month-page-past-day-marker",
+    version: "v1.3.1",
+    releasedAt: "2026-04-20",
+    title: {
+      en: "Month page past-day marker update",
+      zh: "月视图过去日期标记更新"
+    },
+    summary: {
+      en: "Past days in the month view now use a red check mark beside the date for faster scanning.",
+      zh: "月视图中的过去日期现在会在日期旁显示红色对勾，方便更快区分。"
+    },
+    changes: {
+      en: [
+        "Changed the past-day indicator in month view from a red X to a red check mark.",
+        "Kept the marker limited to dates before today so future days stay visually clean."
+      ],
+      zh: [
+        "将月视图中过去日期的标记从红色叉号改为红色对勾。",
+        "该标记仍只显示在今天之前的日期上，未来日期保持简洁。"
+      ]
+    }
+  },
+  {
     id: "2026-04-20-release-notes",
     version: "v1.3.0",
     releasedAt: "2026-04-20",
