@@ -1,6 +1,6 @@
 # Weekly To-Do Application
 
-Current version: `v1.5.0`
+Current version: `v1.4.0`
 
 Weekly To-Do is a full-stack planner for daily tasks, weekly routines, reminders, shared help questions, and calendar-based scheduling.
 
@@ -58,6 +58,6 @@ npm test
 
 ## Notes
 
-- Review [RELEASENOTES.md](/Users/ftj_tom/Desktop/Personal%20Project/todo/weekly-todo/RELEASENOTES.md) for repository-level changes.
+- Review [RELEASENOTES.md](RELEASENOTES.md) for repository-level changes.
 - The in-app Updates center mirrors the latest shipped release metadata from `frontend/src/app/releaseNotes.ts`.
 - Keep backend running before opening the frontend locally.
