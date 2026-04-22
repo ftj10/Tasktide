@@ -31,12 +31,16 @@ const originals = {
   task: {
     find: Task.find,
     deleteMany: Task.deleteMany,
-    insertMany: Task.insertMany,
+    create: Task.create,
+    findOneAndUpdate: Task.findOneAndUpdate,
+    findOneAndDelete: Task.findOneAndDelete,
   },
   reminder: {
     find: Reminder.find,
     deleteMany: Reminder.deleteMany,
-    insertMany: Reminder.insertMany,
+    create: Reminder.create,
+    findOneAndUpdate: Reminder.findOneAndUpdate,
+    findOneAndDelete: Reminder.findOneAndDelete,
   },
   helpQuestion: {
     find: HelpQuestion.find,
@@ -57,10 +61,14 @@ function resetStubs() {
   User.prototype.save = originals.user.save;
   Task.find = originals.task.find;
   Task.deleteMany = originals.task.deleteMany;
-  Task.insertMany = originals.task.insertMany;
+  Task.create = originals.task.create;
+  Task.findOneAndUpdate = originals.task.findOneAndUpdate;
+  Task.findOneAndDelete = originals.task.findOneAndDelete;
   Reminder.find = originals.reminder.find;
   Reminder.deleteMany = originals.reminder.deleteMany;
-  Reminder.insertMany = originals.reminder.insertMany;
+  Reminder.create = originals.reminder.create;
+  Reminder.findOneAndUpdate = originals.reminder.findOneAndUpdate;
+  Reminder.findOneAndDelete = originals.reminder.findOneAndDelete;
   HelpQuestion.find = originals.helpQuestion.find;
   HelpQuestion.prototype.save = originals.helpQuestion.save;
 }
@@ -138,6 +146,11 @@ test('behavior: authenticated help question submission stores the public questio
 
 test('behavior: authenticated task fetch returns the current user tasks', async () => {
   jwt.verify = (token, secret, callback) => callback(null, { userId: 'user-1', username: 'tom' });
+  let cleanupFilter;
+  Task.deleteMany = async (filter) => {
+    cleanupFilter = filter;
+    return { deletedCount: 1 };
+  };
   Task.find = async () => ([
     {
       id: 'task-1',
@@ -152,6 +165,11 @@ test('behavior: authenticated task fetch returns the current user tasks', async 
   });
 
   assert.equal(result.statusCode, 200);
+  assert.deepEqual(cleanupFilter, {
+    userId: 'user-1',
+    type: 'TEMPORARY',
+    date: { $lt: cleanupFilter.date.$lt },
+  });
   assert.deepEqual(result.json, [
     {
       id: 'task-1',
@@ -160,4 +178,93 @@ test('behavior: authenticated task fetch returns the current user tasks', async 
       date: '2026-04-21',
     },
   ]);
+});
+
+test('behavior: task create stores one task for the authenticated user', async () => {
+  jwt.verify = (token, secret, callback) => callback(null, { userId: 'user-1', username: 'tom' });
+  Task.deleteMany = async () => ({ deletedCount: 0 });
+
+  let createdTask;
+  Task.create = async (payload) => {
+    createdTask = payload;
+    return payload;
+  };
+
+  const result = await invokeApp(app, '/tasks', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer token' },
+    body: {
+      id: 'task-2',
+      title: 'Write release notes',
+      type: 'TEMPORARY',
+      date: '2026-04-22',
+    },
+  });
+
+  assert.equal(result.statusCode, 201);
+  assert.deepEqual(result.json, { message: 'Created' });
+  assert.deepEqual(createdTask, {
+    id: 'task-2',
+    title: 'Write release notes',
+    type: 'TEMPORARY',
+    date: '2026-04-22',
+    userId: 'user-1',
+  });
+});
+
+test('behavior: task update rewrites one task for the authenticated user', async () => {
+  jwt.verify = (token, secret, callback) => callback(null, { userId: 'user-1', username: 'tom' });
+  Task.deleteMany = async () => ({ deletedCount: 0 });
+
+  let updateFilter;
+  let updatePayload;
+  let updateOptions;
+  Task.findOneAndUpdate = async (filter, payload, options) => {
+    updateFilter = filter;
+    updatePayload = payload;
+    updateOptions = options;
+    return { ...payload };
+  };
+
+  const result = await invokeApp(app, '/tasks/task-2', {
+    method: 'PUT',
+    headers: { Authorization: 'Bearer token' },
+    body: {
+      id: 'task-2',
+      title: 'Write more release notes',
+      type: 'TEMPORARY',
+      date: '2026-04-22',
+    },
+  });
+
+  assert.equal(result.statusCode, 200);
+  assert.deepEqual(result.json, { message: 'Updated' });
+  assert.deepEqual(updateFilter, { id: 'task-2', userId: 'user-1' });
+  assert.deepEqual(updatePayload, {
+    id: 'task-2',
+    title: 'Write more release notes',
+    type: 'TEMPORARY',
+    date: '2026-04-22',
+    userId: 'user-1',
+  });
+  assert.deepEqual(updateOptions, { new: true });
+});
+
+test('behavior: task delete removes one task for the authenticated user', async () => {
+  jwt.verify = (token, secret, callback) => callback(null, { userId: 'user-1', username: 'tom' });
+
+  let deleteFilter;
+  Task.findOneAndDelete = async (filter) => {
+    deleteFilter = filter;
+    return { id: 'task-2' };
+  };
+
+  const result = await invokeApp(app, '/tasks/task-2', {
+    method: 'DELETE',
+    headers: { Authorization: 'Bearer token' },
+  });
+
+  assert.equal(result.statusCode, 200);
+  assert.deepEqual(result.json, { message: 'Deleted' });
+  assert.deepEqual(deleteFilter, { id: 'task-2', userId: 'user-1' });
 });

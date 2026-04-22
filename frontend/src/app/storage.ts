@@ -1,7 +1,7 @@
 // INPUT: localStorage credentials and frontend payloads
 // OUTPUT: auth helpers plus backend persistence functions for tasks, reminders, and help questions
 // EFFECT: Connects browser state to the authenticated planner API and keeps week rollover metadata current
-import type { HelpQuestion, Task } from "../types";
+import type { HelpQuestion, Reminder, Task } from "../types";
 import dayjs from "dayjs";
 import { weekStartMonday } from "./date";
 
@@ -10,6 +10,27 @@ const TOKEN_KEY = "todo_jwt_token";
 const USERNAME_KEY = "todo_username";
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:2676';
+
+async function authorizedRequest(path: string, options: RequestInit = {}): Promise<Response | null> {
+  const token = getToken();
+  if (!token) return null;
+
+  const response = await fetch(`${API_URL}${path}`, {
+    ...options,
+    headers: {
+      ...(options.headers ?? {}),
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (response.status === 401 || response.status === 403) {
+    logoutUser();
+    window.location.reload();
+    return null;
+  }
+
+  return response;
+}
 
 // INPUT: none
 // OUTPUT: saved JWT token
@@ -41,22 +62,9 @@ export function logoutUser() {
 // OUTPUT: task list from the backend
 // EFFECT: Hydrates the signed-in planner with the user's saved tasks
 export async function loadTasks(): Promise<Task[]> {
-  const token = getToken();
-  if (!token) return [];
-
   try {
-    const response = await fetch(`${API_URL}/tasks`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-
-    if (response.status === 401 || response.status === 403) {
-      logoutUser();
-      window.location.reload();
-      return [];
-    }
-
+    const response = await authorizedRequest('/tasks');
+    if (!response) return [];
     if (!response.ok) throw new Error("Network response was not ok");
     return await response.json();
   } catch (error) {
@@ -65,37 +73,63 @@ export async function loadTasks(): Promise<Task[]> {
   }
 }
 
-// INPUT: current task collection
-// OUTPUT: persisted backend task snapshot
-// EFFECT: Saves the latest task state for the signed-in user
-export async function saveTasks(tasks: Task[]): Promise<void> {
-  const token = getToken();
-  if (!token) return; 
-
+// INPUT: one task
+// OUTPUT: persisted task record
+// EFFECT: Creates a task via the task CRUD API
+export async function createTask(task: Task): Promise<void> {
   try {
-    await fetch(`${API_URL}/tasks`, {
+    const response = await authorizedRequest('/tasks', {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify(tasks),
+      body: JSON.stringify(task),
     });
+    if (response && !response.ok) throw new Error("Network response was not ok");
   } catch (error) {
-    console.error("Failed to save tasks to server", error);
+    console.error("Failed to create task", error);
+  }
+}
+
+// INPUT: one task
+// OUTPUT: updated task record
+// EFFECT: Updates a task via the task CRUD API
+export async function updateTask(task: Task): Promise<void> {
+  try {
+    const response = await authorizedRequest(`/tasks/${task.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(task),
+    });
+    if (response && !response.ok) throw new Error("Network response was not ok");
+  } catch (error) {
+    console.error("Failed to update task", error);
+  }
+}
+
+// INPUT: task id
+// OUTPUT: delete completion
+// EFFECT: Deletes a task via the task CRUD API
+export async function deleteTask(taskId: string): Promise<void> {
+  try {
+    const response = await authorizedRequest(`/tasks/${taskId}`, {
+      method: 'DELETE',
+    });
+    if (response && !response.ok) throw new Error("Network response was not ok");
+  } catch (error) {
+    console.error("Failed to delete task", error);
   }
 }
 
 // INPUT: none
 // OUTPUT: reminder list from the backend
 // EFFECT: Hydrates the reminder feature for the signed-in user
-export async function loadReminders(): Promise<any[]> {
-  const token = getToken();
-  if (!token) return [];
+export async function loadReminders(): Promise<Reminder[]> {
   try {
-    const response = await fetch(`${API_URL}/reminders`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
+    const response = await authorizedRequest('/reminders');
+    if (!response) return [];
     if (!response.ok) throw new Error("Network response was not ok");
     return await response.json();
   } catch (error) {
@@ -104,23 +138,53 @@ export async function loadReminders(): Promise<any[]> {
   }
 }
 
-// INPUT: current reminder collection
-// OUTPUT: persisted backend reminder snapshot
-// EFFECT: Saves the latest reminder state for the signed-in user
-export async function saveReminders(reminders: any[]): Promise<void> {
-  const token = getToken();
-  if (!token) return; 
+// INPUT: one reminder
+// OUTPUT: persisted reminder record
+// EFFECT: Creates a reminder via the reminder CRUD API
+export async function createReminder(reminder: Reminder): Promise<void> {
   try {
-    await fetch(`${API_URL}/reminders`, {
+    const response = await authorizedRequest('/reminders', {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify(reminders),
+      body: JSON.stringify(reminder),
     });
+    if (response && !response.ok) throw new Error("Network response was not ok");
   } catch (error) {
-    console.error("Failed to save reminders", error);
+    console.error("Failed to create reminder", error);
+  }
+}
+
+// INPUT: one reminder
+// OUTPUT: updated reminder record
+// EFFECT: Updates a reminder via the reminder CRUD API
+export async function updateReminder(reminder: Reminder): Promise<void> {
+  try {
+    const response = await authorizedRequest(`/reminders/${reminder.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(reminder),
+    });
+    if (response && !response.ok) throw new Error("Network response was not ok");
+  } catch (error) {
+    console.error("Failed to update reminder", error);
+  }
+}
+
+// INPUT: reminder id
+// OUTPUT: delete completion
+// EFFECT: Deletes a reminder via the reminder CRUD API
+export async function deleteReminder(reminderId: string): Promise<void> {
+  try {
+    const response = await authorizedRequest(`/reminders/${reminderId}`, {
+      method: 'DELETE',
+    });
+    if (response && !response.ok) throw new Error("Network response was not ok");
+  } catch (error) {
+    console.error("Failed to delete reminder", error);
   }
 }
 
@@ -128,12 +192,9 @@ export async function saveReminders(reminders: any[]): Promise<void> {
 // OUTPUT: shared help-question list
 // EFFECT: Loads the public help board visible to authenticated users
 export async function loadHelpQuestions(): Promise<HelpQuestion[]> {
-  const token = getToken();
-  if (!token) return [];
   try {
-    const response = await fetch(`${API_URL}/help-questions`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
+    const response = await authorizedRequest('/help-questions');
+    if (!response) return [];
     if (!response.ok) throw new Error("Network response was not ok");
     return await response.json();
   } catch (error) {
@@ -146,17 +207,15 @@ export async function loadHelpQuestions(): Promise<HelpQuestion[]> {
 // OUTPUT: persisted help question record
 // EFFECT: Publishes a signed-in user's question to the shared help board
 export async function createHelpQuestion(question: { id: string; question: string; createdAt: string }): Promise<void> {
-  const token = getToken();
-  if (!token) return;
   try {
-    const response = await fetch(`${API_URL}/help-questions`, {
+    const response = await authorizedRequest('/help-questions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify(question),
     });
+    if (!response) return;
     if (!response.ok) throw new Error("Network response was not ok");
   } catch (error) {
     console.error("Failed to save help question", error);

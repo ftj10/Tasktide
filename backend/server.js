@@ -17,6 +17,34 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// INPUT: userId
+// OUTPUT: cleanup completion
+// EFFECT: Removes temporary tasks older than 30 days for the signed-in user
+function cleanupTasksForUser(userId) {
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - 30);
+
+  return Task.deleteMany({
+    userId,
+    type: 'TEMPORARY',
+    date: { $lt: cutoffDate.toISOString().slice(0, 10) }
+  });
+}
+
+// INPUT: userId
+// OUTPUT: cleanup completion
+// EFFECT: Removes completed reminders older than 30 days for the signed-in user
+function cleanupRemindersForUser(userId) {
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - 30);
+
+  return Reminder.deleteMany({
+    userId,
+    done: true,
+    updatedAt: { $lt: cutoffDate.toISOString() }
+  });
+}
+
 // INPUT: bearer token request header
 // OUTPUT: decoded user on req.user or an auth error response
 // EFFECT: Protects planner routes so each request is tied to a signed-in user
@@ -81,6 +109,7 @@ app.post('/login', async (req, res) => {
 // EFFECT: Loads the current planner task state
 app.get('/tasks', authenticateToken, async (req, res) => {
   try {
+    await cleanupTasksForUser(req.user.userId);
     const tasks = await Task.find({ userId: req.user.userId }, { _id: 0, __v: 0 });
     res.status(200).json(tasks);
   } catch (err) {
@@ -88,25 +117,55 @@ app.get('/tasks', authenticateToken, async (req, res) => {
   }
 });
 
-// INPUT: authenticated user id plus task array
-// OUTPUT: save confirmation
-// EFFECT: Replaces the user's saved task snapshot with the latest frontend state
+// INPUT: authenticated user id plus a new task
+// OUTPUT: create confirmation
+// EFFECT: Persists one task record for the signed-in user
 app.post('/tasks', authenticateToken, async (req, res) => {
   try {
-    const newTasks = req.body; 
-    await Task.deleteMany({ userId: req.user.userId });
-    
-    if (newTasks && newTasks.length > 0) {
-      const tasksWithUser = newTasks.map(task => ({
-        ...task,
-        userId: req.user.userId
-      }));
-      await Task.insertMany(tasksWithUser);
-    }
-    
-    res.status(200).json({ message: "Saved" });
+    await cleanupTasksForUser(req.user.userId);
+    await Task.create({
+      ...req.body,
+      userId: req.user.userId
+    });
+
+    res.status(201).json({ message: "Created" });
   } catch (err) {
     res.status(500).json({ error: "Failed to save" });
+  }
+});
+
+// INPUT: authenticated user id, task id, and replacement task payload
+// OUTPUT: update confirmation or not-found error
+// EFFECT: Updates one persisted task record for the signed-in user
+app.put('/tasks/:id', authenticateToken, async (req, res) => {
+  try {
+    await cleanupTasksForUser(req.user.userId);
+    const updatedTask = await Task.findOneAndUpdate(
+      { id: req.params.id, userId: req.user.userId },
+      { ...req.body, userId: req.user.userId },
+      { new: true }
+    );
+
+    if (!updatedTask) return res.status(404).json({ error: "Task not found" });
+
+    res.status(200).json({ message: "Updated" });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to update" });
+  }
+});
+
+// INPUT: authenticated user id and task id
+// OUTPUT: delete confirmation or not-found error
+// EFFECT: Deletes one persisted task record for the signed-in user
+app.delete('/tasks/:id', authenticateToken, async (req, res) => {
+  try {
+    const deletedTask = await Task.findOneAndDelete({ id: req.params.id, userId: req.user.userId });
+
+    if (!deletedTask) return res.status(404).json({ error: "Task not found" });
+
+    res.status(200).json({ message: "Deleted" });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to delete" });
   }
 });
 
@@ -115,6 +174,7 @@ app.post('/tasks', authenticateToken, async (req, res) => {
 // EFFECT: Loads the reminder list for the signed-in planner session
 app.get('/reminders', authenticateToken, async (req, res) => {
   try {
+    await cleanupRemindersForUser(req.user.userId);
     const reminders = await Reminder.find({ userId: req.user.userId }, { _id: 0, __v: 0 });
     res.status(200).json(reminders);
   } catch (err) {
@@ -122,21 +182,51 @@ app.get('/reminders', authenticateToken, async (req, res) => {
   }
 });
 
-// INPUT: authenticated user id plus reminder array
-// OUTPUT: save confirmation
-// EFFECT: Replaces the user's saved reminder snapshot with the latest frontend state
+// INPUT: authenticated user id plus a new reminder
+// OUTPUT: create confirmation
+// EFFECT: Persists one reminder record for the signed-in user
 app.post('/reminders', authenticateToken, async (req, res) => {
   try {
-    const newReminders = req.body; 
-    await Reminder.deleteMany({ userId: req.user.userId });
-    
-    if (newReminders && newReminders.length > 0) {
-      const remindersWithUser = newReminders.map(r => ({ ...r, userId: req.user.userId }));
-      await Reminder.insertMany(remindersWithUser);
-    }
-    res.status(200).json({ message: "Saved" });
+    await cleanupRemindersForUser(req.user.userId);
+    await Reminder.create({ ...req.body, userId: req.user.userId });
+    res.status(201).json({ message: "Created" });
   } catch (err) {
     res.status(500).json({ error: "Failed to save" });
+  }
+});
+
+// INPUT: authenticated user id, reminder id, and replacement reminder payload
+// OUTPUT: update confirmation or not-found error
+// EFFECT: Updates one persisted reminder record for the signed-in user
+app.put('/reminders/:id', authenticateToken, async (req, res) => {
+  try {
+    await cleanupRemindersForUser(req.user.userId);
+    const updatedReminder = await Reminder.findOneAndUpdate(
+      { id: req.params.id, userId: req.user.userId },
+      { ...req.body, userId: req.user.userId },
+      { new: true }
+    );
+
+    if (!updatedReminder) return res.status(404).json({ error: "Reminder not found" });
+
+    res.status(200).json({ message: "Updated" });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to update" });
+  }
+});
+
+// INPUT: authenticated user id and reminder id
+// OUTPUT: delete confirmation or not-found error
+// EFFECT: Deletes one persisted reminder record for the signed-in user
+app.delete('/reminders/:id', authenticateToken, async (req, res) => {
+  try {
+    const deletedReminder = await Reminder.findOneAndDelete({ id: req.params.id, userId: req.user.userId });
+
+    if (!deletedReminder) return res.status(404).json({ error: "Reminder not found" });
+
+    res.status(200).json({ message: "Deleted" });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to delete" });
   }
 });
 

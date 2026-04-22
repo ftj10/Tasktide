@@ -8,7 +8,7 @@ import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
 
 import type { Task, Reminder } from "./types";
-import { loadTasks, rolloverIfNeeded, saveTasks, getToken, logoutUser, getUsername, loadReminders, saveReminders } from "./app/storage";
+import { createReminder, createTask, deleteReminder, deleteTask, getToken, getUsername, loadReminders, loadTasks, logoutUser, rolloverIfNeeded, updateReminder, updateTask } from "./app/storage";
 import { tasksForDate } from "./app/taskLogic";
 import { loadCompletions } from "./app/completions";
 
@@ -27,10 +27,10 @@ export default function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [isFetchSuccessful, setIsFetchSuccessful] = useState(false);
-  const isFirstTaskLoad = useRef(true);
-  const isFirstReminderLoad = useRef(true);
   const tasksRef = useRef<Task[]>([]);
+  const remindersRef = useRef<Reminder[]>([]);
+  const taskSyncQueue = useRef(Promise.resolve());
+  const reminderSyncQueue = useRef(Promise.resolve());
   const currentLanguage = i18n.resolvedLanguage?.startsWith("zh") ? "zh" : "en";
 
   useEffect(() => {
@@ -38,37 +38,23 @@ export default function App() {
   }, [tasks]);
 
   useEffect(() => {
+    remindersRef.current = reminders;
+  }, [reminders]);
+
+  useEffect(() => {
     if (!isAuthenticated) return;
 
     // INPUT: authenticated user session
     // OUTPUT: hydrated task and reminder state
-    // EFFECT: Loads the planner data set, trims stale records, and primes autosave after the first successful sync
+    // EFFECT: Loads planner data from the backend, which owns stale-record cleanup
     async function fetchInitialData() {
       try {
         const [serverTasks, serverReminders] = await Promise.all([
           loadTasks(),
           loadReminders()
         ]);
-        
-        const thirtyDaysAgo = dayjs().subtract(30, 'day').format('YYYY-MM-DD');
-        
-        const cleanedTasks = serverTasks.filter((task: Task) => {
-          if (task.date) return task.date >= thirtyDaysAgo;
-          return true; 
-        });
-
-        const cleanedReminders = serverReminders.filter((r: Reminder) => {
-          if (r.done && r.updatedAt) {
-             const doneDate = dayjs(r.updatedAt).format('YYYY-MM-DD');
-             return doneDate >= thirtyDaysAgo;
-          }
-          return true;
-        });
-
-        setTasks(rolloverIfNeeded(cleanedTasks));
-        setReminders(cleanedReminders);
-        
-        setIsFetchSuccessful(true); 
+        setTasks(rolloverIfNeeded(serverTasks));
+        setReminders(serverReminders);
       } catch (error) {
         console.error(error);
       } finally {
@@ -78,27 +64,63 @@ export default function App() {
     fetchInitialData();
   }, [isAuthenticated]);
 
-  useEffect(() => {
-    if (!isFetchSuccessful || !isAuthenticated) return;
-    
-    if (isFirstTaskLoad.current) {
-      isFirstTaskLoad.current = false;
-      return; 
-    }
+  function queueTaskSync(prevTasks: Task[], nextTasks: Task[]) {
+    const prevById = new Map(prevTasks.map((task) => [task.id, task]));
+    const nextById = new Map(nextTasks.map((task) => [task.id, task]));
 
-    saveTasks(tasks);
-  }, [tasks, isFetchSuccessful, isAuthenticated]);
+    const createdTasks = nextTasks.filter((task) => !prevById.has(task.id));
+    const updatedTasks = nextTasks.filter((task) => {
+      const previousTask = prevById.get(task.id);
+      return previousTask && JSON.stringify(previousTask) !== JSON.stringify(task);
+    });
+    const deletedTaskIds = prevTasks.filter((task) => !nextById.has(task.id)).map((task) => task.id);
 
-  useEffect(() => {
-    if (!isFetchSuccessful || !isAuthenticated) return;
+    taskSyncQueue.current = taskSyncQueue.current.then(async () => {
+      await Promise.all([
+        ...createdTasks.map((task) => createTask(task)),
+        ...updatedTasks.map((task) => updateTask(task)),
+        ...deletedTaskIds.map((taskId) => deleteTask(taskId)),
+      ]);
+    }).catch((error) => {
+      console.error(error);
+    });
+  }
 
-    if (isFirstReminderLoad.current) {
-      isFirstReminderLoad.current = false;
-      return;
-    }
+  function queueReminderSync(prevReminders: Reminder[], nextReminders: Reminder[]) {
+    const prevById = new Map(prevReminders.map((reminder) => [reminder.id, reminder]));
+    const nextById = new Map(nextReminders.map((reminder) => [reminder.id, reminder]));
 
-    saveReminders(reminders);
-  }, [reminders, isFetchSuccessful, isAuthenticated]);
+    const createdReminders = nextReminders.filter((reminder) => !prevById.has(reminder.id));
+    const updatedReminders = nextReminders.filter((reminder) => {
+      const previousReminder = prevById.get(reminder.id);
+      return previousReminder && JSON.stringify(previousReminder) !== JSON.stringify(reminder);
+    });
+    const deletedReminderIds = prevReminders.filter((reminder) => !nextById.has(reminder.id)).map((reminder) => reminder.id);
+
+    reminderSyncQueue.current = reminderSyncQueue.current.then(async () => {
+      await Promise.all([
+        ...createdReminders.map((reminder) => createReminder(reminder)),
+        ...updatedReminders.map((reminder) => updateReminder(reminder)),
+        ...deletedReminderIds.map((reminderId) => deleteReminder(reminderId)),
+      ]);
+    }).catch((error) => {
+      console.error(error);
+    });
+  }
+
+  function handleSetTasks(nextTasks: Task[]) {
+    const previousTasks = tasksRef.current;
+    tasksRef.current = nextTasks;
+    setTasks(nextTasks);
+    queueTaskSync(previousTasks, nextTasks);
+  }
+
+  function handleSetReminders(nextReminders: Reminder[]) {
+    const previousReminders = remindersRef.current;
+    remindersRef.current = nextReminders;
+    setReminders(nextReminders);
+    queueReminderSync(previousReminders, nextReminders);
+  }
 
   useEffect(() => {
     if ("Notification" in window && Notification.permission === "default") {
@@ -181,9 +203,6 @@ export default function App() {
     setTasks([]);
     setReminders([]);
     setIsLoaded(false);
-    setIsFetchSuccessful(false);
-    isFirstTaskLoad.current = true;
-    isFirstReminderLoad.current = true;
   };
 
   function handleLanguageToggle() {
@@ -244,10 +263,10 @@ export default function App() {
       <Container maxWidth={false}>
         <Box sx={{ py: 2 }}>
           <Routes>
-            <Route path="/reminders" element={<ReminderPage reminders={reminders} setReminders={setReminders} />} />
-            <Route path="/" element={<TodayPage tasks={tasks} setTasks={setTasks} />} />
-            <Route path="/week" element={<WeekPage tasks={tasks} setTasks={setTasks} completionsRev={0} />} />
-            <Route path="/month" element={<MonthPage tasks={tasks} setTasks={setTasks} />} />
+            <Route path="/reminders" element={<ReminderPage reminders={reminders} setReminders={handleSetReminders} />} />
+            <Route path="/" element={<TodayPage tasks={tasks} setTasks={handleSetTasks} />} />
+            <Route path="/week" element={<WeekPage tasks={tasks} setTasks={handleSetTasks} completionsRev={0} />} />
+            <Route path="/month" element={<MonthPage tasks={tasks} setTasks={handleSetTasks} />} />
             <Route path="/help" element={<HelpPage />} />
           </Routes>
         </Box>

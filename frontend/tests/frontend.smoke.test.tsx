@@ -32,8 +32,12 @@ vi.mock("../src/app/storage", async () => {
     getUsername: () => "tom",
     loadTasks: vi.fn().mockResolvedValue([]),
     loadReminders: vi.fn().mockResolvedValue([]),
-    saveTasks: vi.fn(),
-    saveReminders: vi.fn(),
+    createTask: vi.fn(),
+    updateTask: vi.fn(),
+    deleteTask: vi.fn(),
+    createReminder: vi.fn(),
+    updateReminder: vi.fn(),
+    deleteReminder: vi.fn(),
     loadHelpQuestions: vi.fn().mockResolvedValue([
       {
         id: "q1",
