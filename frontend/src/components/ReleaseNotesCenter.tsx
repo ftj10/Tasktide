@@ -1,6 +1,3 @@
-// INPUT: signed-in username plus release metadata
-// OUTPUT: toolbar action, latest-release dialog, and release-history drawer
-// EFFECT: Surfaces shipped updates and stores per-user seen state for the release-notes feature
 import { useEffect, useMemo, useState } from "react";
 import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Drawer, Stack, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
@@ -19,15 +16,28 @@ export function ReleaseNotesCenter(props: Props) {
   const latestRelease = RELEASE_NOTES[0];
   const seenKey = useMemo(() => getReleaseNotesSeenKey(props.username), [props.username]);
 
-  useEffect(() => {
+  // 1. Extract the check into a reusable function
+  const checkSeenState = () => {
     if (!props.username || !LATEST_RELEASE_ID) return;
     const seenReleaseId = localStorage.getItem(seenKey);
     setDialogOpen(seenReleaseId !== LATEST_RELEASE_ID);
+  };
+
+  useEffect(() => {
+    // 2. Check immediately on mount
+    checkSeenState();
+
+    // 3. Listen for custom event from other instances
+    window.addEventListener("releaseNotesAck", checkSeenState);
+    return () => window.removeEventListener("releaseNotesAck", checkSeenState);
   }, [props.username, seenKey]);
 
   function markLatestSeen() {
     if (!LATEST_RELEASE_ID) return;
     localStorage.setItem(seenKey, LATEST_RELEASE_ID);
+    
+    // 4. Dispatch an event to tell all other instances to close their dialogs
+    window.dispatchEvent(new Event("releaseNotesAck"));
   }
 
   function handleCloseDialog() {
