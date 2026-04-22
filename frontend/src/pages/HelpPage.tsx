@@ -1,3 +1,6 @@
+// INPUT: authenticated help-question access plus translated help content
+// OUTPUT: help center page with guides, FAQ entries, and shared questions
+// EFFECT: Delivers onboarding content and the public question board for signed-in users
 import { useEffect, useMemo, useState } from "react";
 import {
   Accordion,
@@ -19,9 +22,6 @@ import { useTranslation } from "react-i18next";
 import type { HelpQuestion } from "../types";
 import { createHelpQuestion, loadHelpQuestions } from "../app/storage";
 
-// INPUT: none
-// OUTPUT: Help center page with guides, FAQ, and shared questions
-// EFFECT: Loads public help questions for all users and allows the current user to submit a new one
 export function HelpPage() {
   const { t, i18n } = useTranslation();
   const [questions, setQuestions] = useState<HelpQuestion[]>([]);

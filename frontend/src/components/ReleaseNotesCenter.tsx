@@ -1,3 +1,6 @@
+// INPUT: signed-in username plus release metadata
+// OUTPUT: toolbar action, latest-release dialog, and release-history drawer
+// EFFECT: Surfaces shipped updates and stores per-user seen state for the release-notes feature
 import { useEffect, useMemo, useState } from "react";
 import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Drawer, Stack, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
@@ -8,9 +11,6 @@ type Props = {
   username: string;
 };
 
-// INPUT: username
-// OUTPUT: Toolbar button, release dialog, and release history drawer
-// EFFECT: Tracks whether the current user has seen the latest release note using localStorage
 export function ReleaseNotesCenter(props: Props) {
   const { t, i18n } = useTranslation();
   const [dialogOpen, setDialogOpen] = useState(false);

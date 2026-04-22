@@ -1,3 +1,6 @@
+// INPUT: release metadata, localStorage state, and release-notes UI
+// OUTPUT: behavior coverage for the update center
+// EFFECT: Verifies the latest shipped release is shown once per user and remains available in history
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, beforeEach, expect, it } from "vitest";
@@ -25,6 +28,12 @@ describe("ReleaseNotesCenter behavior", () => {
     await waitFor(() => {
       expect(localStorage.getItem("release-notes-seen:tom")).toBe(LATEST_RELEASE_ID);
     });
+  });
+
+  it("shows the latest shipped version in the update dialog", () => {
+    renderWithProviders(<ReleaseNotesCenter username="tom" />);
+
+    expect(screen.getByText("v1.5.0")).toBeInTheDocument();
   });
 
   it("opens the history drawer from the toolbar button", async () => {

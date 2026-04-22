@@ -1,3 +1,6 @@
+// INPUT: task dialog and invalid time input
+// OUTPUT: behavior coverage for task validation
+// EFFECT: Verifies the task editor blocks invalid timed-task saves
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, beforeEach, expect, it, vi } from "vitest";

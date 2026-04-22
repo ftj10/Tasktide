@@ -1,3 +1,6 @@
+// INPUT: help page with mocked shared-question storage
+// OUTPUT: behavior coverage for help-center interactions
+// EFFECT: Verifies the help feature loads shared questions and submits a new public question
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";

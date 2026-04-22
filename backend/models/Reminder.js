@@ -1,3 +1,6 @@
+// INPUT: reminder fields used by the reminder feature
+// OUTPUT: MongoDB reminder model
+// EFFECT: Stores persistent reminder records for each signed-in user
 const mongoose = require('mongoose');
 
 const reminderSchema = new mongoose.Schema({

@@ -1,3 +1,6 @@
+// INPUT: reminder page and reminder fixtures
+// OUTPUT: behavior coverage for reminder completion
+// EFFECT: Verifies the reminder feature updates reminder state when users mark an item done
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, beforeEach, expect, it, vi } from "vitest";

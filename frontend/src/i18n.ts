@@ -1,3 +1,6 @@
+// INPUT: translation resources and browser language detection
+// OUTPUT: initialized i18n instance
+// EFFECT: Supplies bilingual copy across the planner shell, dialogs, release notes, and help flows
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";

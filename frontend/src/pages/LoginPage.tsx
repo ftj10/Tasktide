@@ -1,3 +1,6 @@
+// INPUT: login or registration form fields
+// OUTPUT: authentication page for sign-in and sign-up
+// EFFECT: Starts or creates a planner account and stores the resulting authenticated session
 import { useState } from "react";
 import { 
   Box, 
@@ -15,6 +18,9 @@ import { setAuth } from "../app/storage";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:2676";
 
+// INPUT: login success callback
+// OUTPUT: authentication form UI
+// EFFECT: Switches between sign-in and registration flows for the planner shell
 export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
   const [isRegistering, setIsRegistering] = useState(false);
   const [username, setUsername] = useState("");
@@ -22,7 +28,6 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   
-  // State to track if the password should be visible
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -56,7 +61,6 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
       }
     } catch (err: any) {
       setError(err.message);
-      // Clear ONLY the password if login/register fails
       setPassword("");
     } finally {
       setIsLoading(false);
@@ -89,14 +93,12 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
           <TextField
             fullWidth
             label="Password"
-            // NEW: Toggle between "text" and "password" based on state
             type={showPassword ? "text" : "password"}
             variant="outlined"
             margin="normal"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            // Add the eye icon button inside the input field
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -129,10 +131,9 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
           onClick={() => {
             setIsRegistering(!isRegistering);
             setError("");
-            // Clear both fields when switching modes
             setUsername("");
             setPassword("");
-            setShowPassword(false); // Reset password visibility too
+            setShowPassword(false);
           }}
         >
           {isRegistering

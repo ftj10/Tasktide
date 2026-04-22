@@ -1,5 +1,6 @@
-// frontend/src/pages/WeekPage.tsx
-
+// INPUT: task collection plus completion refresh state
+// OUTPUT: weekly calendar page with navigation and task editing actions
+// EFFECT: Turns planner tasks into week-view events and connects week interactions back to task dialogs and day routing
 import { Box, Button, Stack, Typography } from "@mui/material";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -7,7 +8,7 @@ import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import AccessTimeIcon from "@mui/icons-material/AccessTime"; // Added for icons
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
 
@@ -17,23 +18,27 @@ import { TaskDialog } from "../components/TaskDialog";
 import { ConfirmDeleteDialog } from "../components/ConfirmDeleteDialog";
 import { loadCompletions } from "../app/completions";
 
-// Helper to match colors with TodayPage exactly
+// INPUT: optional task record
+// OUTPUT: event color tokens
+// EFFECT: Aligns week-view event styling with the shared task-priority feature
 function getTaskColors(task?: Task) {
   if (task?.done) {
     return { bg: "#eeeeee", border: "#bdbdbd", text: "#9e9e9e" }; 
   }
   
-  // Using the same 1-5 palette as TodayPage
   const palette = ["#d32f2f", "#ed6c02", "#ff9800", "#4caf50", "#2196f3"];
   const baseColor = palette[(task?.emergency || 5) - 1];
 
   return {
     bg: baseColor,
-    border: baseColor, // We will use a darker variant for the left border in eventContent
+    border: baseColor,
     text: "#ffffff"
   };
 }
 
+// INPUT: task collection, save callback, and completion revision
+// OUTPUT: week calendar page
+// EFFECT: Supports weekly schedule review, event editing, date jumps, and date-prefilled task creation
 export function WeekPage(props: {
   tasks: Task[];
   setTasks: (next: Task[]) => void;
@@ -80,7 +85,7 @@ export function WeekPage(props: {
           backgroundColor: colors.bg,
           borderColor: colors.border,
           textColor: colors.text,
-          extendedProps: { ...ev.extendedProps, task } // Pass full task for rendering
+          extendedProps: { ...ev.extendedProps, task }
         };
       }
 
@@ -121,7 +126,7 @@ export function WeekPage(props: {
           <FullCalendar
             plugins={[timeGridPlugin, dayGridPlugin, interactionPlugin]}
             initialView="dayGridWeek"
-            eventDisplay="block" // CRITICAL: This removes the dots and makes timed tasks solid bars
+            eventDisplay="block"
             headerToolbar={{
               left: "prev,next today",
               center: "title",

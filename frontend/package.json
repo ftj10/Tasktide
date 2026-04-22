@@ -1,13 +1,15 @@
 {
   "name": "weekly-todo",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.5.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "test": "vitest",
+    "test:smoke": "vitest run smoke.test",
+    "test:behavior": "vitest run behavior.test",
     "test:run": "vitest run",
     "preview": "vite preview"
   },

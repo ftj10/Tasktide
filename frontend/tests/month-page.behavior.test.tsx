@@ -1,3 +1,6 @@
+// INPUT: month page and mocked navigation
+// OUTPUT: behavior coverage for month-cell navigation
+// EFFECT: Verifies the month overview links the user back to the selected Today date
 import dayjs from "dayjs";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";

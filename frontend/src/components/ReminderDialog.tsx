@@ -1,3 +1,6 @@
+// INPUT: reminder editing state and reminder callbacks
+// OUTPUT: reminder editor dialog
+// EFFECT: Creates or updates reminder records for the reminder feature
 import { useEffect, useState } from "react";
 import {
     Button,
@@ -23,6 +26,9 @@ type Props = {
     onSave: (r: Reminder) => void;
 };
 
+// INPUT: reminder dialog props
+// OUTPUT: reminder form UI
+// EFFECT: Keeps reminder draft fields aligned with create and edit flows
 export function ReminderDialog({ open, mode, reminder, onClose, onSave }: Props) {
     const { t } = useTranslation();
     const [title, setTitle] = useState("");

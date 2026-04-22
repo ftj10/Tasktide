@@ -1,3 +1,6 @@
+// INPUT: release metadata definitions
+// OUTPUT: Ordered release note records for the in-app update center
+// EFFECT: Publishes the latest shipped version and per-user seen-state keys for the release history feature
 export type ReleaseNoteLocale = "en" | "zh";
 
 export type ReleaseNote = {
@@ -95,6 +98,9 @@ export const RELEASE_NOTES: ReleaseNote[] = [
 
 export const LATEST_RELEASE_ID = RELEASE_NOTES[0]?.id ?? "";
 
+// INPUT: username
+// OUTPUT: localStorage key for the release notes seen marker
+// EFFECT: Isolates release-history read state per signed-in user
 export function getReleaseNotesSeenKey(username: string) {
   return `release-notes-seen:${username}`;
 }

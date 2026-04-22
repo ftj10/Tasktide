@@ -1,6 +1,12 @@
+// INPUT: dialog visibility, entity title, and confirmation callbacks
+// OUTPUT: deletion confirmation dialog
+// EFFECT: Guards destructive task actions across planner views
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
+// INPUT: dialog props for deletion
+// OUTPUT: confirmation modal UI
+// EFFECT: Requires explicit approval before the selected item is deleted
 export function ConfirmDeleteDialog(props: {
   open: boolean;
   title: string;

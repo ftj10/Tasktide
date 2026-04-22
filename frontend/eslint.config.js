@@ -1,3 +1,6 @@
+// INPUT: frontend lint targets and shared rule presets
+// OUTPUT: ESLint flat configuration
+// EFFECT: Enforces the TypeScript and React code-quality rules used by the planner frontend
 import js from '@eslint/js'
 import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'

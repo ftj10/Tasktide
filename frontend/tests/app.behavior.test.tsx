@@ -1,3 +1,6 @@
+// INPUT: app shell with mocked storage and release-note state
+// OUTPUT: behavior coverage for shell-level interactions
+// EFFECT: Verifies top-level planner features such as localization continue to work after shell updates
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, beforeEach, expect, it, vi } from "vitest";

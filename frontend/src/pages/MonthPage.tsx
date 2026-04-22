@@ -1,3 +1,6 @@
+// INPUT: task collection and navigation state
+// OUTPUT: month grid page with per-day task previews
+// EFFECT: Supports monthly schedule scanning and day-level navigation into the Today feature
 import dayjs from "dayjs";
 import { useState, useMemo, useEffect } from "react";
 import { Box, Button, IconButton, Stack, Typography, Paper } from "@mui/material";
@@ -12,13 +15,18 @@ import { tasksForDate } from "../app/taskLogic";
 import { ymd } from "../app/date";
 import { COMPLETIONS_KEY, loadCompletions, type CompletionMap } from "../app/completions";
 
+// INPUT: task collection and save callback
+// OUTPUT: month calendar page
+// EFFECT: Builds the month overview feature from planner tasks and completion state
 export function MonthPage(props: { tasks: Task[]; setTasks: (next: Task[]) => void }) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [currentMonth, setCurrentMonth] = useState(dayjs().startOf("month"));
   const [completions, setCompletions] = useState<CompletionMap>(loadCompletions());
 
-  // Listen for changes so checkboxes update immediately
+  // INPUT: storage updates for completion records
+  // OUTPUT: refreshed completion state
+  // EFFECT: Keeps the month overview aligned with completion changes from other planner views
   useEffect(() => {
     function onStorage(e: StorageEvent) {
       if (e.key === COMPLETIONS_KEY) setCompletions(loadCompletions());
@@ -126,7 +134,6 @@ export function MonthPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
                 </Typography>
               </Box>
 
-              {/* Task Indicators */}
               <Stack spacing={0.5} sx={{ mt: 1 }}>
                 {dayTasks.slice(0, 3).map((t, idx) => (
                   <Typography

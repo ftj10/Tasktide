@@ -1,3 +1,6 @@
+// INPUT: reminder collection and reminder save callback
+// OUTPUT: reminder list page with create, edit, and complete actions
+// EFFECT: Runs the persistent reminder feature outside the date-based task flows
 import { useState } from "react";
 import { Box, Button, Card, CardContent, Stack, Typography } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
@@ -7,6 +10,9 @@ import { useTranslation } from "react-i18next";
 import type { Reminder } from "../types";
 import { ReminderDialog } from "../components/ReminderDialog";
 
+// INPUT: reminder state and update callback
+// OUTPUT: active reminder page
+// EFFECT: Sorts and renders reminders by urgency while exposing reminder CRUD actions
 export function ReminderPage(props: { reminders: Reminder[]; setReminders: (next: Reminder[]) => void }) {
   const { t } = useTranslation();
   const [dialogOpen, setDialogOpen] = useState(false);

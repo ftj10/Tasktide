@@ -1,6 +1,6 @@
-// INPUT: mongoose schema
-// OUTPUT: MongoDB model
-// EFFECT: Defines the Task document structure for the database
+// INPUT: task fields used by planner pages and dialogs
+// OUTPUT: MongoDB task model
+// EFFECT: Stores temporary and permanent task records for each signed-in user
 const mongoose = require('mongoose');
 
 const taskSchema = new mongoose.Schema({

@@ -1,3 +1,6 @@
+// INPUT: jsdom test runtime
+// OUTPUT: browser API shims for frontend tests
+// EFFECT: Provides the UI test environment required by planner components and calendar features
 import "@testing-library/jest-dom/vitest";
 import { vi } from "vitest";
 

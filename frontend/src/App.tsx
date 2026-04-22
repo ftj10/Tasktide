@@ -1,3 +1,6 @@
+// INPUT: authenticated session state plus persisted tasks and reminders
+// OUTPUT: Routed planner shell with navigation, release notes, and page-level task/reminder flows
+// EFFECT: Coordinates login state, initial data hydration, autosave, localization, and browser notification features
 import { Link, Route, Routes } from "react-router-dom";
 import { AppBar, Box, Button, Container, Toolbar, Typography } from "@mui/material";
 import { useEffect, useState, useRef } from "react";
@@ -17,9 +20,6 @@ import { MonthPage } from "./pages/MonthPage";
 import { ReleaseNotesCenter } from "./components/ReleaseNotesCenter";
 import { HelpPage } from "./pages/HelpPage";
 
-// INPUT: none
-// OUTPUT: Main React application component
-// EFFECT: Manages authentication state, synchronizes tasks/reminders with the backend, and schedules periodic background notifications
 export default function App() {
   const { t, i18n } = useTranslation();
   const username = getUsername() || "";
@@ -40,9 +40,9 @@ export default function App() {
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    // INPUT: none
-    // OUTPUT: none
-    // EFFECT: Fetches tasks and reminders from the server, filters out items older than 30 days, and initializes state
+    // INPUT: authenticated user session
+    // OUTPUT: hydrated task and reminder state
+    // EFFECT: Loads the planner data set, trims stale records, and primes autosave after the first successful sync
     async function fetchInitialData() {
       try {
         const [serverTasks, serverReminders] = await Promise.all([
@@ -172,9 +172,9 @@ export default function App() {
     return () => clearInterval(intervalId);
   }, [currentLanguage, t]);
 
-  // INPUT: none
-  // OUTPUT: none
-  // EFFECT: Clears the local storage token, resets all component states, and redirects to the login screen
+  // INPUT: logout button click
+  // OUTPUT: cleared in-memory planner state
+  // EFFECT: Ends the current session and returns the app to the login feature
   const handleLogout = () => {
     logoutUser();
     setIsAuthenticated(false);

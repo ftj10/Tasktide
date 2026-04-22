@@ -1,3 +1,6 @@
+// INPUT: task editing state, default date, and task callbacks
+// OUTPUT: task editor dialog for create and edit flows
+// EFFECT: Builds or updates task records for the planner's temporary and permanent task features
 import dayjs from "dayjs";
 import {
   Dialog,
@@ -20,9 +23,6 @@ import { weekdayISO, weekStartMonday, ymd } from "../app/date";
 
 type Mode = "create" | "edit";
 
-// INPUT: open, mode, defaultDateYmd, task, onClose, onSave, onDelete, onMoveOccurrenceToToday
-// OUTPUT: Dialog component for creating or editing tasks
-// EFFECT: Manages local state for task fields and calls onSave with updated task data
 export function TaskDialog(props: {
   open: boolean;
   mode: Mode;
@@ -53,14 +53,12 @@ export function TaskDialog(props: {
     } satisfies Task;
   }, [props.mode, props.task, props.defaultDateYmd, props.open]);
 
-  // Core Fields
   const [title, setTitle] = useState(base.title);
   const [type, setType] = useState<TaskType>(base.type);
   const [weekday, setWeekday] = useState<number>(base.weekday ?? 1);
   const [date, setDate] = useState<string>(base.date ?? props.defaultDateYmd);
   const [emergency, setEmergency] = useState<number>(base.emergency ?? 5);
 
-  // Extra Fields
   const [location, setLocation] = useState(props.task?.location || "");
   const [description, setDescription] = useState(props.task?.description || "");
   const [startTime, setStartTime] = useState(props.task?.startTime || "");
@@ -68,9 +66,9 @@ export function TaskDialog(props: {
   const [mapProvider, setMapProvider] = useState(props.task?.mapProvider || "google");
   const hasInvalidEndTime = Boolean(startTime && endTime && endTime < startTime);
 
-  // INPUT: props.open, base, props.defaultDateYmd, props.task
-  // OUTPUT: None
-  // EFFECT: Updates local state variables when the dialog opens
+  // INPUT: dialog open state plus the selected task context
+  // OUTPUT: synchronized local field state
+  // EFFECT: Rehydrates the task editor whenever the dialog starts a new create or edit flow
   useEffect(() => {
     if (!props.open) return;
     setTitle(base.title);
@@ -79,7 +77,6 @@ export function TaskDialog(props: {
     setDate(base.date ?? props.defaultDateYmd);
     setEmergency(base.emergency ?? 5);
 
-    // Load existing extra fields if editing, or default to blank
     setLocation(props.task?.location || "");
     setDescription(props.task?.description || "");
     setStartTime(props.task?.startTime || "");
@@ -93,9 +90,9 @@ export function TaskDialog(props: {
 
   const canSave = title.trim().length > 0 && !hasInvalidEndTime;
 
-  // INPUT: override (Partial<Task>)
-  // OUTPUT: Task object
-  // EFFECT: Constructs the final task object from state variables
+  // INPUT: optional field overrides
+  // OUTPUT: normalized task payload
+  // EFFECT: Produces the saved task record for task creation, editing, and move actions
   function buildTask(override?: Partial<Task>): Task {
     const now = new Date().toISOString();
     return {
@@ -108,7 +105,6 @@ export function TaskDialog(props: {
       updatedAt: now,
       emergency: emergency,
 
-      // Inject the extra fields into the final save object
       location: location.trim(),
       description: description.trim(),
       startTime: startTime,
@@ -119,9 +115,9 @@ export function TaskDialog(props: {
     };
   }
 
-  // INPUT: None
-  // OUTPUT: None
-  // EFFECT: Saves the selected map provider as default, saves task, and closes dialog
+  // INPUT: current task editor fields
+  // OUTPUT: saved task plus persisted map-provider preference
+  // EFFECT: Completes the task editor flow and closes the dialog
   function save() {
     localStorage.setItem("defaultMapProvider", mapProvider);
     props.onSave(buildTask());

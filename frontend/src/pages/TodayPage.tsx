@@ -1,3 +1,6 @@
+// INPUT: task collection, completion history, and selected date route state
+// OUTPUT: Today view with grouped tasks and task action dialogs
+// EFFECT: Drives the daily planning feature, including completion, rescheduling, map launch, and task CRUD flows
 import dayjs from "dayjs";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -35,9 +38,6 @@ import {
   type CompletionMap,
 } from "../app/completions";
 
-// INPUT: props.tasks, props.setTasks
-// OUTPUT: Renders the daily task view
-// EFFECT: Groups tasks into "All-Day" and "Timed", ranks them correctly, and manages CRUD operations
 export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => void }) {
   const { t, i18n } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -80,15 +80,12 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
     }).format(dayjs(selectedDay).toDate());
   }, [currentLanguage, selectedDay]);
 
-  // INPUT: props.tasks, selectedDay, completions
-  // OUTPUT: { allDayTasks: Task[], timedTasks: Task[] }
-  // EFFECT: Splits tasks into two arrays and sorts them based on user constraints (All Day by Emergency, Timed by Time)
+  // INPUT: current tasks, selected date, and permanent-task completions
+  // OUTPUT: grouped all-day and timed task lists
+  // EFFECT: Builds the Today layout for the date-focused planning feature
   const { allDayTasks, timedTasks } = useMemo(() => {
     const raw = tasksForDate(props.tasks, selectedDay, completions);
-    // All-Day: Has NO start time. Rank by emergency.
     const allDay = raw.filter(t => !t.startTime).sort((a, b) => (a.emergency ?? 5) - (b.emergency ?? 5));
-
-    // Timed: Has start time. Rank ONLY by time chronologically (ignoring emergency order).
     const timed = raw.filter(t => !!t.startTime).sort((a, b) => a.startTime!.localeCompare(b.startTime!));
 
     return { allDayTasks: allDay, timedTasks: timed };
@@ -204,9 +201,9 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
     window.open(url, "_blank");
   };
 
-  // INPUT: task (Task)
-  // OUTPUT: Renders a single material card
-  // EFFECT: Dynamically shows map, time, description based on existence of properties
+  // INPUT: task record for the selected date
+  // OUTPUT: task card UI
+  // EFFECT: Renders the Today-page presentation for one task and its feature actions
   const renderTaskCard = (task: Task) => {
     const color = getColor(task);
     const isToday = selectedDay === ymd(dayjs());

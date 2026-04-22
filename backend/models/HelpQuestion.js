@@ -1,3 +1,6 @@
+// INPUT: shared help-question fields
+// OUTPUT: MongoDB help-question model
+// EFFECT: Stores public help-board submissions visible to authenticated users
 const mongoose = require('mongoose');
 
 const helpQuestionSchema = new mongoose.Schema({

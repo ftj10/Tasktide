@@ -1,3 +1,6 @@
+// INPUT: week page, mocked calendar interactions, and task fixtures
+// OUTPUT: behavior coverage for weekly planning actions
+// EFFECT: Verifies week-view navigation, delete confirmation, and prefilled date flows
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, beforeEach, expect, it, vi } from "vitest";

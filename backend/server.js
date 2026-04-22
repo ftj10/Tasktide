@@ -1,3 +1,6 @@
+// INPUT: HTTP requests for auth, tasks, reminders, and help questions
+// OUTPUT: Express application plus startup helpers
+// EFFECT: Exposes the backend API used by the weekly planner features and persists data through MongoDB models
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
@@ -14,10 +17,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log("Connected to MongoDB Atlas"))
-  .catch(err => console.error("Database connection error:", err));
-
+// INPUT: bearer token request header
+// OUTPUT: decoded user on req.user or an auth error response
+// EFFECT: Protects planner routes so each request is tied to a signed-in user
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1]; 
@@ -31,6 +33,9 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
+// INPUT: username and password
+// OUTPUT: registration success or validation failure
+// EFFECT: Creates a new account for the planner authentication feature
 app.post('/register', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -50,6 +55,9 @@ app.post('/register', async (req, res) => {
   }
 });
 
+// INPUT: username and password
+// OUTPUT: JWT token plus username for the frontend session
+// EFFECT: Starts an authenticated planner session for an existing user
 app.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -68,6 +76,9 @@ app.post('/login', async (req, res) => {
   }
 });
 
+// INPUT: authenticated user id
+// OUTPUT: saved task records for that user
+// EFFECT: Loads the current planner task state
 app.get('/tasks', authenticateToken, async (req, res) => {
   try {
     const tasks = await Task.find({ userId: req.user.userId }, { _id: 0, __v: 0 });
@@ -77,6 +88,9 @@ app.get('/tasks', authenticateToken, async (req, res) => {
   }
 });
 
+// INPUT: authenticated user id plus task array
+// OUTPUT: save confirmation
+// EFFECT: Replaces the user's saved task snapshot with the latest frontend state
 app.post('/tasks', authenticateToken, async (req, res) => {
   try {
     const newTasks = req.body; 
@@ -96,6 +110,9 @@ app.post('/tasks', authenticateToken, async (req, res) => {
   }
 });
 
+// INPUT: authenticated user id
+// OUTPUT: saved reminder records for that user
+// EFFECT: Loads the reminder list for the signed-in planner session
 app.get('/reminders', authenticateToken, async (req, res) => {
   try {
     const reminders = await Reminder.find({ userId: req.user.userId }, { _id: 0, __v: 0 });
@@ -105,6 +122,9 @@ app.get('/reminders', authenticateToken, async (req, res) => {
   }
 });
 
+// INPUT: authenticated user id plus reminder array
+// OUTPUT: save confirmation
+// EFFECT: Replaces the user's saved reminder snapshot with the latest frontend state
 app.post('/reminders', authenticateToken, async (req, res) => {
   try {
     const newReminders = req.body; 
@@ -120,6 +140,9 @@ app.post('/reminders', authenticateToken, async (req, res) => {
   }
 });
 
+// INPUT: authenticated help-board request
+// OUTPUT: public help questions ordered by recency
+// EFFECT: Supplies the shared help center with cross-user questions
 app.get('/help-questions', authenticateToken, async (req, res) => {
   try {
     const questions = await HelpQuestion.find({}, { _id: 0, __v: 0 }).sort({ createdAt: -1 });
@@ -129,6 +152,9 @@ app.get('/help-questions', authenticateToken, async (req, res) => {
   }
 });
 
+// INPUT: authenticated username plus help question payload
+// OUTPUT: save confirmation or validation error
+// EFFECT: Adds a new public question to the shared help board
 app.post('/help-questions', authenticateToken, async (req, res) => {
   try {
     const { id, question, createdAt } = req.body;
@@ -152,6 +178,28 @@ app.post('/help-questions', authenticateToken, async (req, res) => {
 
 const PORT = process.env.PORT || 2676;
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// INPUT: environment database connection string
+// OUTPUT: Mongoose connection promise
+// EFFECT: Connects the backend API to the configured MongoDB instance
+function connectDatabase() {
+  return mongoose.connect(process.env.MONGODB_URI)
+    .then(() => console.log("Connected to MongoDB Atlas"))
+    .catch(err => console.error("Database connection error:", err));
+}
+
+// INPUT: configured port
+// OUTPUT: active HTTP server instance
+// EFFECT: Starts the planner API process for local or deployed use
+function startServer() {
+  return app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+if (require.main === module) {
+  connectDatabase().then(() => {
+    startServer();
+  });
+}
+
+module.exports = { app, authenticateToken, connectDatabase, startServer };

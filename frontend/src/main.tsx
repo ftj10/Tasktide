@@ -1,3 +1,6 @@
+// INPUT: browser root element plus shared frontend providers
+// OUTPUT: mounted React application
+// EFFECT: Boots the planner shell with theme, router, and localization support
 import React from "react";
 import './i18n';
 import ReactDOM from "react-dom/client";
@@ -19,4 +22,3 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     </ThemeProvider>
   </React.StrictMode>
 );
-

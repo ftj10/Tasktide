@@ -1,9 +1,15 @@
+// INPUT: task collections, date ranges, and recurring-task completion state
+// OUTPUT: filtered task lists and calendar event records
+// EFFECT: Converts raw planner data into the day and week views used across the scheduling features
 import dayjs from "dayjs";
 import type { Task } from "../types";
 import { weekdayISO, ymd } from "./date";
 import type { CompletionMap } from "./completions";
 import { isDoneForDate } from "./completions";
 
+// INPUT: all tasks, selected date, and recurring-task completions
+// OUTPUT: tasks visible on the selected day
+// EFFECT: Resolves which temporary and permanent tasks belong in the Today and Month views
 export function tasksForDate(all: Task[], dateYmd: string, completions: CompletionMap): Task[] {
   const d = dayjs(dateYmd);
   const iso = weekdayISO(d);
@@ -18,7 +24,6 @@ export function tasksForDate(all: Task[], dateYmd: string, completions: Completi
     (t) => t.type === "TEMPORARY" && t.date === dateYmd && !t.done
   );
 
-  // Sort by emergency level (ascending: 1 highest) then by title.
   return [...permanents, ...temporaries].sort((a, b) => {
     const ea = a.emergency ?? 5;
     const eb = b.emergency ?? 5;
@@ -27,14 +32,9 @@ export function tasksForDate(all: Task[], dateYmd: string, completions: Completi
   });
 }
 
-/**
- * Generate calendar events for whatever date range FullCalendar is currently showing.
- * - Permanents repeat weekly because we generate an occurrence for every matching weekday in the range.
- * - Permanents can be hidden for a date if marked done-for-that-date in completions.
- * - Temporaries appear only on their date (if within range and not done).
- *
- * Emergency levels influence the colouring of events: higher emergency (1) results in a darker colour.
- */
+// INPUT: all tasks, recurring-task completions, and visible calendar range
+// OUTPUT: calendar events for FullCalendar
+// EFFECT: Expands planner tasks into week-view event records for the scheduling feature
 export function toCalendarEventsForRange(
   all: Task[],
   completions: CompletionMap,
@@ -43,24 +43,22 @@ export function toCalendarEventsForRange(
 ) {
   const events: any[] = [];
 
-  // Colour palette for emergency levels. Lower number = higher urgency = darker colour.
   const permanentColorMap: { [level: number]: { bg: string; border: string; text: string } } = {
-    1: { bg: "#0D47A1", border: "#08306B", text: "#FFFFFF" }, // very dark blue
-    2: { bg: "#1565C0", border: "#0D47A1", text: "#FFFFFF" }, // dark blue
-    3: { bg: "#1E88E5", border: "#1565C0", text: "#FFFFFF" }, // medium blue
-    4: { bg: "#90CAF9", border: "#42A5F5", text: "#000000" }, // light blue
-    5: { bg: "#E3F2FD", border: "#BBDEFB", text: "#000000" }, // very light blue
+    1: { bg: "#0D47A1", border: "#08306B", text: "#FFFFFF" },
+    2: { bg: "#1565C0", border: "#0D47A1", text: "#FFFFFF" },
+    3: { bg: "#1E88E5", border: "#1565C0", text: "#FFFFFF" },
+    4: { bg: "#90CAF9", border: "#42A5F5", text: "#000000" },
+    5: { bg: "#E3F2FD", border: "#BBDEFB", text: "#000000" },
   };
 
   const temporaryColorMap: { [level: number]: { bg: string; border: string; text: string } } = {
-    1: { bg: "#F57F17", border: "#E65100", text: "#000000" }, // dark yellow / amber
-    2: { bg: "#F9A825", border: "#F57F17", text: "#000000" }, // strong yellow
-    3: { bg: "#FDD835", border: "#FBC02D", text: "#000000" }, // medium yellow
-    4: { bg: "#FFF59D", border: "#FDD835", text: "#000000" }, // pale yellow
-    5: { bg: "#FFFDE7", border: "#FFF9C4", text: "#000000" }, // very light yellow
+    1: { bg: "#F57F17", border: "#E65100", text: "#000000" },
+    2: { bg: "#F9A825", border: "#F57F17", text: "#000000" },
+    3: { bg: "#FDD835", border: "#FBC02D", text: "#000000" },
+    4: { bg: "#FFF59D", border: "#FDD835", text: "#000000" },
+    5: { bg: "#FFFDE7", border: "#FFF9C4", text: "#000000" },
   };
 
-  // 1) Temporary tasks within the visible range
   for (const t of all) {
     if (t.type !== "TEMPORARY") continue;
     if (!t.date || t.done) continue;
@@ -84,7 +82,6 @@ export function toCalendarEventsForRange(
     });
   }
 
-  // 2) Permanent tasks: generate an occurrence for each day in the range that matches weekday
   const permanents = all.filter((t) => t.type === "PERMANENT" && typeof t.weekday === "number");
 
   for (let cur = rangeStart.startOf("day"); cur.isBefore(rangeEnd, "day"); cur = cur.add(1, "day")) {
