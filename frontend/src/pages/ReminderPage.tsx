@@ -40,9 +40,9 @@ export function ReminderPage(props: { reminders: Reminder[]; setReminders: (next
   }
 
   return (
-    <Box sx={{ maxWidth: 900, mx: "auto", p: { xs: 1, sm: 2 } }}>
-      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-        <Typography variant="h5" fontWeight="bold">{t("reminder.title")}</Typography>
+    <Box sx={{ width: "100%", maxWidth: 1200, mx: "auto", px: { xs: 1.5, sm: 2, md: 3 }, py: { xs: 1, sm: 2 } }}>
+      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3, flexWrap: "wrap", gap: 1 }}>
+        <Typography variant="h5" fontWeight="bold" sx={{ fontSize: { xs: "1.1rem", sm: "1.5rem" } }}>{t("reminder.title")}</Typography>
         <Button variant="contained" onClick={() => { setEditing(undefined); setDialogOpen(true); }}>
           {t("reminder.addReminder")}
         </Button>
@@ -55,19 +55,19 @@ export function ReminderPage(props: { reminders: Reminder[]; setReminders: (next
       ) : (
         <Box>
           {sortedReminders.map((reminder) => (
-            <Card key={reminder.id} sx={{ mb: 2, borderLeft: "6px solid", borderColor: getColor(reminder.emergency), opacity: reminder.done ? 0.5 : 1 }}>
+            <Card key={reminder.id} sx={{ mb: 2, borderLeft: "6px solid", borderColor: getColor(reminder.emergency), opacity: reminder.done ? 0.5 : 1, borderRadius: 3 }}>
               <CardContent>
                 <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={2}>
                   <Box>
-                    <Typography variant="h6" sx={{ textDecoration: reminder.done ? "line-through" : "none" }}>
+                    <Typography variant="h6" sx={{ textDecoration: reminder.done ? "line-through" : "none", fontSize: { xs: "1rem", sm: "1.25rem" } }}>
                       {reminder.title}
                     </Typography>
                     {reminder.content && (
-                      <Typography variant="body1" sx={{ mt: 1, color: "text.secondary", whiteSpace: "pre-wrap" }}>
+                      <Typography variant="body1" sx={{ mt: 1, color: "text.secondary", whiteSpace: "pre-wrap", fontSize: { xs: "0.9rem", sm: "1rem" } }}>
                         {reminder.content}
                       </Typography>
                     )}
-                    <Typography variant="caption" sx={{ display: 'block', mt: 1, fontWeight: 'bold' }}>
+                    <Typography variant="caption" sx={{ display: 'block', mt: 1, fontWeight: 'bold', fontSize: { xs: "0.72rem", sm: "0.75rem" } }}>
                       {t("reminder.priority", { value: reminder.emergency })}
                     </Typography>
                   </Box>

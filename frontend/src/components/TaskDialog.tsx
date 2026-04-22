@@ -15,6 +15,8 @@ import {
   MenuItem,
   Box,
   Stack,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import type { Task, TaskType } from "../types";
 import { useEffect, useMemo, useState } from "react";
@@ -34,6 +36,8 @@ export function TaskDialog(props: {
   onMoveOccurrenceToToday?: (task: Task, fromDateYmd: string) => void;
 }) {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const base = useMemo(() => {
     if (props.mode === "edit" && props.task) {
       return { ...props.task, emergency: props.task.emergency ?? 5 };
@@ -166,7 +170,19 @@ export function TaskDialog(props: {
   ];
 
   return (
-    <Dialog open={props.open} onClose={props.onClose} fullWidth maxWidth="sm">
+    <Dialog
+      open={props.open}
+      onClose={props.onClose}
+      fullWidth
+      fullScreen={isMobile}
+      maxWidth="sm"
+      PaperProps={{
+        sx: {
+          borderRadius: { xs: 0, sm: 3 },
+          mx: { xs: 0, sm: 2 },
+        },
+      }}
+    >
       <DialogTitle>{props.mode === "create" ? t("dialog.addTaskTitle") : t("dialog.editTaskTitle")}</DialogTitle>
 
       <Box
@@ -177,7 +193,7 @@ export function TaskDialog(props: {
           save();
         }}
       >
-        <DialogContent sx={{ display: "grid", gap: 3, pt: 2 }}>
+        <DialogContent sx={{ display: "grid", gap: { xs: 2, sm: 3 }, pt: 2 }}>
           <TextField
             label={t("dialog.taskName")}
             value={title}
@@ -235,7 +251,7 @@ export function TaskDialog(props: {
             />
           )}
 
-          <Stack direction="row" spacing={2}>
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
             <TextField
               label={t("common.startTimeOptional")}
               type="time"

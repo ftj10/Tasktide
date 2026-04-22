@@ -9,9 +9,11 @@ import i18n from "../src/i18n";
 import type { Reminder } from "../src/types";
 import { ReminderPage } from "../src/pages/ReminderPage";
 import { renderWithProviders } from "./test-utils";
+import { setScreenWidth } from "./setup";
 
 describe("ReminderPage behavior", () => {
   beforeEach(async () => {
+    setScreenWidth(1024);
     await i18n.changeLanguage("en");
   });
 
@@ -37,5 +39,16 @@ describe("ReminderPage behavior", () => {
     expect(setReminders).toHaveBeenCalledTimes(1);
     const nextReminders = setReminders.mock.calls[0][0] as Reminder[];
     expect(nextReminders[0].done).toBe(true);
+  });
+
+  it("opens the reminder dialog full-screen on mobile screens", async () => {
+    const user = userEvent.setup();
+    setScreenWidth(390);
+
+    renderWithProviders(<ReminderPage reminders={[]} setReminders={vi.fn()} />);
+
+    await user.click(screen.getByRole("button", { name: "Add Reminder" }));
+
+    expect(screen.getByRole("dialog")).toHaveClass("MuiDialog-paperFullScreen");
   });
 });

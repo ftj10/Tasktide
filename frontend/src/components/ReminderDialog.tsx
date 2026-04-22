@@ -14,6 +14,8 @@ import {
     Select,
     TextField,
     Stack,
+    useMediaQuery,
+    useTheme,
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import type { Reminder } from "../types";
@@ -31,6 +33,8 @@ type Props = {
 // EFFECT: Keeps reminder draft fields aligned with create and edit flows
 export function ReminderDialog({ open, mode, reminder, onClose, onSave }: Props) {
     const { t } = useTranslation();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const [emergency, setEmergency] = useState<number>(5);
@@ -67,7 +71,19 @@ export function ReminderDialog({ open, mode, reminder, onClose, onSave }: Props)
     };
 
     return (
-        <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+        <Dialog
+            open={open}
+            onClose={onClose}
+            fullWidth
+            fullScreen={isMobile}
+            maxWidth="sm"
+            PaperProps={{
+                sx: {
+                    borderRadius: { xs: 0, sm: 3 },
+                    mx: { xs: 0, sm: 2 },
+                },
+            }}
+        >
             <DialogTitle>{mode === "create" ? t("reminder.createTitle") : t("reminder.editTitle")}</DialogTitle>
             <DialogContent dividers>
                 <Stack spacing={2} sx={{ mt: 1 }}>

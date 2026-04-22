@@ -38,6 +38,7 @@ const resources = {
         week: "Week",
         month: "Month",
         help: "Help",
+        mobileNavigation: "Mobile navigation",
         logout: "Logout",
         greeting: "Hi, {{name}}!"
       },
@@ -115,7 +116,8 @@ const resources = {
           step1: "Use Today to add, edit, complete, or move tasks for the current day.",
           step2: "Use Week and Month to review your schedule and jump between dates quickly.",
           step3: "Use Reminders for ongoing notes that should stay visible until you mark them done.",
-          step4: "In Week view, you can click a date to jump to that day in Today, or click a blank calendar area before adding a task to prefill that date."
+          step4: "On phones, use the bottom navigation to switch between planner sections, while larger screens keep the sidebar visible.",
+          step5: "Task and Reminder forms open full-screen on mobile for easier editing, and stay centered as dialogs on larger screens."
         },
         faq: {
           title: "Common Q&A",
@@ -138,6 +140,10 @@ const resources = {
           q5: {
             question: "How does clicking in Week view work?",
             answer: "Click a day header to jump to that date in Today, or click an empty spot in the week calendar so the next new task uses that date by default."
+          },
+          q6: {
+            question: "How does the layout change on mobile devices?",
+            answer: "The planner switches to a bottom navigation layout, narrows typography, and expands Task and Reminder forms to full-screen for easier touch use."
           }
         },
         ask: {
@@ -213,6 +219,7 @@ const resources = {
         week: "周视图",
         month: "月视图",
         help: "帮助",
+        mobileNavigation: "移动端导航",
         logout: "退出登录",
         greeting: "你好，{{name}}！"
       },
@@ -290,7 +297,8 @@ const resources = {
           step1: "在 Today 页面中添加、编辑、完成或移动当天任务。",
           step2: "在 Week 和 Month 页面快速查看整体安排并跳转日期。",
           step3: "使用 Reminders 记录持续存在、直到你手动完成的提醒事项。",
-          step4: "在 Week 页面中，你可以点击日期跳转到对应的 Today 页面，或先点击空白日历区域再新增任务，以自动带入该日期。"
+          step4: "在手机上可使用底部导航切换页面；在较大屏幕上会显示侧边栏导航。",
+          step5: "Task 和 Reminder 表单在手机上会全屏打开，较大屏幕上则保持居中弹窗。"
         },
         faq: {
           title: "常见问答",
@@ -313,6 +321,10 @@ const resources = {
           q5: {
             question: "Week 页面中的点击行为是什么？",
             answer: "点击某一天的日期标题会跳转到对应的 Today 页面；点击周历中的空白区域后，再新增任务时会默认带入该日期。"
+          },
+          q6: {
+            question: "移动设备上的布局会怎样变化？",
+            answer: "应用会切换到底部导航、缩小排版字号，并让 Task 与 Reminder 表单改为全屏显示，方便触控操作。"
           }
         },
         ask: {

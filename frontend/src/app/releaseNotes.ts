@@ -14,6 +14,35 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-04-22-responsive-shell-and-mobile-dialogs",
+    version: "v1.5.0",
+    releasedAt: "2026-04-22",
+    title: {
+      en: "Responsive shell and mobile-first dialogs",
+      zh: "响应式外壳与移动端优先弹窗"
+    },
+    summary: {
+      en: "The planner now adapts its layout across screen sizes with a fluid shell, mobile bottom navigation, and full-screen editing flows on phones.",
+      zh: "应用现已支持跨屏幕自适应布局，包含流式页面外壳、移动端底部导航，以及手机上的全屏编辑流程。"
+    },
+    changes: {
+      en: [
+        "Updated the application shell to use a fluid layout that grows from mobile width up to a 1200px desktop maximum.",
+        "Added a desktop sidebar and mobile bottom navigation for faster section switching.",
+        "Changed Task and Reminder dialogs to open full-screen on mobile and as centered modals on larger screens.",
+        "Reduced heading and content typography on smaller screens to prevent horizontal overflow.",
+        "Expanded in-app help and release notes to document the new responsive behavior."
+      ],
+      zh: [
+        "将应用外壳更新为流式布局，从移动端全宽扩展到桌面端最大 1200px。",
+        "新增桌面侧边栏与移动端底部导航，便于快速切换页面。",
+        "Task 与 Reminder 弹窗在手机上改为全屏，在较大屏幕上保持居中弹窗。",
+        "缩小小屏幕上的标题与内容字号，减少横向溢出。",
+        "扩展应用内帮助与更新说明，记录新的响应式行为。"
+      ]
+    }
+  },
+  {
     id: "2026-04-20-help-center-and-public-questions",
     version: "v1.4.0",
     releasedAt: "2026-04-20",

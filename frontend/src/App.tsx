@@ -1,11 +1,27 @@
 // INPUT: authenticated session state plus persisted tasks and reminders
 // OUTPUT: Routed planner shell with navigation, release notes, and page-level task/reminder flows
 // EFFECT: Coordinates login state, initial data hydration, autosave, localization, and browser notification features
-import { Link, Route, Routes } from "react-router-dom";
-import { AppBar, Box, Button, Container, Toolbar, Typography } from "@mui/material";
+import { Link, Route, Routes, useLocation } from "react-router-dom";
+import {
+  AppBar,
+  BottomNavigation,
+  BottomNavigationAction,
+  Box,
+  Button,
+  Container,
+  Paper,
+  Stack,
+  Toolbar,
+  Typography,
+} from "@mui/material";
 import { useEffect, useState, useRef } from "react";
 import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
+import NotificationsActiveOutlinedIcon from "@mui/icons-material/NotificationsActiveOutlined";
+import TodayOutlinedIcon from "@mui/icons-material/TodayOutlined";
+import ViewWeekOutlinedIcon from "@mui/icons-material/ViewWeekOutlined";
+import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 
 import type { Task, Reminder } from "./types";
 import { createReminder, createTask, deleteReminder, deleteTask, getToken, getUsername, loadReminders, loadTasks, logoutUser, rolloverIfNeeded, updateReminder, updateTask } from "./app/storage";
@@ -22,6 +38,7 @@ import { HelpPage } from "./pages/HelpPage";
 
 export default function App() {
   const { t, i18n } = useTranslation();
+  const location = useLocation();
   const username = getUsername() || "";
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!getToken());
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -225,52 +242,142 @@ export default function App() {
     );
   }
 
+  const navigationItems = [
+    { to: "/reminders", label: t("nav.reminders"), icon: <NotificationsActiveOutlinedIcon /> },
+    { to: "/", label: t("nav.today"), icon: <TodayOutlinedIcon /> },
+    { to: "/week", label: t("nav.week"), icon: <ViewWeekOutlinedIcon /> },
+    { to: "/month", label: t("nav.month"), icon: <CalendarMonthOutlinedIcon /> },
+    { to: "/help", label: t("nav.help"), icon: <HelpOutlineIcon /> },
+  ];
+
+  const activePath = navigationItems.some((item) => item.to === location.pathname) ? location.pathname : "/";
+
   return (
-    <>
-      <AppBar position="static">
-        <Toolbar>
-          <Button color="inherit" component={Link} to="/reminders">
-            {t("nav.reminders")}
-          </Button>
-          <Button color="inherit" component={Link} to="/">
-            {t("nav.today")}
-          </Button>
-          <Button color="inherit" component={Link} to="/week">
-            {t("nav.week")}
-          </Button>
-          <Button color="inherit" component={Link} to="/month">
-            {t("nav.month")}
-          </Button>
-          <Button color="inherit" component={Link} to="/help">
-            {t("nav.help")}
-          </Button>
-
-          <Box sx={{ flexGrow: 1 }} />
-
+    <Box sx={{ minHeight: "100vh", bgcolor: "grey.50" }}>
+      <AppBar position="sticky" sx={{ display: { xs: "flex", md: "none" } }}>
+        <Toolbar sx={{ minHeight: 64, px: 2, gap: 1.5 }}>
+          <Box sx={{ minWidth: 0, flexGrow: 1 }}>
+            <Typography variant="h6" sx={{ fontSize: "1rem", fontWeight: 700, lineHeight: 1.2 }}>
+              Weekly To-Do
+            </Typography>
+            <Typography variant="body2" sx={{ fontSize: "0.75rem", opacity: 0.9, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+              {t("nav.greeting", { name: username })}
+            </Typography>
+          </Box>
           {username ? <ReleaseNotesCenter username={username} /> : null}
-          <Button color="inherit" onClick={handleLanguageToggle} sx={{ mr: 1 }}>
+          <Button color="inherit" onClick={handleLanguageToggle} sx={{ minWidth: 52, px: 1 }}>
             {currentLanguage === "en" ? "中文" : "EN"}
           </Button>
-          <Typography variant="body2" sx={{ mr: 2 }}>
-            {t("nav.greeting", { name: username })}
-          </Typography>
-          <Button color="inherit" onClick={handleLogout} variant="outlined" size="small">
+          <Button color="inherit" onClick={handleLogout} sx={{ minWidth: 0, px: 1 }}>
             {t("nav.logout")}
           </Button>
         </Toolbar>
       </AppBar>
 
-      <Container maxWidth={false}>
-        <Box sx={{ py: 2 }}>
-          <Routes>
-            <Route path="/reminders" element={<ReminderPage reminders={reminders} setReminders={handleSetReminders} />} />
-            <Route path="/" element={<TodayPage tasks={tasks} setTasks={handleSetTasks} />} />
-            <Route path="/week" element={<WeekPage tasks={tasks} setTasks={handleSetTasks} completionsRev={0} />} />
-            <Route path="/month" element={<MonthPage tasks={tasks} setTasks={handleSetTasks} />} />
-            <Route path="/help" element={<HelpPage />} />
-          </Routes>
+      <Box sx={{ width: "100%", px: { xs: 0, sm: 2, lg: 3 }, py: { xs: 0, md: 3 } }}>
+        <Box
+          sx={{
+            width: "100%",
+            maxWidth: 1200,
+            mx: "auto",
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md: "240px minmax(0, 1fr)" },
+            gap: { xs: 0, md: 3 },
+            alignItems: "start",
+          }}
+        >
+          <Paper
+            elevation={0}
+            sx={{
+              display: { xs: "none", md: "block" },
+              position: "sticky",
+              top: 24,
+              borderRadius: 3,
+              p: 2,
+              border: "1px solid",
+              borderColor: "divider",
+            }}
+          >
+            <Stack spacing={2.5}>
+              <Box>
+                <Typography variant="h5" fontWeight={700}>
+                  Weekly To-Do
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                  {t("nav.greeting", { name: username })}
+                </Typography>
+              </Box>
+
+              <Stack spacing={1}>
+                {navigationItems.map((item) => (
+                  <Button
+                    key={item.to}
+                    component={Link}
+                    to={item.to}
+                    variant={activePath === item.to ? "contained" : "text"}
+                    color={activePath === item.to ? "primary" : "inherit"}
+                    startIcon={item.icon}
+                    sx={{ justifyContent: "flex-start", py: 1.1, borderRadius: 2 }}
+                  >
+                    {item.label}
+                  </Button>
+                ))}
+              </Stack>
+
+              <Stack spacing={1}>
+                {username ? <ReleaseNotesCenter username={username} /> : null}
+                <Button variant="outlined" onClick={handleLanguageToggle}>
+                  {currentLanguage === "en" ? "中文" : "EN"}
+                </Button>
+                <Button variant="outlined" color="inherit" onClick={handleLogout}>
+                  {t("nav.logout")}
+                </Button>
+              </Stack>
+            </Stack>
+          </Paper>
+
+          <Box sx={{ width: "100%", minWidth: 0, pb: { xs: 10, md: 0 } }}>
+            <Container maxWidth={false} disableGutters>
+              <Box sx={{ py: { xs: 2, md: 0 } }}>
+                <Routes>
+                  <Route path="/reminders" element={<ReminderPage reminders={reminders} setReminders={handleSetReminders} />} />
+                  <Route path="/" element={<TodayPage tasks={tasks} setTasks={handleSetTasks} />} />
+                  <Route path="/week" element={<WeekPage tasks={tasks} setTasks={handleSetTasks} completionsRev={0} />} />
+                  <Route path="/month" element={<MonthPage tasks={tasks} setTasks={handleSetTasks} />} />
+                  <Route path="/help" element={<HelpPage />} />
+                </Routes>
+              </Box>
+            </Container>
+          </Box>
         </Box>
-      </Container>
-    </>
+      </Box>
+
+      <Paper
+        elevation={8}
+        sx={{
+          display: { xs: "block", md: "none" },
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          borderTopLeftRadius: 16,
+          borderTopRightRadius: 16,
+          overflow: "hidden",
+        }}
+      >
+        <BottomNavigation showLabels value={activePath} aria-label={t("nav.mobileNavigation")}>
+          {navigationItems.map((item) => (
+            <BottomNavigationAction
+              key={item.to}
+              component={Link}
+              to={item.to}
+              value={item.to}
+              label={item.label}
+              icon={item.icon}
+            />
+          ))}
+        </BottomNavigation>
+      </Paper>
+    </Box>
   );
 }

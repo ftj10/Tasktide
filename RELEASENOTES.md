@@ -1,5 +1,13 @@
 # Release Notes
 
+## v1.5.0 - 2026-04-22
+
+- Added a responsive application shell that scales from mobile width up to a 1200px desktop maximum.
+- Added desktop sidebar navigation and mobile bottom navigation.
+- Changed Task and Reminder dialogs to open full-screen on mobile and as centered modals on larger screens.
+- Reduced mobile typography sizes across the main planner pages to avoid horizontal scrolling.
+- Expanded README and in-app Help content to document the responsive behavior.
+
 ## v1.4.0 - 2026-04-20
 
 - Added the Help page with step-by-step planner instructions.

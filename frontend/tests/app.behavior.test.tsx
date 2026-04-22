@@ -9,6 +9,7 @@ import i18n from "../src/i18n";
 import { LATEST_RELEASE_ID } from "../src/app/releaseNotes";
 import App from "../src/App";
 import { renderWithProviders } from "./test-utils";
+import { setScreenWidth } from "./setup";
 
 vi.mock("../src/app/storage", async () => {
   const actual = await vi.importActual<typeof import("../src/app/storage")>("../src/app/storage");
@@ -33,6 +34,7 @@ describe("App behavior", () => {
   beforeEach(async () => {
     localStorage.clear();
     localStorage.setItem("release-notes-seen:tom", LATEST_RELEASE_ID);
+    setScreenWidth(1024);
     await i18n.changeLanguage("en");
   });
 
@@ -42,13 +44,25 @@ describe("App behavior", () => {
     renderWithProviders(<App />);
 
     await waitFor(() => {
-      expect(screen.getByRole("link", { name: "Today" })).toBeInTheDocument();
+      expect(screen.getAllByRole("link", { name: "Today" }).length).toBeGreaterThan(0);
     });
 
-    await user.click(screen.getByRole("button", { name: "中文" }));
+    await user.click(screen.getAllByRole("button", { name: "中文" })[0]);
 
     await waitFor(() => {
-      expect(screen.getByRole("link", { name: "今天" })).toBeInTheDocument();
+      expect(screen.getAllByRole("link", { name: "今天" }).length).toBeGreaterThan(0);
     });
+  });
+
+  it("renders mobile bottom navigation on small screens", async () => {
+    setScreenWidth(390);
+
+    renderWithProviders(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Mobile navigation")).toBeInTheDocument();
+    });
+
+    expect(screen.getAllByRole("link", { name: "Today" }).length).toBeGreaterThan(0);
   });
 });

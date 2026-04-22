@@ -8,9 +8,11 @@ import { describe, beforeEach, expect, it, vi } from "vitest";
 import i18n from "../src/i18n";
 import { TaskDialog } from "../src/components/TaskDialog";
 import { renderWithProviders } from "./test-utils";
+import { setScreenWidth } from "./setup";
 
 describe("TaskDialog behavior", () => {
   beforeEach(async () => {
+    setScreenWidth(1024);
     await i18n.changeLanguage("en");
   });
 
@@ -35,5 +37,21 @@ describe("TaskDialog behavior", () => {
     expect(screen.getByText("End time must be equal to or later than start time.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Add" })).toBeDisabled();
     expect(onSave).not.toHaveBeenCalled();
+  });
+
+  it("uses a full-screen dialog layout on mobile screens", () => {
+    setScreenWidth(390);
+
+    renderWithProviders(
+      <TaskDialog
+        open
+        mode="create"
+        defaultDateYmd="2026-04-20"
+        onClose={vi.fn()}
+        onSave={vi.fn()}
+      />
+    );
+
+    expect(screen.getByRole("dialog")).toHaveClass("MuiDialog-paperFullScreen");
   });
 });

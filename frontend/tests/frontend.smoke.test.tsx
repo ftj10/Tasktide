@@ -65,7 +65,7 @@ describe("frontend smoke", () => {
 
   it("renders the app shell", async () => {
     renderWithProviders(<App />);
-    expect(await screen.findByText("Updates")).toBeInTheDocument();
+    expect((await screen.findAllByText("Updates")).length).toBeGreaterThan(0);
   });
 
   it("renders the today page", () => {

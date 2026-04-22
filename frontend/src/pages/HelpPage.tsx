@@ -36,6 +36,7 @@ export function HelpPage() {
     t("help.guides.step2"),
     t("help.guides.step3"),
     t("help.guides.step4"),
+    t("help.guides.step5"),
   ]), [t]);
 
   const faqItems = useMemo(() => ([
@@ -44,6 +45,7 @@ export function HelpPage() {
     { question: t("help.faq.q3.question"), answer: t("help.faq.q3.answer") },
     { question: t("help.faq.q4.question"), answer: t("help.faq.q4.answer") },
     { question: t("help.faq.q5.question"), answer: t("help.faq.q5.answer") },
+    { question: t("help.faq.q6.question"), answer: t("help.faq.q6.answer") },
   ]), [t]);
 
   useEffect(() => {
@@ -89,11 +91,11 @@ export function HelpPage() {
   }
 
   return (
-    <Box sx={{ maxWidth: 980, mx: "auto", p: { xs: 1, sm: 2 } }}>
+    <Box sx={{ width: "100%", maxWidth: 1200, mx: "auto", px: { xs: 1.5, sm: 2, md: 3 }, py: { xs: 1, sm: 2 } }}>
       <Stack spacing={3}>
         <Box>
-          <Typography variant="h4" fontWeight="bold" sx={{ mb: 1 }}>{t("help.title")}</Typography>
-          <Typography variant="body1" color="text.secondary">{t("help.subtitle")}</Typography>
+          <Typography variant="h4" fontWeight="bold" sx={{ mb: 1, fontSize: { xs: "1.4rem", sm: "2rem" } }}>{t("help.title")}</Typography>
+          <Typography variant="body1" color="text.secondary" sx={{ fontSize: { xs: "0.92rem", sm: "1rem" } }}>{t("help.subtitle")}</Typography>
         </Box>
 
         <Card>

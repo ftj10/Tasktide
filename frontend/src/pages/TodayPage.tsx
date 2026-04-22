@@ -212,16 +212,16 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
     return (
       <Card
         key={task.id}
-        sx={{ mb: 1, borderLeft: "6px solid", borderColor: color, opacity: task.done ? 0.6 : 1 }}
+        sx={{ mb: 1, borderLeft: "6px solid", borderColor: color, opacity: task.done ? 0.6 : 1, borderRadius: 3 }}
       >
         <CardContent sx={{ p: "16px !important" }}>
           <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems={{ xs: "flex-start", sm: "center" }} spacing={2}>
             <Box sx={{ maxWidth: "100%", overflow: "hidden" }}>
-              <Typography variant="h6" sx={{ textDecoration: task.done ? "line-through" : "none", wordBreak: "break-word" }}>
+              <Typography variant="h6" sx={{ textDecoration: task.done ? "line-through" : "none", wordBreak: "break-word", fontSize: { xs: "1rem", sm: "1.1rem" } }}>
                 {task.title}
               </Typography>
 
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: "0.8rem", sm: "0.875rem" } }}>
                 {t("today.taskMeta", {
                   type: getTaskTypeLabel(task),
                   priority: task.emergency ?? 5,
@@ -231,7 +231,7 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
               {task.startTime && (
                 <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mt: 0.5 }}>
                   <AccessTimeIcon fontSize="small" color="action" />
-                  <Typography variant="body2" color="text.primary" fontWeight="bold">
+                  <Typography variant="body2" color="text.primary" fontWeight="bold" sx={{ fontSize: { xs: "0.8rem", sm: "0.875rem" } }}>
                     {formatTaskTime(task.startTime)}
                     {task.endTime && ` - ${formatTaskTime(task.endTime)}`}
                   </Typography>
@@ -239,13 +239,13 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
               )}
 
               {task.description && (
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, whiteSpace: "pre-wrap" }}>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, whiteSpace: "pre-wrap", fontSize: { xs: "0.8rem", sm: "0.875rem" } }}>
                   {task.description}
                 </Typography>
               )}
 
               {task.location && (
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, fontSize: { xs: "0.8rem", sm: "0.875rem" } }}>
                   {t("today.locationLabel", { location: task.location })}
                 </Typography>
               )}
@@ -275,13 +275,13 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
   };
 
   return (
-    <Box sx={{ maxWidth: 900, mx: "auto", p: { xs: 1, sm: 2 } }}>
+    <Box sx={{ width: "100%", maxWidth: 1200, mx: "auto", px: { xs: 1.5, sm: 2, md: 3 }, py: { xs: 1, sm: 2 } }}>
       <Stack direction={{ xs: "column", md: "row" }} justifyContent="space-between" alignItems="center" spacing={2} sx={{ mb: 2 }}>
         <Stack direction="row" alignItems="center" spacing={1}>
           <IconButton aria-label={t("today.previousDay")} onClick={() => setSelectedDay(ymd(dayjs(selectedDay).subtract(1, "day")))}>
             <ArrowBackIcon />
           </IconButton>
-          <Typography variant="h6" sx={{ minWidth: 160, textAlign: "center" }}>
+          <Typography variant="h6" sx={{ minWidth: { xs: 0, sm: 160 }, textAlign: "center", fontSize: { xs: "1.05rem", sm: "1.25rem" } }}>
             {title}
           </Typography>
           <IconButton aria-label={t("today.nextDay")} onClick={() => setSelectedDay(ymd(dayjs(selectedDay).add(1, "day")))}>
@@ -307,7 +307,7 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
 
           {allDayTasks.length > 0 && (
             <Box sx={{ mb: 4 }}>
-              <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 1, color: "text.secondary" }}>
+              <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 1, color: "text.secondary", fontSize: { xs: "0.95rem", sm: "1rem" } }}>
                 {t("today.allDay")}
               </Typography>
               {allDayTasks.map(renderTaskCard)}
@@ -316,7 +316,7 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
 
           {timedTasks.length > 0 && (
             <Box>
-              <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 1, color: "text.secondary" }}>
+              <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 1, color: "text.secondary", fontSize: { xs: "0.95rem", sm: "1rem" } }}>
                 {t("today.scheduled")}
               </Typography>
               {timedTasks.map(renderTaskCard)}

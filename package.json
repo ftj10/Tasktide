@@ -1,7 +1,7 @@
 {
   "name": "weekly-todo-workspace",
   "private": true,
-  "version": "1.5.0",
+  "version": "1.6.0",
   "scripts": {
     "test": "npm --prefix backend run test && npm --prefix frontend run test:run",
     "test:smoke": "npm --prefix backend run test:smoke && npm --prefix frontend run test:smoke",

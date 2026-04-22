@@ -113,16 +113,16 @@ export function WeekPage(props: {
   }
 
   return (
-    <Box sx={{ maxWidth: 1100, mx: "auto", p: { xs: 1, md: 2 } }}>
-      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-        <Typography variant="h6">{t('week.title')}</Typography>
+    <Box sx={{ width: "100%", maxWidth: 1200, mx: "auto", px: { xs: 1.5, sm: 2, md: 3 }, py: { xs: 1, sm: 2 } }}>
+      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2, flexWrap: "wrap", gap: 1 }}>
+        <Typography variant="h6" sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }}>{t('week.title')}</Typography>
         <Button variant="contained" onClick={() => { setEditing(undefined); setDialogOpen(true); }}>
           {t('today.addTask')}
         </Button>
       </Stack>
 
       <Box sx={{ width: "100%", overflowX: "auto" }}>
-        <Box sx={{ minWidth: 700 }}>
+        <Box sx={{ minWidth: { xs: 560, sm: 700 } }}>
           <FullCalendar
             plugins={[timeGridPlugin, dayGridPlugin, interactionPlugin]}
             initialView="dayGridWeek"
@@ -204,6 +204,7 @@ export function WeekPage(props: {
               setDefaultDate(info.dateStr.slice(0, 10));
             }}
             height="auto"
+            contentHeight="auto"
             slotMinTime="06:00:00"
             allDaySlot={true}
           />

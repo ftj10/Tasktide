@@ -65,12 +65,12 @@ export function MonthPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
   ];
 
   return (
-    <Box sx={{ maxWidth: 1000, mx: "auto", p: { xs: 1, sm: 2 } }}>
+    <Box sx={{ width: "100%", maxWidth: 1200, mx: "auto", px: { xs: 1.5, sm: 2, md: 3 }, py: { xs: 1, sm: 2 } }}>
       <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
         <IconButton onClick={() => setCurrentMonth(currentMonth.subtract(1, "month"))}>
           <ArrowBackIcon />
         </IconButton>
-        <Typography variant="h5" fontWeight="bold">{monthLabel}</Typography>
+        <Typography variant="h5" fontWeight="bold" sx={{ fontSize: { xs: "1.1rem", sm: "1.5rem" }, textAlign: "center" }}>{monthLabel}</Typography>
         <IconButton onClick={() => setCurrentMonth(currentMonth.add(1, "month"))}>
           <ArrowForwardIcon />
         </IconButton>
@@ -84,8 +84,9 @@ export function MonthPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
 
       <Box sx={{
         display: "grid",
-        gridTemplateColumns: "repeat(7, 1fr)",
-        gap: { xs: 0.5, sm: 1 }
+        gridTemplateColumns: "repeat(7, minmax(0, 1fr))",
+        gap: { xs: 0.5, sm: 1 },
+        minWidth: 0,
       }}>
         {weekDays.map(wd => (
           <Typography key={wd} align="center" fontWeight="bold" sx={{ mb: 1, fontSize: { xs: "0.75rem", sm: "1rem" }}}>
