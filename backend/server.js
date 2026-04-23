@@ -17,6 +17,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Keep-Alive Endpoint for Render Free Tier
+app.get('/ping', (req, res) => {
+  console.log('Keep-alive ping received at:', new Date().toISOString());
+  res.status(200).send('hi,afausbeweufhqweuofbajksbfweq');
+});
+
 // INPUT: userId
 // OUTPUT: cleanup completion
 // EFFECT: Removes temporary tasks older than 30 days for the signed-in user
@@ -60,12 +66,6 @@ const authenticateToken = (req, res, next) => {
     next();
   });
 };
-
-// Keep-Alive Endpoint for Render Free Tier
-app.get('/ping', (req, res) => {
-  console.log('Keep-alive ping received at:', new Date().toISOString());
-  res.status(200).send('hi');
-});
 
 // INPUT: username and password
 // OUTPUT: registration success or validation failure
