@@ -4,7 +4,7 @@ Current version: `v1.5.0`
 
 Weekly To-Do is a full-stack planner for daily tasks, weekly routines, reminders, shared help questions, and calendar-based scheduling.
 
-Deployed Web: [text](https://todo-cfun.onrender.com/)
+Deployed Web: [website](https://todo-cfun.onrender.com/)
 
 ## Features
 
