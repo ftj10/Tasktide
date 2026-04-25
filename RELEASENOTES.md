@@ -5,8 +5,11 @@
 - Changed mobile Week view from a single 7-day layout to a horizontal paged swipe flow.
 - Added a first page with 4 days and a second page with the remaining 3 days, then continued swiping into the next week.
 - Removed the manual previous and next week arrows around the mobile Today button.
+- Added an `EN` / `中文` language switch directly on the login and registration page.
+- Added translated login titles, field labels, actions, success states, and common authentication errors.
 - Added frontend behavior coverage for the rolling mobile week sequence.
-- Expanded README and in-app Help content to document the mobile paging behavior.
+- Added frontend behavior coverage for the login-page language toggle.
+- Expanded README and in-app Help content to document the mobile paging behavior and pre-login language switching.
 
 ## v1.5.1 - 2026-04-24
 

@@ -42,6 +42,33 @@ const resources = {
         logout: "Logout",
         greeting: "Hi, {{name}}!"
       },
+      login: {
+        title: {
+          login: "Welcome Back",
+          register: "Create an Account"
+        },
+        fields: {
+          username: "Username",
+          password: "Password"
+        },
+        actions: {
+          login: "Login",
+          register: "Register",
+          waiting: "Please wait...",
+          switchToLogin: "Already have an account? Log in",
+          switchToRegister: "Don't have an account? Register"
+        },
+        status: {
+          registrationSuccess: "Registration successful! Please log in."
+        },
+        errors: {
+          usernameTaken: "Username taken",
+          invalidCredentials: "Invalid credentials",
+          failedToRegister: "Failed to register",
+          failedToLogin: "Failed to log in",
+          generic: "Something went wrong"
+        }
+      },
       notifications: {
         dailyReminderTitle: "Daily Reminder",
         dailyReminderBody: "Don't forget your tasks for today.",
@@ -113,6 +140,7 @@ const resources = {
         submitSuccess: "Your question is now visible to everyone.",
         guides: {
           title: "How To Use This Website",
+          step0: "Use the EN / 中文 button on the login page whenever you want to switch the sign-in flow between English and Chinese before entering the app.",
           step1: "Use Today to add, edit, complete, or move tasks for the current day.",
           step2: "Use Week and Month to review your schedule and jump between dates quickly.",
           step3: "Use Reminders for ongoing notes that should stay visible until you mark them done.",
@@ -148,6 +176,10 @@ const resources = {
           q7: {
             question: "What happens if a save request fails?",
             answer: "The app reloads tasks or reminders from the server after a failed save so unsaved local changes do not replace your stored data."
+          },
+          q8: {
+            question: "Can I change the language before logging in?",
+            answer: "Yes. Use the EN / 中文 button on the login page to switch the authentication screen before you sign in or register."
           }
         },
         ask: {
@@ -227,6 +259,33 @@ const resources = {
         logout: "退出登录",
         greeting: "你好，{{name}}！"
       },
+      login: {
+        title: {
+          login: "欢迎回来",
+          register: "创建账号"
+        },
+        fields: {
+          username: "用户名",
+          password: "密码"
+        },
+        actions: {
+          login: "登录",
+          register: "注册",
+          waiting: "请稍候...",
+          switchToLogin: "已有账号？去登录",
+          switchToRegister: "还没有账号？去注册"
+        },
+        status: {
+          registrationSuccess: "注册成功，请登录。"
+        },
+        errors: {
+          usernameTaken: "用户名已被使用",
+          invalidCredentials: "用户名或密码错误",
+          failedToRegister: "注册失败",
+          failedToLogin: "登录失败",
+          generic: "发生了一些问题"
+        }
+      },
       notifications: {
         dailyReminderTitle: "每日提醒",
         dailyReminderBody: "别忘了今天的任务。",
@@ -298,6 +357,7 @@ const resources = {
         submitSuccess: "你的问题现在已经对所有人可见。",
         guides: {
           title: "网站使用说明",
+          step0: "如果你想在登录前切换语言，可以先使用登录页上的 EN / 中文 按钮，在英文和中文之间切换认证界面。",
           step1: "在 Today 页面中添加、编辑、完成或移动当天任务。",
           step2: "在 Week 和 Month 页面快速查看整体安排并跳转日期。",
           step3: "使用 Reminders 记录持续存在、直到你手动完成的提醒事项。",
@@ -333,6 +393,10 @@ const resources = {
           q7: {
             question: "如果保存请求失败会怎样？",
             answer: "当保存失败时，应用会从服务器重新加载任务或提醒，避免未保存的本地变更覆盖你已经存储的数据。"
+          },
+          q8: {
+            question: "我可以在登录前切换语言吗？",
+            answer: "可以。使用登录页上的 EN / 中文 按钮，就能在登录或注册前先切换认证界面的语言。"
           }
         },
         ask: {

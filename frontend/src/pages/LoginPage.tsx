@@ -14,6 +14,7 @@ import {
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import { useTranslation } from "react-i18next";
 import { setAuth } from "../app/storage";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:2676";
@@ -22,17 +23,34 @@ const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:2676";
 // OUTPUT: authentication form UI
 // EFFECT: Switches between sign-in and registration flows for the planner shell
 export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
+  const { t, i18n } = useTranslation();
   const [isRegistering, setIsRegistering] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [feedback, setFeedback] = useState<{ severity: "success" | "error"; message: string } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  
   const [showPassword, setShowPassword] = useState(false);
+  const currentLanguage = i18n.resolvedLanguage?.startsWith("zh") ? "zh" : "en";
+
+  function translateAuthMessage(message: string) {
+    const authMessages: Record<string, string> = {
+      "Username taken": t("login.errors.usernameTaken"),
+      "Invalid credentials": t("login.errors.invalidCredentials"),
+      "Failed to register": t("login.errors.failedToRegister"),
+      "Failed to log in": t("login.errors.failedToLogin"),
+      "Something went wrong": t("login.errors.generic"),
+    };
+
+    return authMessages[message] ?? message;
+  }
+
+  function handleLanguageToggle() {
+    void i18n.changeLanguage(currentLanguage === "en" ? "zh" : "en");
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setFeedback(null);
     setIsLoading(true);
 
     const endpoint = isRegistering ? "/register" : "/login";
@@ -52,15 +70,22 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
 
       if (isRegistering) {
         setIsRegistering(false);
-        setError("Registration successful! Please log in.");
+        setFeedback({
+          severity: "success",
+          message: t("login.status.registrationSuccess"),
+        });
         setUsername("");
         setPassword("");
       } else {
         setAuth(data.token, data.username);
         onLoginSuccess();
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Something went wrong";
+      setFeedback({
+        severity: "error",
+        message: translateAuthMessage(message),
+      });
       setPassword("");
     } finally {
       setIsLoading(false);
@@ -70,20 +95,25 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
   return (
     <Box sx={{ display: "flex", justifyContent: "center", mt: 10 }}>
       <Paper sx={{ p: 4, width: "100%", maxWidth: 400, textAlign: "center" }} elevation={3}>
+        <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 1 }}>
+          <Button variant="text" onClick={handleLanguageToggle} sx={{ minWidth: 52, px: 1 }}>
+            {currentLanguage === "en" ? "中文" : "EN"}
+          </Button>
+        </Box>
         <Typography variant="h5" gutterBottom>
-          {isRegistering ? "Create an Account" : "Welcome Back"}
+          {isRegistering ? t("login.title.register") : t("login.title.login")}
         </Typography>
 
-        {error && (
-          <Alert severity={error.includes("successful") ? "success" : "error"} sx={{ mb: 2 }}>
-            {error}
+        {feedback && (
+          <Alert severity={feedback.severity} sx={{ mb: 2 }}>
+            {feedback.message}
           </Alert>
         )}
 
         <form onSubmit={handleSubmit}>
           <TextField
             fullWidth
-            label="Username"
+            label={t("login.fields.username")}
             variant="outlined"
             margin="normal"
             value={username}
@@ -92,7 +122,7 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
           />
           <TextField
             fullWidth
-            label="Password"
+            label={t("login.fields.password")}
             type={showPassword ? "text" : "password"}
             variant="outlined"
             margin="normal"
@@ -120,7 +150,7 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
             sx={{ mt: 2, py: 1.5 }}
             disabled={isLoading}
           >
-            {isLoading ? "Please wait..." : isRegistering ? "Register" : "Login"}
+            {isLoading ? t("login.actions.waiting") : isRegistering ? t("login.actions.register") : t("login.actions.login")}
           </Button>
         </form>
 
@@ -130,15 +160,15 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
           sx={{ mt: 2 }}
           onClick={() => {
             setIsRegistering(!isRegistering);
-            setError("");
+            setFeedback(null);
             setUsername("");
             setPassword("");
             setShowPassword(false);
           }}
         >
           {isRegistering
-            ? "Already have an account? Log in"
-            : "Don't have an account? Register"}
+            ? t("login.actions.switchToLogin")
+            : t("login.actions.switchToRegister")}
         </Button>
       </Paper>
     </Box>

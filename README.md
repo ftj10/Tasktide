@@ -9,6 +9,7 @@ Deployed Web: [website](https://todo-cfun.onrender.com/)
 ## Features
 
 - Secure registration and login with JWT-backed sessions.
+- Login and registration screens support an `EN` / `中文` switch before authentication.
 - Today, Week, and Month planning views for temporary and recurring tasks.
 - Mobile Week view with a horizontal swipe flow that shows 4 days first, then the remaining 3 days, and continues into the next week.
 - Reminder tracking with priority ordering and completion flow.
@@ -66,4 +67,5 @@ npm test
 - Review [RELEASENOTES.md](RELEASENOTES.md) for repository-level changes.
 - The in-app Updates center mirrors the latest shipped release metadata from `frontend/src/app/releaseNotes.ts`.
 - On smaller screens, the app uses bottom navigation, a swipe-through Week view that advances into the next week, and full-screen editing dialogs to keep controls touch-friendly.
+- The login page language switch uses the same bilingual copy system as the signed-in app, so authentication flows can be changed before sign-in.
 - Keep backend running before opening the frontend locally.

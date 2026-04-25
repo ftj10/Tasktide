@@ -18,27 +18,33 @@ export const RELEASE_NOTES: ReleaseNote[] = [
     version: "v1.6.0",
     releasedAt: "2026-04-25",
     title: {
-      en: "Mobile week paging",
-      zh: "移动端周视图分页"
+      en: "Mobile week paging and login language switch",
+      zh: "移动端周视图分页与登录页语言切换"
     },
     summary: {
-      en: "Week view on phones now uses a horizontal paged layout that starts with 4 days, continues with 3 days, and lets users keep swiping into the next week without manual arrows.",
-      zh: "手机上的周视图现在改为横向分页布局，先显示 4 天，再显示 3 天，并且无需手动箭头即可继续滑动进入下一周。"
+      en: "Week view on phones now uses a horizontal paged layout that starts with 4 days, continues with 3 days, and users can also switch the authentication screen between English and Chinese before signing in.",
+      zh: "手机上的周视图现在改为横向分页布局，先显示 4 天，再显示 3 天；同时也支持在登录前切换认证界面的英文与中文。"
     },
     changes: {
       en: [
         "Changed mobile Week view from a single 7-day compressed layout to a horizontal paged experience.",
         "Added a 4-day first page and a 3-day second page, then continued the swipe flow into the next week.",
         "Removed the manual previous and next week arrow controls from the mobile Week header.",
+        "Added an EN / 中文 language switch directly on the login and registration screen.",
+        "Translated login titles, field labels, actions, success states, and common auth errors.",
         "Kept week-view date jumps, blank-slot date prefilling, and task editing flows working across the rolling mobile pages.",
-        "Expanded README and in-app Help content to document the mobile paging behavior."
+        "Added frontend behavior coverage for the login-page language toggle.",
+        "Expanded README and in-app Help content to document the mobile paging behavior and pre-login language switching."
       ],
       zh: [
         "将移动端 Week 页面从单屏压缩 7 天改为横向分页体验。",
         "新增第一页 4 天、第二页 3 天，并让滑动流程继续进入下一周。",
         "移除了移动端 Week 页头中用于切换上一周和下一周的箭头按钮。",
+        "在登录与注册页面直接新增 EN / 中文 语言切换按钮。",
+        "为登录标题、字段标签、操作文案、成功状态与常见认证错误补充翻译。",
         "在滚动分页中继续保留日期跳转、空白区域默认日期带入与任务编辑流程。",
-        "扩展 README 与应用内 Help 内容，记录新的移动端分页行为。"
+        "新增登录页语言切换的前端行为测试。",
+        "扩展 README 与应用内 Help 内容，记录新的移动端分页行为与登录前语言切换方式。"
       ]
     }
   },
