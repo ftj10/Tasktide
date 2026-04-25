@@ -14,6 +14,35 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-04-25-mobile-week-paging",
+    version: "v1.6.0",
+    releasedAt: "2026-04-25",
+    title: {
+      en: "Mobile week paging",
+      zh: "移动端周视图分页"
+    },
+    summary: {
+      en: "Week view on phones now uses a horizontal paged layout that starts with 4 days, continues with 3 days, and lets users keep swiping into the next week without manual arrows.",
+      zh: "手机上的周视图现在改为横向分页布局，先显示 4 天，再显示 3 天，并且无需手动箭头即可继续滑动进入下一周。"
+    },
+    changes: {
+      en: [
+        "Changed mobile Week view from a single 7-day compressed layout to a horizontal paged experience.",
+        "Added a 4-day first page and a 3-day second page, then continued the swipe flow into the next week.",
+        "Removed the manual previous and next week arrow controls from the mobile Week header.",
+        "Kept week-view date jumps, blank-slot date prefilling, and task editing flows working across the rolling mobile pages.",
+        "Expanded README and in-app Help content to document the mobile paging behavior."
+      ],
+      zh: [
+        "将移动端 Week 页面从单屏压缩 7 天改为横向分页体验。",
+        "新增第一页 4 天、第二页 3 天，并让滑动流程继续进入下一周。",
+        "移除了移动端 Week 页头中用于切换上一周和下一周的箭头按钮。",
+        "在滚动分页中继续保留日期跳转、空白区域默认日期带入与任务编辑流程。",
+        "扩展 README 与应用内 Help 内容，记录新的移动端分页行为。"
+      ]
+    }
+  },
+  {
     id: "2026-04-24-idempotent-saves-and-sync-recovery",
     version: "v1.5.1",
     releasedAt: "2026-04-24",

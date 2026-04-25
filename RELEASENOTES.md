@@ -1,5 +1,13 @@
 # Release Notes
 
+## v1.6.0 - 2026-04-25
+
+- Changed mobile Week view from a single 7-day layout to a horizontal paged swipe flow.
+- Added a first page with 4 days and a second page with the remaining 3 days, then continued swiping into the next week.
+- Removed the manual previous and next week arrows around the mobile Today button.
+- Added frontend behavior coverage for the rolling mobile week sequence.
+- Expanded README and in-app Help content to document the mobile paging behavior.
+
 ## v1.5.1 - 2026-04-24
 
 - Changed task, reminder, and help-question create routes to idempotent saves so repeated submissions do not create duplicate records.

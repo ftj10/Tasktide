@@ -139,11 +139,11 @@ const resources = {
           },
           q5: {
             question: "How does clicking in Week view work?",
-            answer: "Click a day header to jump to that date in Today, or click an empty spot in the week calendar so the next new task uses that date by default."
+            answer: "Click a day header to jump to that date in Today, click an empty spot so the next new task uses that date by default, and on mobile keep swiping through 4-day then 3-day week pages across each week."
           },
           q6: {
             question: "How does the layout change on mobile devices?",
-            answer: "The planner switches to a bottom navigation layout, narrows typography, and expands Task and Reminder forms to full-screen for easier touch use."
+            answer: "The planner switches to a bottom navigation layout, narrows typography, uses a swipeable Week view that rolls from 4 days to 3 days and into the next week, and expands Task and Reminder forms to full-screen for easier touch use."
           },
           q7: {
             question: "What happens if a save request fails?",
@@ -324,11 +324,11 @@ const resources = {
           },
           q5: {
             question: "Week 页面中的点击行为是什么？",
-            answer: "点击某一天的日期标题会跳转到对应的 Today 页面；点击周历中的空白区域后，再新增任务时会默认带入该日期。"
+            answer: "点击某一天的日期标题会跳转到对应的 Today 页面；点击周历中的空白区域后，再新增任务时会默认带入该日期；在手机上还可以持续左右滑动，在每周的 4 天页与 3 天页之间切换并进入下一周。"
           },
           q6: {
             question: "移动设备上的布局会怎样变化？",
-            answer: "应用会切换到底部导航、缩小排版字号，并让 Task 与 Reminder 表单改为全屏显示，方便触控操作。"
+            answer: "应用会切换到底部导航、缩小排版字号，并让 Week 页面改为可持续左右滑动的布局，按每周先 4 天再 3 天的顺序切换，同时让 Task 与 Reminder 表单改为全屏显示，方便触控操作。"
           },
           q7: {
             question: "如果保存请求失败会怎样？",

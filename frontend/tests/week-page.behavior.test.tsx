@@ -9,8 +9,10 @@ import i18n from "../src/i18n";
 import type { Task } from "../src/types";
 import { WeekPage } from "../src/pages/WeekPage";
 import { renderWithProviders } from "./test-utils";
+import { setScreenWidth } from "./setup";
 
 const navigateMock = vi.fn();
+const calendarRenderProps: any[] = [];
 
 vi.mock("react-router-dom", async () => {
   const actual = await vi.importActual<typeof import("react-router-dom")>("react-router-dom");
@@ -21,37 +23,42 @@ vi.mock("react-router-dom", async () => {
 });
 
 vi.mock("@fullcalendar/react", () => ({
-  default: (props: any) => (
-    <div>
-      <button type="button" onClick={() => props.navLinkDayClick?.(new Date("2026-04-22T00:00:00"))}>
+  default: (props: any) => {
+    calendarRenderProps.push(props);
+    return (
+      <div>
+        <button type="button" onClick={() => props.navLinkDayClick?.(new Date("2026-04-22T00:00:00"))}>
         jump-day
-      </button>
-      <button type="button" onClick={() => props.dateClick?.({ dateStr: "2026-04-23T09:00:00" })}>
-        blank-slot
-      </button>
-      {props.events.map((event: any) => (
-        <button
-          key={event.id}
-          type="button"
-          onClick={() =>
-            props.eventClick({
-              event: {
-                extendedProps: event.extendedProps,
-                startStr: event.start,
-              },
-            })
-          }
-        >
-          {event.title}
         </button>
-      ))}
-    </div>
-  ),
+        <button type="button" onClick={() => props.dateClick?.({ dateStr: "2026-04-23T09:00:00" })}>
+        blank-slot
+        </button>
+        {props.events.map((event: any) => (
+          <button
+            key={event.id}
+            type="button"
+            onClick={() =>
+              props.eventClick({
+                event: {
+                  extendedProps: event.extendedProps,
+                  startStr: event.start,
+                },
+              })
+            }
+          >
+            {event.title}
+          </button>
+        ))}
+      </div>
+    );
+  },
 }));
 
 describe("WeekPage behavior", () => {
   beforeEach(async () => {
+    setScreenWidth(1024);
     navigateMock.mockReset();
+    calendarRenderProps.length = 0;
     await i18n.changeLanguage("en");
   });
 
@@ -106,5 +113,30 @@ describe("WeekPage behavior", () => {
     expect(setTasks).toHaveBeenCalledTimes(1);
     const savedTasks = setTasks.mock.calls[0][0] as Task[];
     expect(savedTasks[0].date).toBe("2026-04-23");
+  });
+
+  it("rolls mobile week view from a 3-day page into the next week's 4-day page", () => {
+    setScreenWidth(390);
+
+    renderWithProviders(<WeekPage tasks={[]} setTasks={vi.fn()} completionsRev={0} />);
+
+    const latestCalendarProps = calendarRenderProps.slice(-3);
+
+    expect(latestCalendarProps).toHaveLength(3);
+    expect(latestCalendarProps[0].visibleRange).toMatchObject({
+      start: "2026-04-20",
+      end: "2026-04-24",
+    });
+    expect(latestCalendarProps[1].visibleRange).toMatchObject({
+      start: "2026-04-24",
+      end: "2026-04-27",
+    });
+    expect(latestCalendarProps[2].visibleRange).toMatchObject({
+      start: "2026-04-27",
+      end: "2026-05-01",
+    });
+    expect(latestCalendarProps[0].headerToolbar).toBe(false);
+    expect(latestCalendarProps[1].headerToolbar).toBe(false);
+    expect(latestCalendarProps[2].headerToolbar).toBe(false);
   });
 });
