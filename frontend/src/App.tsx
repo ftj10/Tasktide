@@ -50,6 +50,18 @@ export default function App() {
   const reminderSyncQueue = useRef(Promise.resolve());
   const currentLanguage = i18n.resolvedLanguage?.startsWith("zh") ? "zh" : "en";
 
+  async function reloadTasksFromServer() {
+    const serverTasks = rolloverIfNeeded(await loadTasks());
+    tasksRef.current = serverTasks;
+    setTasks(serverTasks);
+  }
+
+  async function reloadRemindersFromServer() {
+    const serverReminders = await loadReminders();
+    remindersRef.current = serverReminders;
+    setReminders(serverReminders);
+  }
+
   useEffect(() => {
     tasksRef.current = tasks;
   }, [tasks]);
@@ -66,11 +78,11 @@ export default function App() {
     // EFFECT: Loads planner data from the backend, which owns stale-record cleanup
     async function fetchInitialData() {
       try {
-        const [serverTasks, serverReminders] = await Promise.all([
-          loadTasks(),
-          loadReminders()
-        ]);
-        setTasks(rolloverIfNeeded(serverTasks));
+        const [serverTasks, serverReminders] = await Promise.all([loadTasks(), loadReminders()]);
+        const nextTasks = rolloverIfNeeded(serverTasks);
+        tasksRef.current = nextTasks;
+        remindersRef.current = serverReminders;
+        setTasks(nextTasks);
         setReminders(serverReminders);
       } catch (error) {
         console.error(error);
@@ -100,6 +112,9 @@ export default function App() {
       ]);
     }).catch((error) => {
       console.error(error);
+      void reloadTasksFromServer().catch((reloadError) => {
+        console.error(reloadError);
+      });
     });
   }
 
@@ -122,6 +137,9 @@ export default function App() {
       ]);
     }).catch((error) => {
       console.error(error);
+      void reloadRemindersFromServer().catch((reloadError) => {
+        console.error(reloadError);
+      });
     });
   }
 

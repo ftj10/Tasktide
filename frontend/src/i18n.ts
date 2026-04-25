@@ -144,6 +144,10 @@ const resources = {
           q6: {
             question: "How does the layout change on mobile devices?",
             answer: "The planner switches to a bottom navigation layout, narrows typography, and expands Task and Reminder forms to full-screen for easier touch use."
+          },
+          q7: {
+            question: "What happens if a save request fails?",
+            answer: "The app reloads tasks or reminders from the server after a failed save so unsaved local changes do not replace your stored data."
           }
         },
         ask: {
@@ -325,6 +329,10 @@ const resources = {
           q6: {
             question: "移动设备上的布局会怎样变化？",
             answer: "应用会切换到底部导航、缩小排版字号，并让 Task 与 Reminder 表单改为全屏显示，方便触控操作。"
+          },
+          q7: {
+            question: "如果保存请求失败会怎样？",
+            answer: "当保存失败时，应用会从服务器重新加载任务或提醒，避免未保存的本地变更覆盖你已经存储的数据。"
           }
         },
         ask: {

@@ -14,4 +14,6 @@ const reminderSchema = new mongoose.Schema({
   updatedAt: { type: String }
 }, { strict: false });
 
+reminderSchema.index({ userId: 1, id: 1 }, { unique: true });
+
 module.exports = mongoose.model('Reminder', reminderSchema);

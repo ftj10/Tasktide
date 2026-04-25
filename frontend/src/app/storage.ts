@@ -64,12 +64,12 @@ export function logoutUser() {
 export async function loadTasks(): Promise<Task[]> {
   try {
     const response = await authorizedRequest('/tasks');
-    if (!response) return [];
+    if (!response) throw new Error("Authorized request unavailable");
     if (!response.ok) throw new Error("Network response was not ok");
     return await response.json();
   } catch (error) {
     console.error("Failed to load from server", error);
-    return [];
+    throw error;
   }
 }
 
@@ -85,9 +85,11 @@ export async function createTask(task: Task): Promise<void> {
       },
       body: JSON.stringify(task),
     });
-    if (response && !response.ok) throw new Error("Network response was not ok");
+    if (!response) throw new Error("Authorized request unavailable");
+    if (!response.ok) throw new Error("Network response was not ok");
   } catch (error) {
     console.error("Failed to create task", error);
+    throw error;
   }
 }
 
@@ -103,9 +105,11 @@ export async function updateTask(task: Task): Promise<void> {
       },
       body: JSON.stringify(task),
     });
-    if (response && !response.ok) throw new Error("Network response was not ok");
+    if (!response) throw new Error("Authorized request unavailable");
+    if (!response.ok) throw new Error("Network response was not ok");
   } catch (error) {
     console.error("Failed to update task", error);
+    throw error;
   }
 }
 
@@ -117,9 +121,11 @@ export async function deleteTask(taskId: string): Promise<void> {
     const response = await authorizedRequest(`/tasks/${taskId}`, {
       method: 'DELETE',
     });
-    if (response && !response.ok) throw new Error("Network response was not ok");
+    if (!response) throw new Error("Authorized request unavailable");
+    if (!response.ok) throw new Error("Network response was not ok");
   } catch (error) {
     console.error("Failed to delete task", error);
+    throw error;
   }
 }
 
@@ -129,12 +135,12 @@ export async function deleteTask(taskId: string): Promise<void> {
 export async function loadReminders(): Promise<Reminder[]> {
   try {
     const response = await authorizedRequest('/reminders');
-    if (!response) return [];
+    if (!response) throw new Error("Authorized request unavailable");
     if (!response.ok) throw new Error("Network response was not ok");
     return await response.json();
   } catch (error) {
     console.error("Failed to load reminders", error);
-    return [];
+    throw error;
   }
 }
 
@@ -150,9 +156,11 @@ export async function createReminder(reminder: Reminder): Promise<void> {
       },
       body: JSON.stringify(reminder),
     });
-    if (response && !response.ok) throw new Error("Network response was not ok");
+    if (!response) throw new Error("Authorized request unavailable");
+    if (!response.ok) throw new Error("Network response was not ok");
   } catch (error) {
     console.error("Failed to create reminder", error);
+    throw error;
   }
 }
 
@@ -168,9 +176,11 @@ export async function updateReminder(reminder: Reminder): Promise<void> {
       },
       body: JSON.stringify(reminder),
     });
-    if (response && !response.ok) throw new Error("Network response was not ok");
+    if (!response) throw new Error("Authorized request unavailable");
+    if (!response.ok) throw new Error("Network response was not ok");
   } catch (error) {
     console.error("Failed to update reminder", error);
+    throw error;
   }
 }
 
@@ -182,9 +192,11 @@ export async function deleteReminder(reminderId: string): Promise<void> {
     const response = await authorizedRequest(`/reminders/${reminderId}`, {
       method: 'DELETE',
     });
-    if (response && !response.ok) throw new Error("Network response was not ok");
+    if (!response) throw new Error("Authorized request unavailable");
+    if (!response.ok) throw new Error("Network response was not ok");
   } catch (error) {
     console.error("Failed to delete reminder", error);
+    throw error;
   }
 }
 

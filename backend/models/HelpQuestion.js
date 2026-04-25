@@ -10,4 +10,6 @@ const helpQuestionSchema = new mongoose.Schema({
   createdAt: { type: String, required: true },
 }, { strict: false });
 
+helpQuestionSchema.index({ id: 1 }, { unique: true });
+
 module.exports = mongoose.model('HelpQuestion', helpQuestionSchema);

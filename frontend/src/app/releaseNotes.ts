@@ -14,6 +14,33 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-04-24-idempotent-saves-and-sync-recovery",
+    version: "v1.5.1",
+    releasedAt: "2026-04-24",
+    title: {
+      en: "Safer saves and sync recovery",
+      zh: "更安全的保存与同步恢复"
+    },
+    summary: {
+      en: "The planner now protects saved data more aggressively by making create requests idempotent and reloading server state after failed task or reminder syncs.",
+      zh: "应用现在通过让创建请求具备幂等性，并在任务或提醒同步失败后重新加载服务器状态，进一步保护已保存的数据。"
+    },
+    changes: {
+      en: [
+        "Task, reminder, and help-question create routes now reuse the same record id instead of creating duplicates on repeated submissions.",
+        "Failed task and reminder sync attempts now trigger a reload from the backend so unsaved local changes do not replace stored data.",
+        "Added regression tests for duplicate-safe task saves and failed task-save recovery.",
+        "Expanded help and README documentation with the new data-safety behavior."
+      ],
+      zh: [
+        "Task、Reminder 与 Help Question 的创建接口现在会复用同一条记录 id，重复提交不会再产生重复数据。",
+        "当任务或提醒同步失败时，应用会重新从后端加载数据，避免未保存的本地变更替代已存储内容。",
+        "新增重复保存保护与失败保存恢复的回归测试。",
+        "扩展了 Help 与 README 中关于数据安全行为的说明。"
+      ]
+    }
+  },
+  {
     id: "2026-04-22-responsive-shell-and-mobile-dialogs",
     version: "v1.5.0",
     releasedAt: "2026-04-22",

@@ -20,4 +20,6 @@ const taskSchema = new mongoose.Schema({
   description: { type: String, default: "" }
 }, { timestamps: true });
 
+taskSchema.index({ userId: 1, id: 1 }, { unique: true });
+
 module.exports = mongoose.model('Task', taskSchema);

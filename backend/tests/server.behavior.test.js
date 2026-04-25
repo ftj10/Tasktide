@@ -31,20 +31,20 @@ const originals = {
   task: {
     find: Task.find,
     deleteMany: Task.deleteMany,
-    create: Task.create,
+    updateOne: Task.updateOne,
     findOneAndUpdate: Task.findOneAndUpdate,
     findOneAndDelete: Task.findOneAndDelete,
   },
   reminder: {
     find: Reminder.find,
     deleteMany: Reminder.deleteMany,
-    create: Reminder.create,
+    updateOne: Reminder.updateOne,
     findOneAndUpdate: Reminder.findOneAndUpdate,
     findOneAndDelete: Reminder.findOneAndDelete,
   },
   helpQuestion: {
     find: HelpQuestion.find,
-    save: HelpQuestion.prototype.save,
+    updateOne: HelpQuestion.updateOne,
   },
 };
 
@@ -61,16 +61,16 @@ function resetStubs() {
   User.prototype.save = originals.user.save;
   Task.find = originals.task.find;
   Task.deleteMany = originals.task.deleteMany;
-  Task.create = originals.task.create;
+  Task.updateOne = originals.task.updateOne;
   Task.findOneAndUpdate = originals.task.findOneAndUpdate;
   Task.findOneAndDelete = originals.task.findOneAndDelete;
   Reminder.find = originals.reminder.find;
   Reminder.deleteMany = originals.reminder.deleteMany;
-  Reminder.create = originals.reminder.create;
+  Reminder.updateOne = originals.reminder.updateOne;
   Reminder.findOneAndUpdate = originals.reminder.findOneAndUpdate;
   Reminder.findOneAndDelete = originals.reminder.findOneAndDelete;
   HelpQuestion.find = originals.helpQuestion.find;
-  HelpQuestion.prototype.save = originals.helpQuestion.save;
+  HelpQuestion.updateOne = originals.helpQuestion.updateOne;
 }
 
 test.afterEach(() => {
@@ -114,14 +114,14 @@ test('behavior: login returns a token for valid credentials', async () => {
 test('behavior: authenticated help question submission stores the public question with the username', async () => {
   jwt.verify = (token, secret, callback) => callback(null, { userId: 'user-1', username: 'tom' });
 
-  let savedQuestion;
-  HelpQuestion.prototype.save = async function save() {
-    savedQuestion = {
-      id: this.id,
-      username: this.username,
-      question: this.question,
-      createdAt: this.createdAt,
-    };
+  let updateFilter;
+  let updatePayload;
+  let updateOptions;
+  HelpQuestion.updateOne = async (filter, payload, options) => {
+    updateFilter = filter;
+    updatePayload = payload;
+    updateOptions = options;
+    return { upsertedCount: 1 };
   };
 
   const result = await invokeApp(app, '/help-questions', {
@@ -136,12 +136,16 @@ test('behavior: authenticated help question submission stores the public questio
 
   assert.equal(result.statusCode, 201);
   assert.deepEqual(result.json, { message: 'Saved' });
-  assert.deepEqual(savedQuestion, {
-    id: 'q1',
-    username: 'tom',
-    question: 'How do I use week view?',
-    createdAt: '2026-04-21T10:00:00.000Z',
+  assert.deepEqual(updateFilter, { id: 'q1' });
+  assert.deepEqual(updatePayload, {
+    $set: {
+      id: 'q1',
+      username: 'tom',
+      question: 'How do I use week view?',
+      createdAt: '2026-04-21T10:00:00.000Z',
+    },
   });
+  assert.deepEqual(updateOptions, { upsert: true, runValidators: true, setDefaultsOnInsert: true });
 });
 
 test('behavior: authenticated task fetch returns the current user tasks', async () => {
@@ -184,10 +188,14 @@ test('behavior: task create stores one task for the authenticated user', async (
   jwt.verify = (token, secret, callback) => callback(null, { userId: 'user-1', username: 'tom' });
   Task.deleteMany = async () => ({ deletedCount: 0 });
 
-  let createdTask;
-  Task.create = async (payload) => {
-    createdTask = payload;
-    return payload;
+  let updateFilter;
+  let updatePayload;
+  let updateOptions;
+  Task.updateOne = async (filter, payload, options) => {
+    updateFilter = filter;
+    updatePayload = payload;
+    updateOptions = options;
+    return { upsertedCount: 1 };
   };
 
   const result = await invokeApp(app, '/tasks', {
@@ -203,13 +211,37 @@ test('behavior: task create stores one task for the authenticated user', async (
 
   assert.equal(result.statusCode, 201);
   assert.deepEqual(result.json, { message: 'Created' });
-  assert.deepEqual(createdTask, {
-    id: 'task-2',
-    title: 'Write release notes',
-    type: 'TEMPORARY',
-    date: '2026-04-22',
-    userId: 'user-1',
+  assert.deepEqual(updateFilter, { id: 'task-2', userId: 'user-1' });
+  assert.deepEqual(updatePayload, {
+    $set: {
+      id: 'task-2',
+      title: 'Write release notes',
+      type: 'TEMPORARY',
+      date: '2026-04-22',
+      userId: 'user-1',
+    },
   });
+  assert.deepEqual(updateOptions, { upsert: true, runValidators: true, setDefaultsOnInsert: true });
+});
+
+test('behavior: repeated task create keeps one saved task for the authenticated user', async () => {
+  jwt.verify = (token, secret, callback) => callback(null, { userId: 'user-1', username: 'tom' });
+  Task.deleteMany = async () => ({ deletedCount: 0 });
+  Task.updateOne = async () => ({ upsertedCount: 0 });
+
+  const result = await invokeApp(app, '/tasks', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer token' },
+    body: {
+      id: 'task-2',
+      title: 'Write release notes',
+      type: 'TEMPORARY',
+      date: '2026-04-22',
+    },
+  });
+
+  assert.equal(result.statusCode, 200);
+  assert.deepEqual(result.json, { message: 'Already saved' });
 });
 
 test('behavior: task update rewrites one task for the authenticated user', async () => {
@@ -247,7 +279,7 @@ test('behavior: task update rewrites one task for the authenticated user', async
     date: '2026-04-22',
     userId: 'user-1',
   });
-  assert.deepEqual(updateOptions, { new: true });
+  assert.deepEqual(updateOptions, { new: true, runValidators: true });
 });
 
 test('behavior: task delete removes one task for the authenticated user', async () => {

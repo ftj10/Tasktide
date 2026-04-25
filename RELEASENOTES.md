@@ -1,5 +1,12 @@
 # Release Notes
 
+## v1.5.1 - 2026-04-24
+
+- Changed task, reminder, and help-question create routes to idempotent saves so repeated submissions do not create duplicate records.
+- Changed task and reminder sync recovery so the app reloads server data after a failed save instead of leaving unsaved local-only state on screen.
+- Added tests covering failed task-save recovery and duplicate-safe task creation.
+- Expanded README and in-app Help content with data-safety behavior notes.
+
 ## v1.5.0 - 2026-04-22
 
 - Added a responsive application shell that scales from mobile width up to a 1200px desktop maximum.

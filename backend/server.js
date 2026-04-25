@@ -129,12 +129,17 @@ app.get('/tasks', authenticateToken, async (req, res) => {
 app.post('/tasks', authenticateToken, async (req, res) => {
   try {
     await cleanupTasksForUser(req.user.userId);
-    await Task.create({
+    const taskPayload = {
       ...req.body,
       userId: req.user.userId
-    });
+    };
+    const result = await Task.updateOne(
+      { id: taskPayload.id, userId: req.user.userId },
+      { $set: taskPayload },
+      { upsert: true, runValidators: true, setDefaultsOnInsert: true }
+    );
 
-    res.status(201).json({ message: "Created" });
+    res.status(result.upsertedCount > 0 ? 201 : 200).json({ message: result.upsertedCount > 0 ? "Created" : "Already saved" });
   } catch (err) {
     res.status(500).json({ error: "Failed to save" });
   }
@@ -149,7 +154,7 @@ app.put('/tasks/:id', authenticateToken, async (req, res) => {
     const updatedTask = await Task.findOneAndUpdate(
       { id: req.params.id, userId: req.user.userId },
       { ...req.body, userId: req.user.userId },
-      { returnDocument: 'after' }
+      { new: true, runValidators: true }
     );
 
     if (!updatedTask) return res.status(404).json({ error: "Task not found" });
@@ -194,8 +199,13 @@ app.get('/reminders', authenticateToken, async (req, res) => {
 app.post('/reminders', authenticateToken, async (req, res) => {
   try {
     await cleanupRemindersForUser(req.user.userId);
-    await Reminder.create({ ...req.body, userId: req.user.userId });
-    res.status(201).json({ message: "Created" });
+    const reminderPayload = { ...req.body, userId: req.user.userId };
+    const result = await Reminder.updateOne(
+      { id: reminderPayload.id, userId: req.user.userId },
+      { $set: reminderPayload },
+      { upsert: true, runValidators: true, setDefaultsOnInsert: true }
+    );
+    res.status(result.upsertedCount > 0 ? 201 : 200).json({ message: result.upsertedCount > 0 ? "Created" : "Already saved" });
   } catch (err) {
     res.status(500).json({ error: "Failed to save" });
   }
@@ -210,7 +220,7 @@ app.put('/reminders/:id', authenticateToken, async (req, res) => {
     const updatedReminder = await Reminder.findOneAndUpdate(
       { id: req.params.id, userId: req.user.userId },
       { ...req.body, userId: req.user.userId },
-      { returnDocument: 'after' }
+      { new: true, runValidators: true }
     );
 
     if (!updatedReminder) return res.status(404).json({ error: "Reminder not found" });
@@ -258,15 +268,19 @@ app.post('/help-questions', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: "Question is required" });
     }
 
-    const newQuestion = new HelpQuestion({
+    const questionPayload = {
       id,
       username: req.user.username,
       question: String(question).trim(),
       createdAt,
-    });
+    };
 
-    await newQuestion.save();
-    res.status(201).json({ message: "Saved" });
+    const result = await HelpQuestion.updateOne(
+      { id: questionPayload.id },
+      { $set: questionPayload },
+      { upsert: true, runValidators: true, setDefaultsOnInsert: true }
+    );
+    res.status(result.upsertedCount > 0 ? 201 : 200).json({ message: result.upsertedCount > 0 ? "Saved" : "Already saved" });
   } catch (err) {
     res.status(500).json({ error: "Failed to save" });
   }

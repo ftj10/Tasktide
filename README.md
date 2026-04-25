@@ -1,6 +1,6 @@
 # Weekly To-Do Application
 
-Current version: `v1.5.0`
+Current version: `v1.5.1`
 
 Weekly To-Do is a full-stack planner for daily tasks, weekly routines, reminders, shared help questions, and calendar-based scheduling.
 
@@ -13,6 +13,7 @@ Deployed Web: [website](https://todo-cfun.onrender.com/)
 - Reminder tracking with priority ordering and completion flow.
 - Shared help center with FAQ content and public user questions.
 - Responsive application shell with a desktop sidebar, mobile bottom navigation, and full-screen mobile task and reminder forms.
+- Idempotent save routes and client-side recovery that reload persisted planner data after a failed task or reminder sync.
 - Map links for task locations and browser notifications for daily prompts and upcoming timed tasks.
 - Consistent `INPUT` / `OUTPUT` / `EFFECT` code comments across source and test files for faster feature scanning during maintenance.
 
