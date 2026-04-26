@@ -1,6 +1,6 @@
 # Weekly To-Do Application
 
-Current version: `v1.6.1`
+Current version: `v1.7.2`
 
 Weekly To-Do is a full-stack planner for daily tasks, weekly routines, reminders, shared help questions, and calendar-based scheduling.
 
@@ -10,7 +10,11 @@ Deployed Web: [website](https://todo-cfun.onrender.com/)
 
 - Secure registration and login with JWT-backed sessions.
 - Login and registration screens support an `EN` / `中文` switch before authentication.
-- Today, Week, and Month planning views for temporary and recurring tasks.
+- Today, Week, and Month planning views for one-time and recurring tasks.
+- Task forms now use a `Begin date` field plus a repeat-options window that supports once, daily, weekly, monthly, and yearly schedules.
+- The repeat-options window now matches the main task editor size on desktop and opens full-screen on mobile.
+- The repeat-options selector now sits slightly lower in its dialog so the `Repeat` label stays fully visible below the header.
+- Repeating task edits can target either one occurrence or the full series without destroying older task data.
 - Mobile Week view with a horizontal swipe flow that shows 4 days first, then the remaining 3 days, continues into the next week, and settles to a single page move per swipe.
 - Reminder tracking with priority ordering and completion flow.
 - Shared help center with FAQ content and public user questions.
@@ -66,6 +70,7 @@ npm test
 
 - Review [RELEASENOTES.md](RELEASENOTES.md) for repository-level changes.
 - The in-app Updates center mirrors the latest shipped release metadata from `frontend/src/app/releaseNotes.ts`.
+- Older datasets that still use `TEMPORARY` and `PERMANENT` task records remain readable; the frontend normalizes them into the new recurrence model when it loads.
 - On smaller screens, the app uses bottom navigation, a swipe-through Week view with single-step settled paging, and full-screen editing dialogs to keep controls touch-friendly.
 - The login page language switch uses the same bilingual copy system as the signed-in app, so authentication flows can be changed before sign-in.
 - Keep backend running before opening the frontend locally.

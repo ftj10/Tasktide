@@ -54,4 +54,79 @@ describe("TaskDialog behavior", () => {
 
     expect(screen.getByRole("dialog")).toHaveClass("MuiDialog-paperFullScreen");
   });
+
+  it("uses a full-screen repeat dialog layout on mobile screens", async () => {
+    setScreenWidth(390);
+    const user = userEvent.setup();
+
+    renderWithProviders(
+      <TaskDialog
+        open
+        mode="create"
+        defaultDateYmd="2026-04-20"
+        onClose={vi.fn()}
+        onSave={vi.fn()}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /None \(Once\)/i }));
+
+    expect(document.querySelectorAll(".MuiDialog-paperFullScreen")).toHaveLength(2);
+  });
+
+  it("keeps the repeat selector label fully visible in the repeat dialog", async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(
+      <TaskDialog
+        open
+        mode="create"
+        defaultDateYmd="2026-04-20"
+        onClose={vi.fn()}
+        onSave={vi.fn()}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /None \(Once\)/i }));
+
+    expect(screen.getAllByText("Repeat")[0]).toBeInTheDocument();
+  });
+
+  it("asks whether to update one day or the entire series when saving a repeating task edit", async () => {
+    const user = userEvent.setup();
+    const onSave = vi.fn();
+
+    renderWithProviders(
+      <TaskDialog
+        open
+        mode="edit"
+        defaultDateYmd="2026-04-22"
+        occurrenceDateYmd="2026-04-22"
+        task={{
+          id: "repeat-1",
+          title: "Weekly review",
+          type: "RECURRING",
+          beginDate: "2026-04-20",
+          createdAt: "2026-04-20T00:00:00.000Z",
+          updatedAt: "2026-04-20T00:00:00.000Z",
+          recurrence: {
+            frequency: "WEEKLY",
+            interval: 1,
+            weekdays: [3],
+            until: null,
+          },
+        }}
+        onClose={vi.fn()}
+        onSave={onSave}
+      />
+    );
+
+    await user.clear(screen.getByLabelText("Task name"));
+    await user.type(screen.getByLabelText("Task name"), "Updated weekly review");
+    await user.click(screen.getByRole("button", { name: "Done" }));
+    await user.click(screen.getByRole("button", { name: "This day only" }));
+
+    expect(onSave).toHaveBeenCalledTimes(1);
+    expect(onSave.mock.calls[0][1]).toBe("single");
+  });
 });

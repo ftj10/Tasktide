@@ -14,6 +14,85 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-04-25-repeat-label-spacing",
+    version: "v1.7.2",
+    releasedAt: "2026-04-25",
+    title: {
+      en: "Repeat label spacing fix",
+      zh: "重复标签间距修复"
+    },
+    summary: {
+      en: "The repeat selector now sits lower in its dialog so the label is fully visible below the header.",
+      zh: "重复选择器现在会在弹窗中稍微下移，标签可以完整显示在标题下方。"
+    },
+    changes: {
+      en: [
+        "Added top spacing to the repeat selector in the repeat-options dialog.",
+        "Prevented the Repeat label from clipping against the dialog header.",
+        "Added a frontend regression test for the repeat dialog label rendering."
+      ],
+      zh: [
+        "为重复设置弹窗中的重复选择器增加顶部间距。",
+        "避免 Repeat 标签贴住弹窗标题而被裁切。",
+        "新增重复设置弹窗标签渲染的前端回归测试。"
+      ]
+    }
+  },
+  {
+    id: "2026-04-25-repeat-dialog-sizing",
+    version: "v1.7.1",
+    releasedAt: "2026-04-25",
+    title: {
+      en: "Repeat dialog sizing alignment",
+      zh: "重复设置弹窗尺寸对齐"
+    },
+    summary: {
+      en: "The repeat-options window now matches the main task editor size and opens full-screen on phones.",
+      zh: "重复设置窗口现在与主任务编辑弹窗保持相同尺寸，并会在手机上全屏打开。"
+    },
+    changes: {
+      en: [
+        "Matched the repeat-options dialog width to the main task editor on larger screens.",
+        "Changed the repeat-options dialog to full-screen on mobile.",
+        "Added frontend regression coverage for the mobile repeat dialog layout."
+      ],
+      zh: [
+        "让重复设置弹窗在大屏幕上与主任务编辑弹窗保持相同宽度。",
+        "将重复设置弹窗改为在移动端全屏打开。",
+        "新增移动端重复设置弹窗布局的前端回归测试。"
+      ]
+    }
+  },
+  {
+    id: "2026-04-25-flexible-task-recurrence",
+    version: "v1.7.0",
+    releasedAt: "2026-04-25",
+    title: {
+      en: "Flexible task recurrence and occurrence edits",
+      zh: "更灵活的任务重复规则与单次编辑"
+    },
+    summary: {
+      en: "Tasks now start from a begin date and a repeat-options flow, and repeating-task edits can target one occurrence or the whole series.",
+      zh: "任务现在从开始日期与重复设置流程开始，重复任务的修改也可以只作用于某一天，或作用于整个系列。"
+    },
+    changes: {
+      en: [
+        "Replaced the old one-time versus weekly type selector with a repeat options flow.",
+        "Added daily, weekly, monthly, and yearly repeat rules with interval and end-date controls.",
+        "Added single-day versus entire-series save choices for repeating task edits.",
+        "Kept older TEMPORARY and PERMANENT task datasets renderable through compatibility normalization.",
+        "Added regression tests for recurrence rendering, occurrence overrides, and the updated task API payloads."
+      ],
+      zh: [
+        "将旧的一次性 / 每周类型选择改为重复设置流程。",
+        "新增每天、每周、每月、每年的重复规则，并支持间隔与结束日期设置。",
+        "为重复任务编辑新增只改当天或修改整个系列的保存选择。",
+        "通过兼容性归一化继续支持旧的 TEMPORARY 与 PERMANENT 任务数据渲染。",
+        "新增重复渲染、单次覆盖与任务接口新载荷的回归测试。"
+      ]
+    }
+  },
+  {
     id: "2026-04-25-mobile-week-swipe-stability",
     version: "v1.6.1",
     releasedAt: "2026-04-25",

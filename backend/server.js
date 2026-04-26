@@ -29,11 +29,20 @@ app.get('/ping', (req, res) => {
 function cleanupTasksForUser(userId) {
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - 30);
+  const cutoffYmd = cutoffDate.toISOString().slice(0, 10);
 
   return Task.deleteMany({
     userId,
-    type: 'TEMPORARY',
-    date: { $lt: cutoffDate.toISOString().slice(0, 10) }
+    $or: [
+      {
+        type: 'TEMPORARY',
+        date: { $lt: cutoffYmd }
+      },
+      {
+        type: 'ONCE',
+        beginDate: { $lt: cutoffYmd }
+      }
+    ]
   });
 }
 

@@ -1,5 +1,24 @@
 # Release Notes
 
+## v1.7.2 - 2026-04-25
+
+- Adjusted the repeat-options selector spacing so its `Repeat` label clears the dialog header and no longer clips.
+- Added frontend regression coverage for the repeat dialog label rendering.
+
+## v1.7.1 - 2026-04-25
+
+- Changed the repeat-options window to use the same dialog width as the main task editor.
+- Changed the mobile repeat-options window to open full-screen like the main task editor.
+- Added frontend regression coverage for the mobile full-screen repeat dialog.
+
+## v1.7.0 - 2026-04-25
+
+- Replaced the task type selector with a recurrence flow built around a begin date and a dedicated repeat-options window.
+- Added daily, weekly, monthly, and yearly repeat rules with interval, day-selection, and end-date controls.
+- Added recurring-task edit scope choices so changes can apply to one occurrence or the entire series without overwriting old data.
+- Kept legacy task datasets renderable by normalizing older `TEMPORARY` and `PERMANENT` records at load time.
+- Added frontend and backend regression coverage for recurrence rendering, single-day overrides, and the new task payload shape.
+
 ## v1.6.1 - 2026-04-25
 
 - Changed mobile Week swipe handling to wait for the gesture to settle before deciding the next page.

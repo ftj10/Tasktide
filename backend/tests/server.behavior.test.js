@@ -171,8 +171,16 @@ test('behavior: authenticated task fetch returns the current user tasks', async 
   assert.equal(result.statusCode, 200);
   assert.deepEqual(cleanupFilter, {
     userId: 'user-1',
-    type: 'TEMPORARY',
-    date: { $lt: cleanupFilter.date.$lt },
+    $or: [
+      {
+        type: 'TEMPORARY',
+        date: { $lt: cleanupFilter.$or[0].date.$lt },
+      },
+      {
+        type: 'ONCE',
+        beginDate: { $lt: cleanupFilter.$or[1].beginDate.$lt },
+      },
+    ],
   });
   assert.deepEqual(result.json, [
     {
@@ -204,7 +212,8 @@ test('behavior: task create stores one task for the authenticated user', async (
     body: {
       id: 'task-2',
       title: 'Write release notes',
-      type: 'TEMPORARY',
+      type: 'ONCE',
+      beginDate: '2026-04-22',
       date: '2026-04-22',
     },
   });
@@ -216,7 +225,8 @@ test('behavior: task create stores one task for the authenticated user', async (
     $set: {
       id: 'task-2',
       title: 'Write release notes',
-      type: 'TEMPORARY',
+      type: 'ONCE',
+      beginDate: '2026-04-22',
       date: '2026-04-22',
       userId: 'user-1',
     },
@@ -235,7 +245,8 @@ test('behavior: repeated task create keeps one saved task for the authenticated 
     body: {
       id: 'task-2',
       title: 'Write release notes',
-      type: 'TEMPORARY',
+      type: 'ONCE',
+      beginDate: '2026-04-22',
       date: '2026-04-22',
     },
   });
@@ -264,8 +275,14 @@ test('behavior: task update rewrites one task for the authenticated user', async
     body: {
       id: 'task-2',
       title: 'Write more release notes',
-      type: 'TEMPORARY',
-      date: '2026-04-22',
+      type: 'RECURRING',
+      beginDate: '2026-04-22',
+      recurrence: {
+        frequency: 'WEEKLY',
+        interval: 1,
+        weekdays: [3],
+        until: null,
+      },
     },
   });
 
@@ -275,8 +292,14 @@ test('behavior: task update rewrites one task for the authenticated user', async
   assert.deepEqual(updatePayload, {
     id: 'task-2',
     title: 'Write more release notes',
-    type: 'TEMPORARY',
-    date: '2026-04-22',
+    type: 'RECURRING',
+    beginDate: '2026-04-22',
+    recurrence: {
+      frequency: 'WEEKLY',
+      interval: 1,
+      weekdays: [3],
+      until: null,
+    },
     userId: 'user-1',
   });
   assert.deepEqual(updateOptions, { new: true, runValidators: true });

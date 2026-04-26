@@ -18,6 +18,13 @@ import { TaskDialog } from "../components/TaskDialog";
 import { ConfirmDeleteDialog } from "../components/ConfirmDeleteDialog";
 import { loadCompletions } from "../app/completions";
 import { weekStartMonday, ymd } from "../app/date";
+import {
+  applySeriesEdit,
+  applySingleOccurrenceEdit,
+  getTaskOccurrence,
+  normalizeTask,
+  type TaskSaveScope,
+} from "../app/tasks";
 
 // INPUT: optional task record
 // OUTPUT: event color tokens
@@ -51,6 +58,7 @@ export function WeekPage(props: {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Task | undefined>();
+  const [editingSourceTask, setEditingSourceTask] = useState<Task | undefined>();
   const [deleteTask, setDeleteTask] = useState<Task | undefined>();
   const [defaultDate, setDefaultDate] = useState<string | undefined>();
   const [viewMode, setViewMode] = useState<"dayGrid" | "timeGrid">("dayGrid");
@@ -111,9 +119,27 @@ export function WeekPage(props: {
     });
   }, [props.tasks, props.completionsRev]);
 
-  function upsert(task: Task) {
-    props.setTasks([...props.tasks.filter((t) => t.id !== task.id), task]);
+  function upsert(task: Task, scope: TaskSaveScope = "series") {
+    if (editingSourceTask && scope === "single" && defaultDate) {
+      props.setTasks(
+        props.tasks.map((item) =>
+          item.id === editingSourceTask.id
+            ? applySingleOccurrenceEdit(item, defaultDate, task)
+            : item
+        )
+      );
+      setDialogOpen(false);
+      setEditing(undefined);
+      setEditingSourceTask(undefined);
+      return;
+    }
+
+    const sourceId = editingSourceTask?.id ?? task.id;
+    const nextTask = editingSourceTask ? applySeriesEdit(editingSourceTask, task) : normalizeTask(task);
+    props.setTasks([...props.tasks.filter((item) => item.id !== sourceId), nextTask]);
     setDialogOpen(false);
+    setEditing(undefined);
+    setEditingSourceTask(undefined);
   }
 
   function remove(id: string) {
@@ -121,6 +147,7 @@ export function WeekPage(props: {
     setDeleteTask(undefined);
     setDialogOpen(false);
     setEditing(undefined);
+    setEditingSourceTask(undefined);
   }
 
   const mobilePages = useMemo(() => {
@@ -315,8 +342,10 @@ export function WeekPage(props: {
           const taskId = info.event.extendedProps.taskId as string;
           const task = props.tasks.find((t) => t.id === taskId);
           if (!task) return;
-          setEditing(task);
-          setDefaultDate(info.event.startStr.slice(0, 10));
+          const occurrenceDate = info.event.startStr.slice(0, 10);
+          setEditingSourceTask(task);
+          setEditing(getTaskOccurrence(task, occurrenceDate) ?? normalizeTask(task));
+          setDefaultDate(occurrenceDate);
           setDialogOpen(true);
         }}
         dateClick={(info) => {
@@ -436,8 +465,9 @@ export function WeekPage(props: {
         open={dialogOpen}
         mode={editing ? "edit" : "create"}
         task={editing}
+        occurrenceDateYmd={editing ? defaultDate : undefined}
         defaultDateYmd={defaultDate || ""}
-        onClose={() => { setDialogOpen(false); setEditing(undefined); }}
+        onClose={() => { setDialogOpen(false); setEditing(undefined); setEditingSourceTask(undefined); }}
         onSave={upsert}
         onDelete={(id) => {
           const task = props.tasks.find((item) => item.id === id);

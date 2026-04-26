@@ -4,6 +4,7 @@
 import type { HelpQuestion, Reminder, Task } from "../types";
 import dayjs from "dayjs";
 import { weekStartMonday } from "./date";
+import { normalizeTasks } from "./tasks";
 
 const WEEK_KEY = "weekly_todo_lastWeekStart_v1";
 const TOKEN_KEY = "todo_jwt_token";
@@ -66,7 +67,7 @@ export async function loadTasks(): Promise<Task[]> {
     const response = await authorizedRequest('/tasks');
     if (!response) throw new Error("Authorized request unavailable");
     if (!response.ok) throw new Error("Network response was not ok");
-    return await response.json();
+    return normalizeTasks(await response.json());
   } catch (error) {
     console.error("Failed to load from server", error);
     throw error;

@@ -48,6 +48,7 @@ export function HelpPage() {
     { question: t("help.faq.q6.question"), answer: t("help.faq.q6.answer") },
     { question: t("help.faq.q7.question"), answer: t("help.faq.q7.answer") },
     { question: t("help.faq.q8.question"), answer: t("help.faq.q8.answer") },
+    { question: t("help.faq.q9.question"), answer: t("help.faq.q9.answer") },
   ]), [t]);
 
   useEffect(() => {

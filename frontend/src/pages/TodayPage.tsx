@@ -37,6 +37,16 @@ import {
   markDoneForDate,
   type CompletionMap,
 } from "../app/completions";
+import {
+  applySeriesEdit,
+  applySingleOccurrenceEdit,
+  getRepeatFrequency,
+  getTaskOccurrence,
+  isOneTimeTask,
+  isRecurringTask,
+  normalizeTask,
+  type TaskSaveScope,
+} from "../app/tasks";
 
 export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => void }) {
   const { t, i18n } = useTranslation();
@@ -93,26 +103,47 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Task | undefined>();
+  const [editingSourceTask, setEditingSourceTask] = useState<Task | undefined>();
   const [markDoneTask, setMarkDoneTask] = useState<Task | undefined>();
   const [deleteTask, setDeleteTask] = useState<Task | undefined>();
   const [allDoneOpen, setAllDoneOpen] = useState(false);
 
-  function upsert(task: Task) {
+  function upsert(task: Task, scope: TaskSaveScope = "series") {
+    if (editingSourceTask && scope === "single" && isRecurringTask(editingSourceTask)) {
+      props.setTasks(
+        props.tasks.map((item) =>
+          item.id === editingSourceTask.id
+            ? applySingleOccurrenceEdit(item, selectedDay, task)
+            : item
+        )
+      );
+      setDialogOpen(false);
+      setEditing(undefined);
+      setEditingSourceTask(undefined);
+      return;
+    }
+
+    const sourceId = editingSourceTask?.id ?? task.id;
+    const nextTask = editingSourceTask ? applySeriesEdit(editingSourceTask, task) : normalizeTask(task);
     props.setTasks([
-      ...props.tasks.filter((t) => t.id !== task.id),
-      task,
+      ...props.tasks.filter((item) => item.id !== sourceId),
+      nextTask,
     ]);
     setDialogOpen(false);
+    setEditing(undefined);
+    setEditingSourceTask(undefined);
   }
 
   function remove(id: string) {
     props.setTasks(props.tasks.filter((t) => t.id !== id));
     setDeleteTask(undefined);
     setDialogOpen(false);
+    setEditing(undefined);
+    setEditingSourceTask(undefined);
   }
 
   function doMarkDone(task: Task) {
-    if (task.type === "TEMPORARY") {
+    if (isOneTimeTask(task)) {
       upsert({ ...task, done: true, updatedAt: new Date().toISOString() });
     } else {
       const nextMap = markDoneForDate(completions, task.id, selectedDay);
@@ -124,7 +155,7 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
 
   function markAllDone() {
     const raw = tasksForDate(props.tasks, selectedDay, completions);
-    const temporaryIds = raw.filter((t) => t.type === "TEMPORARY").map((t) => t.id);
+    const temporaryIds = raw.filter((task) => isOneTimeTask(task)).map((task) => task.id);
     let nextTasks = props.tasks;
     if (temporaryIds.length > 0) {
       nextTasks = nextTasks.map((t) => {
@@ -135,10 +166,10 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
       });
     }
 
-    const permanentIds = raw.filter((t) => t.type === "PERMANENT").map((t) => t.id);
+    const recurringIds = raw.filter((task) => isRecurringTask(task)).map((task) => task.id);
     let nextCompletions = completions;
-    for (const pid of permanentIds) {
-      nextCompletions = markDoneForDate(nextCompletions, pid, selectedDay);
+    for (const recurringId of recurringIds) {
+      nextCompletions = markDoneForDate(nextCompletions, recurringId, selectedDay);
     }
 
     if (temporaryIds.length > 0) {
@@ -150,15 +181,15 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
   }
 
   function moveTemporaryToToday(task: Task) {
-    if (task.type !== "TEMPORARY") return;
+    if (!isOneTimeTask(task)) return;
     const todayYmd = ymd(dayjs());
-    upsert({ ...task, date: todayYmd, done: false, updatedAt: new Date().toISOString() });
+    upsert({ ...task, beginDate: todayYmd, date: todayYmd, done: false, updatedAt: new Date().toISOString() });
   }
 
   function moveTemporaryToTomorrow(task: Task) {
-    if (task.type !== "TEMPORARY") return;
+    if (!isOneTimeTask(task)) return;
     const tomorrowYmd = ymd(dayjs().add(1, "day"));
-    upsert({ ...task, date: tomorrowYmd, done: false, updatedAt: new Date().toISOString() });
+    upsert({ ...task, beginDate: tomorrowYmd, date: tomorrowYmd, done: false, updatedAt: new Date().toISOString() });
   }
 
   function getColor(t: Task) {
@@ -173,9 +204,12 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
   }
 
   function getTaskTypeLabel(task: Task) {
-    return task.type === "TEMPORARY"
-      ? t("today.taskTypes.temporary")
-      : t("today.taskTypes.permanent");
+    const frequency = getRepeatFrequency(task);
+    if (frequency === "DAILY") return t("today.taskTypes.daily");
+    if (frequency === "WEEKLY") return t("today.taskTypes.weekly");
+    if (frequency === "MONTHLY") return t("today.taskTypes.monthly");
+    if (frequency === "YEARLY") return t("today.taskTypes.yearly");
+    return t("today.taskTypes.once");
   }
 
   function formatTaskTime(value: string) {
@@ -200,6 +234,14 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
 
     window.open(url, "_blank");
   };
+
+  function openTaskEditor(task: Task) {
+    const sourceTask = props.tasks.find((item) => item.id === task.id);
+    if (!sourceTask) return;
+    setEditingSourceTask(sourceTask);
+    setEditing(getTaskOccurrence(sourceTask, selectedDay) ?? normalizeTask(sourceTask));
+    setDialogOpen(true);
+  }
 
   // INPUT: task record for the selected date
   // OUTPUT: task card UI
@@ -252,13 +294,13 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
             </Box>
 
             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mt: { xs: 1, sm: 0 } }}>
-              <Button size="small" variant="outlined" color="primary" startIcon={<EditIcon />} onClick={() => { setEditing(task); setDialogOpen(true); }}>
+              <Button size="small" variant="outlined" color="primary" startIcon={<EditIcon />} onClick={() => openTaskEditor(task)}>
                 {t("today.modify")}
               </Button>
-              {task.type === "TEMPORARY" && !isToday && (
+              {isOneTimeTask(task) && !isToday && (
                 <Button size="small" variant="outlined" color="secondary" startIcon={<EventIcon />} onClick={() => moveTemporaryToToday(task)}>{t("today.toToday")}</Button>
               )}
-              {task.type === "TEMPORARY" && !isTomorrow && (
+              {isOneTimeTask(task) && !isTomorrow && (
                 <Button size="small" variant="outlined" color="secondary" startIcon={<EventIcon />} onClick={() => moveTemporaryToTomorrow(task)}>{t("today.toTomorrow")}</Button>
               )}
               {!task.done && (
@@ -291,7 +333,7 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
 
         <Stack direction="row" spacing={1} flexWrap="wrap" justifyContent="center">
           <Button variant="outlined" onClick={() => setSelectedDay(ymd(dayjs()))}>{t("today.goToToday")}</Button>
-          <Button variant="contained" onClick={() => { setEditing(undefined); setDialogOpen(true); }}>{t("today.addTask")}</Button>
+          <Button variant="contained" onClick={() => { setEditing(undefined); setEditingSourceTask(undefined); setDialogOpen(true); }}>{t("today.addTask")}</Button>
         </Stack>
       </Stack>
 
@@ -329,8 +371,9 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
         open={dialogOpen}
         mode={editing ? "edit" : "create"}
         task={editing}
+        occurrenceDateYmd={editing ? selectedDay : undefined}
         defaultDateYmd={selectedDay}
-        onClose={() => { setDialogOpen(false); setEditing(undefined); }}
+        onClose={() => { setDialogOpen(false); setEditing(undefined); setEditingSourceTask(undefined); }}
         onSave={upsert}
         onDelete={(id) => { const t = props.tasks.find((x) => x.id === id); if (t) setDeleteTask(t); }}
       />

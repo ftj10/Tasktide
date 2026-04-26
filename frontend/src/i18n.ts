@@ -22,7 +22,8 @@ const resources = {
         edit: "Edit",
         moveToToday: "Move to Today",
         moveOccurrenceToToday: "Move occurrence to Today",
-        type: "Type",
+        repeat: "Repeat",
+        beginDate: "Begin date",
         date: "Date",
         weekday: "Weekday",
         emergency: "Emergency",
@@ -91,8 +92,11 @@ const resources = {
         previousDay: "Previous day",
         nextDay: "Next day",
         taskTypes: {
-          temporary: "Temporary",
-          permanent: "Permanent"
+          once: "Once",
+          daily: "Daily",
+          weekly: "Weekly",
+          monthly: "Monthly",
+          yearly: "Yearly"
         }
       },
       week: {
@@ -141,17 +145,17 @@ const resources = {
         guides: {
           title: "How To Use This Website",
           step0: "Use the EN / 中文 button on the login page whenever you want to switch the sign-in flow between English and Chinese before entering the app.",
-          step1: "Use Today to add, edit, complete, or move tasks for the current day.",
+          step1: "Use Today to add, edit, complete, or move tasks for the current day. Task forms now start from a begin date and a repeat window.",
           step2: "Use Week and Month to review your schedule and jump between dates quickly.",
           step3: "Use Reminders for ongoing notes that should stay visible until you mark them done.",
           step4: "On phones, use the bottom navigation to switch between planner sections, while larger screens keep the sidebar visible.",
-          step5: "Task and Reminder forms open full-screen on mobile for easier editing, and stay centered as dialogs on larger screens."
+          step5: "Task, Reminder, and repeat-option forms open full-screen on mobile for easier editing, and stay centered as dialogs on larger screens."
         },
         faq: {
           title: "Common Q&A",
           q1: {
-            question: "What is the difference between temporary and permanent tasks?",
-            answer: "Temporary tasks belong to a specific date, while permanent tasks repeat on a weekday until you mark that occurrence done."
+            question: "How does repeat work for tasks?",
+            answer: "Each task starts with a begin date and a repeat setting. You can keep it as Once, or repeat it daily, weekly, monthly, or yearly with interval and end-date controls."
           },
           q2: {
             question: "How do reminders differ from tasks?",
@@ -180,6 +184,10 @@ const resources = {
           q8: {
             question: "Can I change the language before logging in?",
             answer: "Yes. Use the EN / 中文 button on the login page to switch the authentication screen before you sign in or register."
+          },
+          q9: {
+            question: "What happens when I edit one repeating task occurrence?",
+            answer: "After you save changes to a repeating task, the app asks whether to update only that day or the entire series. Single-day edits are stored as occurrence overrides so the original series stays intact."
           }
         },
         ask: {
@@ -202,8 +210,35 @@ const resources = {
         editTaskTitle: "Edit task",
         taskName: "Task name",
         endTimeError: "End time must be equal to or later than start time.",
-        repeatWeekly: "Repeat every week",
-        oneTime: "One-time",
+        repeatTitle: "Repeat options",
+        editRepeat: "Edit",
+        repeatEvery: "Repeat every",
+        repeatIntervalValue: "Every {{value}} {{unit}}",
+        onDays: "On days",
+        onMonthDays: "On days of month",
+        until: "Until",
+        forever: "Forever",
+        endDate: "End date",
+        editSeriesTitle: "Update repeating task",
+        editSeriesMessage: "Choose whether these changes should affect only this day or the entire repeating series.",
+        editSeriesHint: "Repeat and begin-date changes apply when you update the entire series.",
+        editingOccurrence: "Editing occurrence on {{date}}",
+        editEntireSeries: "Editing repeating task",
+        thisDayOnly: "This day only",
+        entireSeries: "Entire series",
+        repeatOptions: {
+          none: "None (Once)",
+          daily: "Daily",
+          weekly: "Weekly",
+          monthly: "Monthly",
+          yearly: "Yearly"
+        },
+        repeatUnits: {
+          daily: "day(s)",
+          weekly: "week(s)",
+          monthly: "month(s)",
+          yearly: "year(s)"
+        },
         highest: "{{value}} (Highest)",
         lowest: "{{value}} (Lowest)",
         weekdays: {
@@ -239,7 +274,8 @@ const resources = {
         edit: "编辑",
         moveToToday: "移到今天",
         moveOccurrenceToToday: "将本次移到今天",
-        type: "类型",
+        repeat: "重复",
+        beginDate: "开始日期",
         date: "日期",
         weekday: "星期",
         emergency: "紧急程度",
@@ -308,8 +344,11 @@ const resources = {
         previousDay: "前一天",
         nextDay: "后一天",
         taskTypes: {
-          temporary: "临时任务",
-          permanent: "固定任务"
+          once: "一次",
+          daily: "每天",
+          weekly: "每周",
+          monthly: "每月",
+          yearly: "每年"
         }
       },
       week: {
@@ -358,17 +397,17 @@ const resources = {
         guides: {
           title: "网站使用说明",
           step0: "如果你想在登录前切换语言，可以先使用登录页上的 EN / 中文 按钮，在英文和中文之间切换认证界面。",
-          step1: "在 Today 页面中添加、编辑、完成或移动当天任务。",
+          step1: "在 Today 页面中添加、编辑、完成或移动当天任务。任务表单现在会先设置开始日期，再进入重复设置窗口。",
           step2: "在 Week 和 Month 页面快速查看整体安排并跳转日期。",
           step3: "使用 Reminders 记录持续存在、直到你手动完成的提醒事项。",
           step4: "在手机上可使用底部导航切换页面；在较大屏幕上会显示侧边栏导航。",
-          step5: "Task 和 Reminder 表单在手机上会全屏打开，较大屏幕上则保持居中弹窗。"
+          step5: "Task、Reminder 和重复设置表单在手机上会全屏打开，较大屏幕上则保持居中弹窗。"
         },
         faq: {
           title: "常见问答",
           q1: {
-            question: "临时任务和固定任务有什么区别？",
-            answer: "临时任务属于某一个具体日期，而固定任务会按星期重复，直到你将当天那次标记为完成。"
+            question: "任务的重复设置怎么用？",
+            answer: "每个任务都会先设置开始日期，再选择重复方式。你可以保持为一次，也可以设置为每天、每周、每月或每年，并配置间隔和结束日期。"
           },
           q2: {
             question: "提醒和任务有什么不同？",
@@ -397,6 +436,10 @@ const resources = {
           q8: {
             question: "我可以在登录前切换语言吗？",
             answer: "可以。使用登录页上的 EN / 中文 按钮，就能在登录或注册前先切换认证界面的语言。"
+          },
+          q9: {
+            question: "修改重复任务的一天时会发生什么？",
+            answer: "保存重复任务时，应用会让你选择只修改这一天，还是修改整个系列。只修改这一天时会记录为单次覆盖，不会破坏原来的系列。"
           }
         },
         ask: {
@@ -419,8 +462,35 @@ const resources = {
         editTaskTitle: "编辑任务",
         taskName: "任务名称",
         endTimeError: "结束时间必须等于或晚于开始时间。",
-        repeatWeekly: "每周重复",
-        oneTime: "一次性任务",
+        repeatTitle: "重复设置",
+        editRepeat: "编辑",
+        repeatEvery: "重复间隔",
+        repeatIntervalValue: "每 {{value}} 个{{unit}}",
+        onDays: "在这些星期",
+        onMonthDays: "在每月这些日期",
+        until: "结束方式",
+        forever: "一直重复",
+        endDate: "结束日期",
+        editSeriesTitle: "更新重复任务",
+        editSeriesMessage: "请选择这些修改是只影响这一天，还是影响整个重复系列。",
+        editSeriesHint: "重复方式和开始日期的修改会在你选择整个系列时生效。",
+        editingOccurrence: "正在编辑 {{date}} 这一天",
+        editEntireSeries: "正在编辑重复任务",
+        thisDayOnly: "只改这一天",
+        entireSeries: "整个系列",
+        repeatOptions: {
+          none: "不重复（一次）",
+          daily: "每天",
+          weekly: "每周",
+          monthly: "每月",
+          yearly: "每年"
+        },
+        repeatUnits: {
+          daily: "天",
+          weekly: "周",
+          monthly: "个月",
+          yearly: "年"
+        },
         highest: "{{value}}（最高）",
         lowest: "{{value}}（最低）",
         weekdays: {

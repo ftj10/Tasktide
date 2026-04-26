@@ -3,28 +3,23 @@
 // EFFECT: Converts raw planner data into the day and week views used across the scheduling features
 import dayjs from "dayjs";
 import type { Task } from "../types";
-import { weekdayISO, ymd } from "./date";
+import { ymd } from "./date";
 import type { CompletionMap } from "./completions";
 import { isDoneForDate } from "./completions";
+import { getTaskOccurrence, isRecurringTask } from "./tasks";
 
 // INPUT: all tasks, selected date, and recurring-task completions
 // OUTPUT: tasks visible on the selected day
 // EFFECT: Resolves which temporary and permanent tasks belong in the Today and Month views
 export function tasksForDate(all: Task[], dateYmd: string, completions: CompletionMap): Task[] {
-  const d = dayjs(dateYmd);
-  const iso = weekdayISO(d);
-
-  const permanents = all.filter((t) => {
-    if (t.type !== "PERMANENT") return false;
-    if (t.weekday !== iso) return false;
-    return !isDoneForDate(completions, t.id, dateYmd);
-  });
-
-  const temporaries = all.filter(
-    (t) => t.type === "TEMPORARY" && t.date === dateYmd && !t.done
-  );
-
-  return [...permanents, ...temporaries].sort((a, b) => {
+  return all
+    .flatMap((task) => {
+      const occurrence = getTaskOccurrence(task, dateYmd);
+      if (!occurrence) return [];
+      if (isRecurringTask(task) && isDoneForDate(completions, task.id, dateYmd)) return [];
+      return [occurrence];
+    })
+    .sort((a, b) => {
     const ea = a.emergency ?? 5;
     const eb = b.emergency ?? 5;
     if (ea !== eb) return ea - eb;
@@ -60,20 +55,22 @@ export function toCalendarEventsForRange(
   };
 
   for (const t of all) {
-    if (t.type !== "TEMPORARY") continue;
-    if (!t.date || t.done) continue;
+    if (isRecurringTask(t)) continue;
 
-    const d = dayjs(t.date);
+    const occurrence = getTaskOccurrence(t, t.beginDate ?? t.date ?? "");
+    if (!occurrence?.beginDate) continue;
+
+    const d = dayjs(occurrence.beginDate);
     if (d.isBefore(rangeStart, "day")) continue;
     if (d.isAfter(rangeEnd.subtract(1, "day"), "day")) continue;
 
-    const level = t.emergency ?? 5;
+    const level = occurrence.emergency ?? 5;
     const col = temporaryColorMap[level] ?? temporaryColorMap[5];
 
     events.push({
       id: t.id,
-      title: t.title,
-      start: t.date,
+      title: occurrence.title,
+      start: occurrence.beginDate,
       allDay: true,
       extendedProps: { taskId: t.id },
       backgroundColor: col.bg,
@@ -82,25 +79,25 @@ export function toCalendarEventsForRange(
     });
   }
 
-  const permanents = all.filter((t) => t.type === "PERMANENT" && typeof t.weekday === "number");
+  const recurringTasks = all.filter((task) => isRecurringTask(task));
 
   for (let cur = rangeStart.startOf("day"); cur.isBefore(rangeEnd, "day"); cur = cur.add(1, "day")) {
     const dateStr = ymd(cur);
-    const iso = weekdayISO(cur);
 
-    for (const t of permanents) {
-      if (t.weekday !== iso) continue;
+    for (const t of recurringTasks) {
+      const occurrence = getTaskOccurrence(t, dateStr);
+      if (!occurrence) continue;
       if (isDoneForDate(completions, t.id, dateStr)) continue;
 
-      const level = t.emergency ?? 5;
+      const level = occurrence.emergency ?? 5;
       const col = permanentColorMap[level] ?? permanentColorMap[5];
 
       events.push({
         id: `${t.id}::${dateStr}`,
-        title: t.title,
+        title: occurrence.title,
         start: dateStr,
         allDay: true,
-        extendedProps: { taskId: t.id },
+        extendedProps: { taskId: t.id, occurrenceDate: dateStr, task: occurrence },
         backgroundColor: col.bg,
         borderColor: col.border,
         textColor: col.text,
