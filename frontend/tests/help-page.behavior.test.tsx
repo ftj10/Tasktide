@@ -36,7 +36,6 @@ describe("HelpPage behavior", () => {
     renderWithProviders(<HelpPage />);
 
     expect(await screen.findByText("How do I move a task?")).toBeInTheDocument();
-
     await user.type(screen.getByLabelText("Your question"), "Can I sort tasks by time?");
     await user.click(screen.getByRole("button", { name: "Send Question" }));
 

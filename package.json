@@ -3,6 +3,9 @@
   "private": true,
   "version": "1.6.0",
   "scripts": {
+    "backup:dataset": "npm --prefix backend run backup:dataset",
+    "backup:dataset:auto": "npm --prefix backend run backup:dataset:auto",
+    "restore:dataset": "npm --prefix backend run restore:dataset",
     "test": "npm --prefix backend run test && npm --prefix frontend run test:run",
     "test:smoke": "npm --prefix backend run test:smoke && npm --prefix frontend run test:smoke",
     "test:behavior": "npm --prefix backend run test:behavior && npm --prefix frontend run test:behavior",
