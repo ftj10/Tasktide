@@ -1,7 +1,7 @@
 // INPUT: week page, mocked calendar interactions, and task fixtures
 // OUTPUT: behavior coverage for weekly planning actions
 // EFFECT: Verifies week-view navigation, delete confirmation, and prefilled date flows
-import { screen, within } from "@testing-library/react";
+import { act, fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, beforeEach, expect, it, vi } from "vitest";
 
@@ -56,6 +56,7 @@ vi.mock("@fullcalendar/react", () => ({
 
 describe("WeekPage behavior", () => {
   beforeEach(async () => {
+    vi.useRealTimers();
     setScreenWidth(1024);
     navigateMock.mockReset();
     calendarRenderProps.length = 0;
@@ -138,5 +139,48 @@ describe("WeekPage behavior", () => {
     expect(latestCalendarProps[0].headerToolbar).toBe(false);
     expect(latestCalendarProps[1].headerToolbar).toBe(false);
     expect(latestCalendarProps[2].headerToolbar).toBe(false);
+  });
+
+  it("advances only one mobile page after a swipe settles", () => {
+    vi.useFakeTimers();
+    setScreenWidth(390);
+
+    renderWithProviders(<WeekPage tasks={[]} setTasks={vi.fn()} completionsRev={0} />);
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
+
+    const pager = screen.getByTestId("mobile-week-pager");
+    Object.defineProperty(pager, "clientWidth", {
+      configurable: true,
+      value: 100,
+    });
+
+    Object.defineProperty(pager, "scrollLeft", {
+      configurable: true,
+      writable: true,
+      value: 190,
+    });
+    act(() => {
+      fireEvent.scroll(pager, { target: { scrollLeft: 190 } });
+    });
+    pager.scrollLeft = 195;
+    act(() => {
+      fireEvent.scroll(pager, { target: { scrollLeft: 195 } });
+    });
+
+    act(() => {
+      vi.advanceTimersByTime(150);
+    });
+
+    const latestCalendarProps = calendarRenderProps.slice(-3);
+    expect(latestCalendarProps[1].visibleRange).toMatchObject({
+      start: "2026-04-27",
+      end: "2026-05-01",
+    });
+    expect(latestCalendarProps[2].visibleRange).toMatchObject({
+      start: "2026-05-01",
+      end: "2026-05-04",
+    });
   });
 });

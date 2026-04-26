@@ -1,6 +1,6 @@
 # Weekly To-Do Application
 
-Current version: `v1.6.0`
+Current version: `v1.6.1`
 
 Weekly To-Do is a full-stack planner for daily tasks, weekly routines, reminders, shared help questions, and calendar-based scheduling.
 
@@ -11,7 +11,7 @@ Deployed Web: [website](https://todo-cfun.onrender.com/)
 - Secure registration and login with JWT-backed sessions.
 - Login and registration screens support an `EN` / `中文` switch before authentication.
 - Today, Week, and Month planning views for temporary and recurring tasks.
-- Mobile Week view with a horizontal swipe flow that shows 4 days first, then the remaining 3 days, and continues into the next week.
+- Mobile Week view with a horizontal swipe flow that shows 4 days first, then the remaining 3 days, continues into the next week, and settles to a single page move per swipe.
 - Reminder tracking with priority ordering and completion flow.
 - Shared help center with FAQ content and public user questions.
 - Responsive application shell with a desktop sidebar, mobile bottom navigation, and full-screen mobile task and reminder forms.
@@ -66,6 +66,6 @@ npm test
 
 - Review [RELEASENOTES.md](RELEASENOTES.md) for repository-level changes.
 - The in-app Updates center mirrors the latest shipped release metadata from `frontend/src/app/releaseNotes.ts`.
-- On smaller screens, the app uses bottom navigation, a swipe-through Week view that advances into the next week, and full-screen editing dialogs to keep controls touch-friendly.
+- On smaller screens, the app uses bottom navigation, a swipe-through Week view with single-step settled paging, and full-screen editing dialogs to keep controls touch-friendly.
 - The login page language switch uses the same bilingual copy system as the signed-in app, so authentication flows can be changed before sign-in.
 - Keep backend running before opening the frontend locally.

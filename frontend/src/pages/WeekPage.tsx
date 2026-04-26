@@ -60,6 +60,7 @@ export function WeekPage(props: {
   );
   const mobilePagerRef = useRef<HTMLDivElement | null>(null);
   const mobileTransitionLockRef = useRef(false);
+  const mobileScrollSettleRef = useRef<number | null>(null);
 
   const events = useMemo(() => {
     const completions = loadCompletions();
@@ -191,6 +192,14 @@ export function WeekPage(props: {
       }, 80);
     });
   }, [isMobile, mobilePageKind, mobileWeekStart]);
+
+  useEffect(() => {
+    return () => {
+      if (mobileScrollSettleRef.current !== null) {
+        window.clearTimeout(mobileScrollSettleRef.current);
+      }
+    };
+  }, []);
 
   function moveMobilePage(direction: -1 | 1) {
     if (direction === 1) {
@@ -359,22 +368,36 @@ export function WeekPage(props: {
           </ToggleButtonGroup>
 
           <Box
+            data-testid="mobile-week-pager"
             ref={mobilePagerRef}
             onScroll={(event) => {
               if (mobileTransitionLockRef.current) return;
               const pager = event.currentTarget;
-              const pageWidth = pager.clientWidth || 1;
-              const progress = pager.scrollLeft / pageWidth;
+              if (mobileScrollSettleRef.current !== null) {
+                window.clearTimeout(mobileScrollSettleRef.current);
+              }
+              mobileScrollSettleRef.current = window.setTimeout(() => {
+                if (mobileTransitionLockRef.current) return;
+                const pageWidth = pager.clientWidth || 1;
+                const progress = pager.scrollLeft / pageWidth;
 
-              if (progress <= 0.15) {
+                if (progress <= 0.35) {
+                  mobileTransitionLockRef.current = true;
+                  moveMobilePage(-1);
+                  return;
+                }
+                if (progress >= 1.65) {
+                  mobileTransitionLockRef.current = true;
+                  moveMobilePage(1);
+                  return;
+                }
+
                 mobileTransitionLockRef.current = true;
-                moveMobilePage(-1);
-                return;
-              }
-              if (progress >= 1.85) {
-                mobileTransitionLockRef.current = true;
-                moveMobilePage(1);
-              }
+                scrollToMobilePage(1, "smooth");
+                window.setTimeout(() => {
+                  mobileTransitionLockRef.current = false;
+                }, 120);
+              }, 120);
             }}
             sx={{
               display: "flex",

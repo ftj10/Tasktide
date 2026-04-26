@@ -14,6 +14,33 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-04-25-mobile-week-swipe-stability",
+    version: "v1.6.1",
+    releasedAt: "2026-04-25",
+    title: {
+      en: "Mobile week swipe stability",
+      zh: "移动端周视图滑动稳定性"
+    },
+    summary: {
+      en: "Week view on phones now settles each swipe before changing pages so one gesture cannot skip across multiple week ranges.",
+      zh: "手机上的周视图现在会在滑动结束后再决定翻页，避免一次手势跨过多个周页面。"
+    },
+    changes: {
+      en: [
+        "Changed mobile Week swipe handling to wait for the gesture to settle before selecting the next page.",
+        "Prevented one swipe from cascading across multiple 4-day and 3-day week pages.",
+        "Kept the rolling week sequence, date jumps, task editing, and blank-slot prefilling intact.",
+        "Added frontend regression coverage for one-swipe single-step paging."
+      ],
+      zh: [
+        "将移动端 Week 页面的滑动处理改为等待手势结束后再决定下一页。",
+        "防止一次滑动连续跨过多个 4 天页与 3 天页。",
+        "继续保留跨周滚动顺序、日期跳转、任务编辑与空白区域默认日期带入功能。",
+        "新增单次滑动只前进一页的前端回归测试。"
+      ]
+    }
+  },
+  {
     id: "2026-04-25-mobile-week-paging",
     version: "v1.6.0",
     releasedAt: "2026-04-25",

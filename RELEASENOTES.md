@@ -1,5 +1,12 @@
 # Release Notes
 
+## v1.6.1 - 2026-04-25
+
+- Changed mobile Week swipe handling to wait for the gesture to settle before deciding the next page.
+- Prevented a single mobile swipe from skipping across multiple week pages.
+- Added frontend regression coverage for one-swipe single-step paging.
+- Expanded README and in-app release notes to document the stabilized mobile paging behavior.
+
 ## v1.6.0 - 2026-04-25
 
 - Changed mobile Week view from a single 7-day layout to a horizontal paged swipe flow.
