@@ -16,7 +16,7 @@ Deployed Web: [website](https://todo-cfun.onrender.com/)
 - The repeat-options selector now sits slightly lower in its dialog so the `Repeat` label stays fully visible below the header.
 - Repeating task edits can target either one occurrence or the full series without destroying older task data.
 - Mobile Week view opens in Time Grid by default, keeps a horizontal swipe flow that shows 4 days first and then the remaining 3 days, and creates tasks from a press-held time range instead of a global add button.
-- Month view now keeps a task-grid-focused layout, supports vertical swipe navigation between months, and includes a `Jump to Current Month` button.
+- Month view now uses the refreshed card-based calendar UI, keeps desktop previous and next arrow controls, keeps mobile vertical swipe navigation between months, and includes a `Jump to Current Month` button.
 - Reminder tracking with priority ordering and completion flow.
 - Shared help center with FAQ content and public user questions.
 - Responsive application shell with a desktop sidebar, mobile bottom navigation, and full-screen mobile task and reminder forms.
@@ -73,6 +73,6 @@ npm test
 - Review [RELEASENOTES.md](RELEASENOTES.md) for repository-level changes.
 - The in-app Updates center mirrors the latest shipped release metadata from `frontend/src/app/releaseNotes.ts`.
 - Older datasets that still use `TEMPORARY` and `PERMANENT` task records remain readable; the frontend normalizes them into the new recurrence model when it loads.
-- On smaller screens, the app uses bottom navigation, a swipe-through Week view with single-step settled paging and default Time Grid focus, press-held time-range task creation in Week, a Month task grid with direct vertical swipe navigation plus a quick jump-to-current-month action, and full-screen editing dialogs to keep controls touch-friendly.
+- On smaller screens, the app uses bottom navigation, a swipe-through Week view with single-step settled paging and default Time Grid focus, press-held time-range task creation in Week, a refreshed Month task grid with direct vertical swipe navigation plus a quick jump-to-current-month action, and full-screen editing dialogs to keep controls touch-friendly.
 - The login page language switch uses the same bilingual copy system as the signed-in app, so authentication flows can be changed before sign-in.
 - Keep backend running before opening the frontend locally.

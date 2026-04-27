@@ -27,7 +27,7 @@ describe("LoginPage behavior", () => {
     expect(await screen.findByRole("heading", { name: "欢迎回来" })).toBeInTheDocument();
     expect(screen.getByText("用户名")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "登录" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "EN" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "English" })).toBeInTheDocument();
   });
 
   it("keeps the language switch active when moving to registration mode", async () => {

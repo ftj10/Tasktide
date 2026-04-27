@@ -64,6 +64,15 @@ describe("MonthPage behavior", () => {
     expect(screen.getAllByText(nextMonthDay).length).toBeGreaterThan(0);
   });
 
+  it("hides month arrow buttons on mobile while keeping the jump button", () => {
+    setScreenWidth(390);
+    renderWithProviders(<MonthPage tasks={[]} setTasks={vi.fn()} />);
+
+    expect(screen.queryByLabelText("Previous month")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Next month")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Jump to Current Month" })).toBeInTheDocument();
+  });
+
   it("changes month with arrow buttons on desktop", async () => {
     const user = userEvent.setup();
     renderWithProviders(<MonthPage tasks={[]} setTasks={vi.fn()} />);

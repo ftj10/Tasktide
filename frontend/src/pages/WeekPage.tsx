@@ -1,7 +1,19 @@
 // INPUT: task collection plus completion refresh state
 // OUTPUT: weekly calendar page with navigation and task editing actions
 // EFFECT: Turns planner tasks into week-view events and connects week interactions back to task dialogs and day routing
-import { Box, Button, Chip, Stack, ToggleButton, ToggleButtonGroup, Typography, useMediaQuery, useTheme } from "@mui/material";
+import {
+  Box,
+  Button,
+  Chip,
+  Paper,
+  Stack,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import FullCalendar from "@fullcalendar/react";
@@ -9,6 +21,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
 
@@ -26,27 +39,21 @@ import {
   type TaskSaveScope,
 } from "../app/tasks";
 
-// INPUT: optional task record
-// OUTPUT: event color tokens
-// EFFECT: Aligns week-view event styling with the shared task-priority feature
 function getTaskColors(task?: Task) {
   if (task?.done) {
-    return { bg: "#eeeeee", border: "#bdbdbd", text: "#9e9e9e" }; 
+    return { bg: "#e5e7eb", border: "#cbd5e1", text: "#6b7280" };
   }
-  
-  const palette = ["#d32f2f", "#ed6c02", "#ff9800", "#4caf50", "#2196f3"];
+
+  const palette = ["#ef4444", "#f97316", "#f59e0b", "#10b981", "#0ea5e9"];
   const baseColor = palette[(task?.emergency || 5) - 1];
 
   return {
     bg: baseColor,
     border: baseColor,
-    text: "#ffffff"
+    text: "#ffffff",
   };
 }
 
-// INPUT: task collection, save callback, and completion revision
-// OUTPUT: week calendar page
-// EFFECT: Supports weekly schedule review, event editing, date jumps, and date-prefilled task creation
 export function WeekPage(props: {
   tasks: Task[];
   setTasks: (next: Task[]) => void;
@@ -86,8 +93,9 @@ export function WeekPage(props: {
       const task = props.tasks.find((t) => t.id === taskId);
       const colors = getTaskColors(task);
 
-      const dateYmd = typeof ev.start === "string" 
-          ? ev.start.substring(0, 10) 
+      const dateYmd =
+        typeof ev.start === "string"
+          ? ev.start.substring(0, 10)
           : dayjs(ev.start).format("YYYY-MM-DD");
 
       if (task && task.startTime) {
@@ -96,17 +104,19 @@ export function WeekPage(props: {
         const dayEndAt = dayjs(`${dateYmd}T23:59:00`);
         const endAt = task.endTime
           ? dayjs(`${dateYmd}T${task.endTime}:00`)
-          : (implicitEndAt.isAfter(dayEndAt) ? dayEndAt : implicitEndAt);
+          : implicitEndAt.isAfter(dayEndAt)
+          ? dayEndAt
+          : implicitEndAt;
 
         return {
           ...ev,
           start: startAt.format("YYYY-MM-DDTHH:mm:ss"),
           end: endAt.format("YYYY-MM-DDTHH:mm:ss"),
-          allDay: false, 
+          allDay: false,
           backgroundColor: colors.bg,
           borderColor: colors.border,
           textColor: colors.text,
-          extendedProps: { ...ev.extendedProps, task }
+          extendedProps: { ...ev.extendedProps, task },
         };
       }
 
@@ -116,7 +126,7 @@ export function WeekPage(props: {
         backgroundColor: colors.bg,
         borderColor: colors.border,
         textColor: colors.text,
-        extendedProps: { ...ev.extendedProps, task }
+        extendedProps: { ...ev.extendedProps, task },
       };
     });
   }, [props.tasks, props.completionsRev]);
@@ -168,19 +178,25 @@ export function WeekPage(props: {
           key: "prev-second",
           start: prevWeekStart.add(4, "day"),
           end: prevWeekStart.add(7, "day"),
-          label: `${prevWeekStart.add(4, "day").format("MMM D")} - ${prevWeekStart.add(6, "day").format("MMM D")}`,
+          label: `${prevWeekStart.add(4, "day").format("MMM D")} - ${prevWeekStart
+            .add(6, "day")
+            .format("MMM D")}`,
         },
         {
           key: "current-first",
           start: mobileWeekStart,
           end: mobileWeekStart.add(4, "day"),
-          label: `${mobileWeekStart.format("MMM D")} - ${mobileWeekStart.add(3, "day").format("MMM D")}`,
+          label: `${mobileWeekStart.format("MMM D")} - ${mobileWeekStart
+            .add(3, "day")
+            .format("MMM D")}`,
         },
         {
           key: "current-second",
           start: mobileWeekStart.add(4, "day"),
           end: mobileWeekStart.add(7, "day"),
-          label: `${mobileWeekStart.add(4, "day").format("MMM D")} - ${mobileWeekStart.add(6, "day").format("MMM D")}`,
+          label: `${mobileWeekStart.add(4, "day").format("MMM D")} - ${mobileWeekStart
+            .add(6, "day")
+            .format("MMM D")}`,
         },
       ];
     }
@@ -190,19 +206,25 @@ export function WeekPage(props: {
         key: "current-first",
         start: mobileWeekStart,
         end: mobileWeekStart.add(4, "day"),
-        label: `${mobileWeekStart.format("MMM D")} - ${mobileWeekStart.add(3, "day").format("MMM D")}`,
+        label: `${mobileWeekStart.format("MMM D")} - ${mobileWeekStart
+          .add(3, "day")
+          .format("MMM D")}`,
       },
       {
         key: "current-second",
         start: mobileWeekStart.add(4, "day"),
         end: mobileWeekStart.add(7, "day"),
-        label: `${mobileWeekStart.add(4, "day").format("MMM D")} - ${mobileWeekStart.add(6, "day").format("MMM D")}`,
+        label: `${mobileWeekStart.add(4, "day").format("MMM D")} - ${mobileWeekStart
+          .add(6, "day")
+          .format("MMM D")}`,
       },
       {
         key: "next-first",
         start: nextWeekStart,
         end: nextWeekStart.add(4, "day"),
-        label: `${nextWeekStart.format("MMM D")} - ${nextWeekStart.add(3, "day").format("MMM D")}`,
+        label: `${nextWeekStart.format("MMM D")} - ${nextWeekStart
+          .add(3, "day")
+          .format("MMM D")}`,
       },
     ];
   }, [mobilePageKind, mobileWeekStart]);
@@ -255,9 +277,6 @@ export function WeekPage(props: {
     setMobilePageKind("second");
   }
 
-  // INPUT: calendar selection payload from Week mobile time grid
-  // OUTPUT: prefilled create-dialog state
-  // EFFECT: Converts a long-pressed time range into Week-local task creation defaults
   function openCreateDialogForRange(startIso: string, endIso: string) {
     const startAt = dayjs(startIso);
     const endAt = dayjs(endIso);
@@ -277,7 +296,13 @@ export function WeekPage(props: {
     return (
       <FullCalendar
         plugins={[timeGridPlugin, dayGridPlugin, interactionPlugin]}
-        initialView={isMobileSlice ? (viewMode === "dayGrid" ? "mobileDayGrid" : "mobileTimeGrid") : "timeGridWeek"}
+        initialView={
+          isMobileSlice
+            ? viewMode === "dayGrid"
+              ? "mobileDayGrid"
+              : "mobileTimeGrid"
+            : "timeGridWeek"
+        }
         views={
           isMobileSlice
             ? {
@@ -307,7 +332,7 @@ export function WeekPage(props: {
         buttonText={{
           today: t("week.todayButton"),
           dayGridWeek: t("week.listView"),
-          timeGridWeek: t("week.timeGridView")
+          timeGridWeek: t("week.timeGridView"),
         }}
         navLinks={true}
         selectable={allowRangeCreate}
@@ -328,38 +353,46 @@ export function WeekPage(props: {
           const timeText = eventInfo.timeText;
 
           return (
-            <Box sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'stretch',
-              gap: 0.25,
-              px: 0.5,
-              py: 0.35,
-              overflow: 'hidden',
-              borderRadius: '2px',
-              minHeight: '100%',
-              borderLeft: isTimed ? '3px solid rgba(0,0,0,0.3)' : 'none'
-            }}>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "stretch",
+                gap: 0.25,
+                px: 0.6,
+                py: 0.4,
+                overflow: "hidden",
+                borderRadius: "4px",
+                minHeight: "100%",
+                borderLeft: isTimed ? "3px solid rgba(255,255,255,0.45)" : "none",
+              }}
+            >
               {isTimed ? (
                 <Stack direction="row" spacing={0.5} alignItems="center" sx={{ minWidth: 0 }}>
-                  <AccessTimeIcon sx={{ fontSize: 12, color: 'inherit', flexShrink: 0 }} />
-                  <Typography variant="caption" sx={{ fontSize: 10, fontWeight: 'bold', lineHeight: 1.1, whiteSpace: 'nowrap' }}>
+                  <AccessTimeIcon sx={{ fontSize: 12, color: "inherit", flexShrink: 0 }} />
+                  <Typography
+                    variant="caption"
+                    sx={{ fontSize: 10, fontWeight: 700, lineHeight: 1.1, whiteSpace: "nowrap" }}
+                  >
                     {timeText}
                   </Typography>
                 </Stack>
               ) : null}
-              <Typography variant="caption" sx={{
-                fontSize: 11,
-                fontWeight: isTimed ? 'normal' : 'bold',
-                textDecoration: task?.done ? 'line-through' : 'none',
-                whiteSpace: isTimed ? 'normal' : 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                lineHeight: 1.15,
-                display: '-webkit-box',
-                WebkitBoxOrient: 'vertical',
-                WebkitLineClamp: isTimed ? 2 : 1
-              }}>
+              <Typography
+                variant="caption"
+                sx={{
+                  fontSize: 11,
+                  fontWeight: isTimed ? 600 : 700,
+                  textDecoration: task?.done ? "line-through" : "none",
+                  whiteSpace: isTimed ? "normal" : "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  lineHeight: 1.15,
+                  display: "-webkit-box",
+                  WebkitBoxOrient: "vertical",
+                  WebkitLineClamp: isTimed ? 2 : 1,
+                }}
+              >
                 {eventInfo.event.title}
               </Typography>
             </Box>
@@ -395,38 +428,60 @@ export function WeekPage(props: {
   }
 
   return (
-    <Box sx={{ width: "100%", maxWidth: 1200, mx: "auto", px: { xs: 1.5, sm: 2, md: 3 }, py: { xs: 1, sm: 2 } }}>
-      <Box
+    <Box
+      sx={{
+        width: "100%",
+        maxWidth: 1200,
+        mx: "auto",
+        px: { xs: 1.5, sm: 2, md: 3 },
+        py: { xs: 1, sm: 2 },
+      }}
+    >
+      <Paper
+        elevation={0}
         sx={{
           mb: 2,
-          p: { xs: 1.5, sm: 2 },
-          borderRadius: { xs: 3, sm: 4 },
-          background: "linear-gradient(135deg, rgba(13,71,161,0.10), rgba(38,198,218,0.10))",
-          border: "1px solid rgba(33, 150, 243, 0.14)",
+          p: { xs: 1.75, sm: 2.5 },
+          borderRadius: 4,
+          border: "1px solid",
+          borderColor: "divider",
+          background:
+            "linear-gradient(135deg, rgba(79, 70, 229, 0.08), rgba(14, 165, 233, 0.06))",
           boxShadow: "0 12px 32px rgba(15, 23, 42, 0.06)",
         }}
       >
-        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ flexWrap: "wrap", gap: 1 }}>
+        <Stack direction="row" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={1.5}>
           <Stack spacing={0.75}>
-            <Typography variant="h6" sx={{ fontSize: { xs: "1rem", sm: "1.35rem" }, fontWeight: 700 }}>{t("week.title")}</Typography>
-            <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
+            <Typography variant="h6" fontWeight={800} sx={{ fontSize: { xs: "1.05rem", sm: "1.4rem" } }}>
+              {t("week.title")}
+            </Typography>
+            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
               <Chip size="small" label={t("week.defaultView")} color="primary" variant="outlined" />
-              <Chip size="small" label={isMobile ? t("week.mobileSwipeHint") : t("week.desktopHint")} variant="outlined" />
+              <Chip
+                size="small"
+                label={isMobile ? t("week.mobileSwipeHint") : t("week.desktopHint")}
+                variant="outlined"
+              />
             </Stack>
           </Stack>
           {!isMobile ? (
-            <Button variant="contained" onClick={() => {
-              setEditing(undefined);
-              setEditingSourceTask(undefined);
-              setDefaultStartTime(undefined);
-              setDefaultEndTime(undefined);
-              setDialogOpen(true);
-            }}>
+            <Button
+              variant="contained"
+              startIcon={<AddRoundedIcon />}
+              onClick={() => {
+                setEditing(undefined);
+                setEditingSourceTask(undefined);
+                setDefaultStartTime(undefined);
+                setDefaultEndTime(undefined);
+                setDialogOpen(true);
+              }}
+              sx={{ borderRadius: 2.5 }}
+            >
               {t("today.addTask")}
             </Button>
           ) : null}
         </Stack>
-      </Box>
+      </Paper>
 
       {isMobile ? (
         <Box sx={{ width: "100%" }}>
@@ -436,22 +491,27 @@ export function WeekPage(props: {
             alignItems="center"
             sx={{
               mb: 1.25,
-              px: 1.25,
+              px: 1.5,
               py: 1,
               borderRadius: 3,
-              bgcolor: "rgba(255,255,255,0.9)",
-              border: "1px solid rgba(15, 23, 42, 0.08)",
+              bgcolor: "rgba(255,255,255,0.95)",
+              border: "1px solid",
+              borderColor: "divider",
+              boxShadow: "0 6px 18px rgba(15, 23, 42, 0.05)",
             }}
           >
-            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+            <Typography variant="subtitle2" fontWeight={800}>
               {mobilePages[1]?.label}
             </Typography>
             <Button
               variant="text"
+              size="small"
               onClick={() => {
                 const today = dayjs();
                 setMobileWeekStart(dayjs(weekStartMonday(today)));
-                setMobilePageKind(today.diff(dayjs(weekStartMonday(today)), "day") >= 4 ? "second" : "first");
+                setMobilePageKind(
+                  today.diff(dayjs(weekStartMonday(today)), "day") >= 4 ? "second" : "first"
+                );
               }}
             >
               {t("week.todayButton")}
@@ -467,17 +527,32 @@ export function WeekPage(props: {
             fullWidth
             sx={{
               mb: 1.25,
-              bgcolor: "rgba(255,255,255,0.92)",
+              bgcolor: "rgba(255,255,255,0.95)",
               borderRadius: 3,
-              p: 0.25,
-              boxShadow: "0 8px 24px rgba(15, 23, 42, 0.06)",
+              p: 0.5,
+              boxShadow: "0 6px 18px rgba(15, 23, 42, 0.05)",
+              "& .MuiToggleButton-root": {
+                border: "none !important",
+                borderRadius: "10px !important",
+                "&.Mui-selected": {
+                  background: "linear-gradient(135deg, #4f46e5, #0ea5e9)",
+                  color: "#fff",
+                  "&:hover": {
+                    background: "linear-gradient(135deg, #4338ca, #0284c7)",
+                  },
+                },
+              },
             }}
           >
             <ToggleButton value="dayGrid">{t("week.listView")}</ToggleButton>
             <ToggleButton value="timeGrid">{t("week.timeGridView")}</ToggleButton>
           </ToggleButtonGroup>
 
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5, textAlign: "center", px: 1 }}>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ mb: 1.5, textAlign: "center", px: 1 }}
+          >
             {t("week.mobileCreateHint")}
           </Typography>
 
@@ -530,61 +605,105 @@ export function WeekPage(props: {
                   scrollSnapAlign: "start",
                 }}
               >
-                <Box
+                <Paper
+                  elevation={0}
                   sx={{
                     borderRadius: 3,
-                    bgcolor: "rgba(255,255,255,0.94)",
-                    border: "1px solid rgba(15, 23, 42, 0.08)",
+                    bgcolor: "rgba(255,255,255,0.98)",
+                    border: "1px solid",
+                    borderColor: "divider",
                     boxShadow: "0 12px 28px rgba(15, 23, 42, 0.06)",
                     p: 1,
                   }}
                 >
-                  <Typography variant="subtitle2" sx={{ mb: 1, textAlign: "center", fontWeight: 700 }}>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ mb: 1, textAlign: "center", fontWeight: 800 }}
+                  >
                     {page.label}
                   </Typography>
                   <Box
                     sx={{
                       "& .fc": { fontSize: "0.82rem" },
-                      "& .fc-theme-standard td, & .fc-theme-standard th": { borderColor: "rgba(15, 23, 42, 0.08)" },
-                      "& .fc-scrollgrid": { borderRadius: 2, overflow: "hidden", borderColor: "rgba(15, 23, 42, 0.08)" },
-                      "& .fc-col-header-cell": { bgcolor: "rgba(13, 71, 161, 0.05)" },
+                      "& .fc-theme-standard td, & .fc-theme-standard th": {
+                        borderColor: alpha("#0f172a", 0.08),
+                      },
+                      "& .fc-scrollgrid": {
+                        borderRadius: 2,
+                        overflow: "hidden",
+                        borderColor: alpha("#0f172a", 0.08),
+                      },
+                      "& .fc-col-header-cell": { bgcolor: alpha("#4f46e5", 0.06) },
                       "& .fc-timegrid-slot": { height: "2.6rem" },
+                      "& .fc-event": {
+                        borderRadius: "6px !important",
+                        border: "none !important",
+                      },
                     }}
                   >
                     {renderCalendar(page.start, page.end, page.key)}
                   </Box>
-                </Box>
+                </Paper>
               </Box>
             ))}
           </Box>
         </Box>
       ) : (
-        <Box
+        <Paper
+          elevation={0}
           sx={{
             width: "100%",
             overflowX: "auto",
             borderRadius: 4,
-            bgcolor: "rgba(255,255,255,0.96)",
-            border: "1px solid rgba(15, 23, 42, 0.08)",
+            bgcolor: "rgba(255,255,255,0.98)",
+            border: "1px solid",
+            borderColor: "divider",
             boxShadow: "0 18px 40px rgba(15, 23, 42, 0.08)",
-            p: 1.5,
+            p: 2,
           }}
         >
           <Box
             sx={{
               minWidth: { xs: 560, sm: 700 },
               "& .fc": { fontSize: "0.92rem" },
-              "& .fc-toolbar-title": { fontSize: "1.1rem", fontWeight: 700 },
-              "& .fc-button": { borderRadius: 2, textTransform: "none" },
-              "& .fc-col-header-cell": { bgcolor: "rgba(13, 71, 161, 0.05)" },
-              "& .fc-theme-standard td, & .fc-theme-standard th": { borderColor: "rgba(15, 23, 42, 0.08)" },
-              "& .fc-scrollgrid": { borderRadius: 3, overflow: "hidden", borderColor: "rgba(15, 23, 42, 0.08)" },
+              "& .fc-toolbar-title": { fontSize: "1.15rem", fontWeight: 800 },
+              "& .fc-button": {
+                borderRadius: "10px !important",
+                textTransform: "none",
+                fontWeight: 600,
+                border: "1px solid rgba(15, 23, 42, 0.1) !important",
+                background: "rgba(255,255,255,0.9) !important",
+                color: "#0f172a !important",
+                boxShadow: "none !important",
+              },
+              "& .fc-button-primary.fc-button-active, & .fc-button-primary:not(:disabled):active": {
+                background: "linear-gradient(135deg, #4f46e5, #0ea5e9) !important",
+                color: "#fff !important",
+                border: "none !important",
+              },
+              "& .fc-col-header-cell": { bgcolor: alpha("#4f46e5", 0.06) },
+              "& .fc-theme-standard td, & .fc-theme-standard th": {
+                borderColor: alpha("#0f172a", 0.08),
+              },
+              "& .fc-scrollgrid": {
+                borderRadius: 3,
+                overflow: "hidden",
+                borderColor: alpha("#0f172a", 0.08),
+              },
               "& .fc-timegrid-slot": { height: "3rem" },
+              "& .fc-event": {
+                borderRadius: "8px !important",
+                border: "none !important",
+                boxShadow: "0 4px 10px rgba(15, 23, 42, 0.08)",
+              },
+              "& .fc-today": {
+                background: `${alpha("#4f46e5", 0.04)} !important`,
+              },
             }}
           >
             {renderCalendar()}
           </Box>
-        </Box>
+        </Paper>
       )}
 
       <TaskDialog

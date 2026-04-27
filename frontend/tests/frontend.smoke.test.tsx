@@ -71,7 +71,7 @@ describe("frontend smoke", () => {
   it("renders the today page", () => {
     const tasks: Task[] = [];
     renderWithProviders(<TodayPage tasks={tasks} setTasks={vi.fn()} />);
-    expect(screen.getByText("Add Task")).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: "Add Task" }).length).toBeGreaterThan(0);
   });
 
   it("renders the week page", () => {

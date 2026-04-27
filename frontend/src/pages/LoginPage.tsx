@@ -2,18 +2,22 @@
 // OUTPUT: authentication page for sign-in and sign-up
 // EFFECT: Starts or creates a planner account and stores the resulting authenticated session
 import { useState } from "react";
-import { 
-  Box, 
-  Button, 
-  TextField, 
-  Typography, 
-  Paper, 
+import {
   Alert,
+  Avatar,
+  Box,
+  Button,
+  IconButton,
   InputAdornment,
-  IconButton
+  Paper,
+  Stack,
+  TextField,
+  Typography,
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import LanguageRoundedIcon from "@mui/icons-material/LanguageRounded";
+import TaskAltRoundedIcon from "@mui/icons-material/TaskAltRounded";
 import { useTranslation } from "react-i18next";
 import { setAuth } from "../app/storage";
 
@@ -27,7 +31,10 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
   const [isRegistering, setIsRegistering] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [feedback, setFeedback] = useState<{ severity: "success" | "error"; message: string } | null>(null);
+  const [feedback, setFeedback] = useState<{
+    severity: "success" | "error";
+    message: string;
+  } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const currentLanguage = i18n.resolvedLanguage?.startsWith("zh") ? "zh" : "en";
@@ -93,83 +100,137 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
   };
 
   return (
-    <Box sx={{ display: "flex", justifyContent: "center", mt: 10 }}>
-      <Paper sx={{ p: 4, width: "100%", maxWidth: 400, textAlign: "center" }} elevation={3}>
-        <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 1 }}>
-          <Button variant="text" onClick={handleLanguageToggle} sx={{ minWidth: 52, px: 1 }}>
-            {currentLanguage === "en" ? "中文" : "EN"}
-          </Button>
-        </Box>
-        <Typography variant="h5" gutterBottom>
-          {isRegistering ? t("login.title.register") : t("login.title.login")}
-        </Typography>
+    <Box
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        py: { xs: 4, sm: 8 },
+        px: 2,
+      }}
+    >
+      <Paper
+        elevation={0}
+        sx={{
+          p: { xs: 3, sm: 5 },
+          width: "100%",
+          maxWidth: 440,
+          borderRadius: 5,
+          border: "1px solid",
+          borderColor: "divider",
+          background:
+            "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.92))",
+          backdropFilter: "blur(14px)",
+          boxShadow: "0 30px 60px rgba(15, 23, 42, 0.12)",
+        }}
+      >
+        <Stack spacing={3}>
+          <Stack direction="row" justifyContent="space-between" alignItems="center">
+            <Avatar
+              sx={{
+                width: 48,
+                height: 48,
+                background: "linear-gradient(135deg, #4f46e5, #0ea5e9)",
+                boxShadow: "0 12px 24px rgba(79, 70, 229, 0.3)",
+              }}
+            >
+              <TaskAltRoundedIcon />
+            </Avatar>
+            <Button
+              variant="text"
+              startIcon={<LanguageRoundedIcon />}
+              onClick={handleLanguageToggle}
+              sx={{ color: "text.secondary", borderRadius: 2 }}
+            >
+              {currentLanguage === "en" ? "中文" : "English"}
+            </Button>
+          </Stack>
 
-        {feedback && (
-          <Alert severity={feedback.severity} sx={{ mb: 2 }}>
-            {feedback.message}
-          </Alert>
-        )}
+          <Box>
+            <Typography variant="h4" fontWeight={800} sx={{ mb: 0.5 }}>
+              {isRegistering ? t("login.title.register") : t("login.title.login")}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Weekly To-Do · {t("nav.reminders")} · {t("nav.week")} · {t("nav.month")}
+            </Typography>
+          </Box>
 
-        <form onSubmit={handleSubmit}>
-          <TextField
-            fullWidth
-            label={t("login.fields.username")}
-            variant="outlined"
-            margin="normal"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
-          <TextField
-            fullWidth
-            label={t("login.fields.password")}
-            type={showPassword ? "text" : "password"}
-            variant="outlined"
-            margin="normal"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={() => setShowPassword(!showPassword)}
-                    edge="end"
-                  >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
+          {feedback && (
+            <Alert severity={feedback.severity} sx={{ borderRadius: 2 }}>
+              {feedback.message}
+            </Alert>
+          )}
+
+          <Box component="form" onSubmit={handleSubmit}>
+            <Stack spacing={2}>
+              <TextField
+                fullWidth
+                label={t("login.fields.username")}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+              <TextField
+                fullWidth
+                label={t("login.fields.password")}
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                size="large"
+                sx={{
+                  py: 1.3,
+                  fontSize: "1rem",
+                  background: "linear-gradient(135deg, #4f46e5, #0ea5e9)",
+                  boxShadow: "0 12px 24px rgba(79, 70, 229, 0.3)",
+                  "&:hover": {
+                    background: "linear-gradient(135deg, #4338ca, #0284c7)",
+                    boxShadow: "0 14px 28px rgba(79, 70, 229, 0.36)",
+                  },
+                }}
+                disabled={isLoading}
+              >
+                {isLoading
+                  ? t("login.actions.waiting")
+                  : isRegistering
+                  ? t("login.actions.register")
+                  : t("login.actions.login")}
+              </Button>
+            </Stack>
+          </Box>
+
           <Button
-            type="submit"
             fullWidth
-            variant="contained"
-            color="primary"
-            sx={{ mt: 2, py: 1.5 }}
-            disabled={isLoading}
+            variant="text"
+            onClick={() => {
+              setIsRegistering(!isRegistering);
+              setFeedback(null);
+              setUsername("");
+              setPassword("");
+              setShowPassword(false);
+            }}
+            sx={{ color: "text.secondary" }}
           >
-            {isLoading ? t("login.actions.waiting") : isRegistering ? t("login.actions.register") : t("login.actions.login")}
+            {isRegistering
+              ? t("login.actions.switchToLogin")
+              : t("login.actions.switchToRegister")}
           </Button>
-        </form>
-
-        <Button
-          fullWidth
-          variant="text"
-          sx={{ mt: 2 }}
-          onClick={() => {
-            setIsRegistering(!isRegistering);
-            setFeedback(null);
-            setUsername("");
-            setPassword("");
-            setShowPassword(false);
-          }}
-        >
-          {isRegistering
-            ? t("login.actions.switchToLogin")
-            : t("login.actions.switchToRegister")}
-        </Button>
+        </Stack>
       </Paper>
     </Box>
   );

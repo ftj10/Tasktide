@@ -114,10 +114,10 @@ describe("App behavior", () => {
     renderWithProviders(<App />);
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Add Task" })).toBeInTheDocument();
+      expect(screen.getAllByRole("button", { name: "Add Task" }).length).toBeGreaterThan(0);
     });
 
-    await user.click(screen.getByRole("button", { name: "Add Task" }));
+    await user.click(screen.getAllByRole("button", { name: "Add Task" })[0]);
     await user.type(screen.getByLabelText("Task name"), "Unsaved task");
     await user.click(screen.getByRole("button", { name: "Add" }));
 

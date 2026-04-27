@@ -4,16 +4,20 @@
 import { Link, Route, Routes, useLocation } from "react-router-dom";
 import {
   AppBar,
+  Avatar,
   BottomNavigation,
   BottomNavigationAction,
   Box,
   Button,
   Container,
+  IconButton,
   Paper,
   Stack,
   Toolbar,
+  Tooltip,
   Typography,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import { useEffect, useState, useRef } from "react";
 import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
@@ -22,12 +26,32 @@ import TodayOutlinedIcon from "@mui/icons-material/TodayOutlined";
 import ViewWeekOutlinedIcon from "@mui/icons-material/ViewWeekOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
+import LanguageRoundedIcon from "@mui/icons-material/LanguageRounded";
+import TaskAltRoundedIcon from "@mui/icons-material/TaskAltRounded";
 
 import type { Task, Reminder } from "./types";
-import { createReminder, createTask, deleteReminder, deleteTask, getToken, getUsername, loadReminders, loadTasks, logoutUser, rolloverIfNeeded, updateReminder, updateTask } from "./app/storage";
+import {
+  createReminder,
+  createTask,
+  deleteReminder,
+  deleteTask,
+  getToken,
+  getUsername,
+  loadReminders,
+  loadTasks,
+  logoutUser,
+  rolloverIfNeeded,
+  updateReminder,
+  updateTask,
+} from "./app/storage";
 import { tasksForDate } from "./app/taskLogic";
 import { loadCompletions } from "./app/completions";
-import { hasNotificationFired, pruneStoredNotificationHistory, recordNotificationFired } from "./app/notificationHistory";
+import {
+  hasNotificationFired,
+  pruneStoredNotificationHistory,
+  recordNotificationFired,
+} from "./app/notificationHistory";
 
 import { TodayPage } from "./pages/TodayPage";
 import { WeekPage } from "./pages/WeekPage";
@@ -76,12 +100,12 @@ export default function App() {
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    // INPUT: authenticated user session
-    // OUTPUT: hydrated task and reminder state
-    // EFFECT: Loads planner data from the backend, which owns stale-record cleanup
     async function fetchInitialData() {
       try {
-        const [serverTasks, serverReminders] = await Promise.all([loadTasks(), loadReminders()]);
+        const [serverTasks, serverReminders] = await Promise.all([
+          loadTasks(),
+          loadReminders(),
+        ]);
         const nextTasks = rolloverIfNeeded(serverTasks);
         tasksRef.current = nextTasks;
         remindersRef.current = serverReminders;
@@ -105,20 +129,24 @@ export default function App() {
       const previousTask = prevById.get(task.id);
       return previousTask && JSON.stringify(previousTask) !== JSON.stringify(task);
     });
-    const deletedTaskIds = prevTasks.filter((task) => !nextById.has(task.id)).map((task) => task.id);
+    const deletedTaskIds = prevTasks
+      .filter((task) => !nextById.has(task.id))
+      .map((task) => task.id);
 
-    taskSyncQueue.current = taskSyncQueue.current.then(async () => {
-      await Promise.all([
-        ...createdTasks.map((task) => createTask(task)),
-        ...updatedTasks.map((task) => updateTask(task)),
-        ...deletedTaskIds.map((taskId) => deleteTask(taskId)),
-      ]);
-    }).catch((error) => {
-      console.error(error);
-      void reloadTasksFromServer().catch((reloadError) => {
-        console.error(reloadError);
+    taskSyncQueue.current = taskSyncQueue.current
+      .then(async () => {
+        await Promise.all([
+          ...createdTasks.map((task) => createTask(task)),
+          ...updatedTasks.map((task) => updateTask(task)),
+          ...deletedTaskIds.map((taskId) => deleteTask(taskId)),
+        ]);
+      })
+      .catch((error) => {
+        console.error(error);
+        void reloadTasksFromServer().catch((reloadError) => {
+          console.error(reloadError);
+        });
       });
-    });
   }
 
   function queueReminderSync(prevReminders: Reminder[], nextReminders: Reminder[]) {
@@ -130,20 +158,24 @@ export default function App() {
       const previousReminder = prevById.get(reminder.id);
       return previousReminder && JSON.stringify(previousReminder) !== JSON.stringify(reminder);
     });
-    const deletedReminderIds = prevReminders.filter((reminder) => !nextById.has(reminder.id)).map((reminder) => reminder.id);
+    const deletedReminderIds = prevReminders
+      .filter((reminder) => !nextById.has(reminder.id))
+      .map((reminder) => reminder.id);
 
-    reminderSyncQueue.current = reminderSyncQueue.current.then(async () => {
-      await Promise.all([
-        ...createdReminders.map((reminder) => createReminder(reminder)),
-        ...updatedReminders.map((reminder) => updateReminder(reminder)),
-        ...deletedReminderIds.map((reminderId) => deleteReminder(reminderId)),
-      ]);
-    }).catch((error) => {
-      console.error(error);
-      void reloadRemindersFromServer().catch((reloadError) => {
-        console.error(reloadError);
+    reminderSyncQueue.current = reminderSyncQueue.current
+      .then(async () => {
+        await Promise.all([
+          ...createdReminders.map((reminder) => createReminder(reminder)),
+          ...updatedReminders.map((reminder) => updateReminder(reminder)),
+          ...deletedReminderIds.map((reminderId) => deleteReminder(reminderId)),
+        ]);
+      })
+      .catch((error) => {
+        console.error(error);
+        void reloadRemindersFromServer().catch((reloadError) => {
+          console.error(reloadError);
+        });
       });
-    });
   }
 
   function handleSetTasks(nextTasks: Task[]) {
@@ -182,13 +214,17 @@ export default function App() {
 
   useEffect(() => {
     function maybeShowNotification(title: string, body: string, firedKey: string, now: Date) {
-      if (!("Notification" in window) || Notification.permission !== "granted" || hasNotificationFired(firedKey, now)) {
+      if (
+        !("Notification" in window) ||
+        Notification.permission !== "granted" ||
+        hasNotificationFired(firedKey, now)
+      ) {
         return;
       }
 
       const notification = new Notification(title, {
         body,
-        icon: "/todo.svg"
+        icon: "/todo.svg",
       });
 
       notification.onclick = () => {
@@ -202,7 +238,7 @@ export default function App() {
     function checkNotifications() {
       const now = new Date();
       const nowTime = now.getTime();
-      const previousCheckTime = lastNotificationCheckRef.current ?? (nowTime - 60 * 1000);
+      const previousCheckTime = lastNotificationCheckRef.current ?? nowTime - 60 * 1000;
       const windowStart = Math.min(previousCheckTime, nowTime);
       lastNotificationCheckRef.current = nowTime;
 
@@ -216,7 +252,7 @@ export default function App() {
             t("notifications.dailyReminderTitle"),
             t("notifications.dailyReminderBody"),
             `daily:${dayjs(now).format("YYYY-MM-DD")}:${hour}`,
-            now,
+            now
           );
         }
       });
@@ -246,12 +282,12 @@ export default function App() {
               time: new Intl.DateTimeFormat(currentLanguage, {
                 hour: "numeric",
                 minute: "2-digit",
-              }).format(new Date(`2000-01-01T${task.startTime}`))
+              }).format(new Date(`2000-01-01T${task.startTime}`)),
             }),
             `task:${task.id}:${todayYmd}`,
-            now,
+            now
           );
-          }
+        }
       });
     }
 
@@ -262,9 +298,6 @@ export default function App() {
     return () => clearInterval(intervalId);
   }, [currentLanguage, t]);
 
-  // INPUT: logout button click
-  // OUTPUT: cleared in-memory planner state
-  // EFFECT: Ends the current session and returns the app to the login feature
   const handleLogout = () => {
     logoutUser();
     setIsAuthenticated(false);
@@ -287,8 +320,29 @@ export default function App() {
 
   if (!isLoaded) {
     return (
-      <Box sx={{ p: 4, textAlign: 'center' }}>
-        <Typography variant="h6">{t("app.loading")}</Typography>
+      <Box
+        sx={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column",
+          gap: 2,
+        }}
+      >
+        <Avatar
+          sx={{
+            width: 56,
+            height: 56,
+            background: "linear-gradient(135deg, #4f46e5, #0ea5e9)",
+            boxShadow: "0 10px 30px rgba(79, 70, 229, 0.35)",
+          }}
+        >
+          <TaskAltRoundedIcon />
+        </Avatar>
+        <Typography variant="h6" color="text.secondary">
+          {t("app.loading")}
+        </Typography>
       </Box>
     );
   }
@@ -301,27 +355,56 @@ export default function App() {
     { to: "/help", label: t("nav.help"), icon: <HelpOutlineIcon /> },
   ];
 
-  const activePath = navigationItems.some((item) => item.to === location.pathname) ? location.pathname : "/";
+  const activePath = navigationItems.some((item) => item.to === location.pathname)
+    ? location.pathname
+    : "/";
+
+  const userInitial = (username || "?").trim().charAt(0).toUpperCase();
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "grey.50" }}>
+    <Box sx={{ minHeight: "100vh" }}>
       <AppBar position="sticky" sx={{ display: { xs: "flex", md: "none" } }}>
-        <Toolbar sx={{ minHeight: 64, px: 2, gap: 1.5 }}>
+        <Toolbar sx={{ minHeight: 64, px: 2, gap: 1 }}>
+          <Avatar
+            sx={{
+              width: 36,
+              height: 36,
+              background: "rgba(255,255,255,0.2)",
+              border: "1px solid rgba(255,255,255,0.4)",
+              color: "#fff",
+              fontWeight: 700,
+            }}
+          >
+            {userInitial}
+          </Avatar>
           <Box sx={{ minWidth: 0, flexGrow: 1 }}>
             <Typography variant="h6" sx={{ fontSize: "1rem", fontWeight: 700, lineHeight: 1.2 }}>
               Weekly To-Do
             </Typography>
-            <Typography variant="body2" sx={{ fontSize: "0.75rem", opacity: 0.9, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            <Typography
+              variant="body2"
+              sx={{
+                fontSize: "0.75rem",
+                opacity: 0.9,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
               {t("nav.greeting", { name: username })}
             </Typography>
           </Box>
           {username ? <ReleaseNotesCenter username={username} /> : null}
-          <Button color="inherit" onClick={handleLanguageToggle} sx={{ minWidth: 52, px: 1 }}>
-            {currentLanguage === "en" ? "中文" : "EN"}
-          </Button>
-          <Button color="inherit" onClick={handleLogout} sx={{ minWidth: 0, px: 1 }}>
-            {t("nav.logout")}
-          </Button>
+          <Tooltip title={currentLanguage === "en" ? "中文" : "English"}>
+            <IconButton color="inherit" onClick={handleLanguageToggle} size="small">
+              <LanguageRoundedIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title={t("nav.logout")}>
+            <IconButton color="inherit" onClick={handleLogout} size="small">
+              <LogoutRoundedIcon />
+            </IconButton>
+          </Tooltip>
         </Toolbar>
       </AppBar>
 
@@ -329,10 +412,10 @@ export default function App() {
         <Box
           sx={{
             width: "100%",
-            maxWidth: 1200,
+            maxWidth: 1240,
             mx: "auto",
             display: "grid",
-            gridTemplateColumns: { xs: "1fr", md: "240px minmax(0, 1fr)" },
+            gridTemplateColumns: { xs: "1fr", md: "260px minmax(0, 1fr)" },
             gap: { xs: 0, md: 3 },
             alignItems: "start",
           }}
@@ -343,44 +426,109 @@ export default function App() {
               display: { xs: "none", md: "block" },
               position: "sticky",
               top: 24,
-              borderRadius: 3,
-              p: 2,
+              borderRadius: 4,
+              p: 2.5,
               border: "1px solid",
               borderColor: "divider",
+              background:
+                "linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.75))",
+              backdropFilter: "blur(10px)",
+              boxShadow: "0 12px 40px rgba(15, 23, 42, 0.06)",
             }}
           >
             <Stack spacing={2.5}>
-              <Box>
-                <Typography variant="h5" fontWeight={700}>
-                  Weekly To-Do
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                  {t("nav.greeting", { name: username })}
-                </Typography>
-              </Box>
-
-              <Stack spacing={1}>
-                {navigationItems.map((item) => (
-                  <Button
-                    key={item.to}
-                    component={Link}
-                    to={item.to}
-                    variant={activePath === item.to ? "contained" : "text"}
-                    color={activePath === item.to ? "primary" : "inherit"}
-                    startIcon={item.icon}
-                    sx={{ justifyContent: "flex-start", py: 1.1, borderRadius: 2 }}
+              <Stack direction="row" spacing={1.5} alignItems="center">
+                <Avatar
+                  sx={{
+                    width: 44,
+                    height: 44,
+                    background: "linear-gradient(135deg, #4f46e5, #0ea5e9)",
+                    boxShadow: "0 10px 24px rgba(79, 70, 229, 0.3)",
+                  }}
+                >
+                  <TaskAltRoundedIcon fontSize="small" />
+                </Avatar>
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography variant="h6" fontWeight={800} sx={{ lineHeight: 1.1 }}>
+                    Weekly To-Do
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{
+                      display: "block",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
                   >
-                    {item.label}
-                  </Button>
-                ))}
+                    {t("nav.greeting", { name: username })}
+                  </Typography>
+                </Box>
               </Stack>
+
+              <Stack spacing={0.5}>
+                {navigationItems.map((item) => {
+                  const isActive = activePath === item.to;
+                  return (
+                    <Button
+                      key={item.to}
+                      component={Link}
+                      to={item.to}
+                      startIcon={item.icon}
+                      disableElevation
+                      sx={{
+                        justifyContent: "flex-start",
+                        py: 1.15,
+                        px: 1.5,
+                        borderRadius: 2.5,
+                        fontWeight: 600,
+                        color: isActive ? "primary.main" : "text.primary",
+                        background: isActive
+                          ? (theme) =>
+                              `linear-gradient(135deg, ${alpha(
+                                theme.palette.primary.main,
+                                0.12
+                              )}, ${alpha(theme.palette.secondary.main, 0.1)})`
+                          : "transparent",
+                        border: "1px solid",
+                        borderColor: isActive ? alpha("#4f46e5", 0.25) : "transparent",
+                        "&:hover": {
+                          background: isActive
+                            ? (theme) =>
+                                `linear-gradient(135deg, ${alpha(
+                                  theme.palette.primary.main,
+                                  0.18
+                                )}, ${alpha(theme.palette.secondary.main, 0.14)})`
+                            : "rgba(15, 23, 42, 0.04)",
+                        },
+                      }}
+                    >
+                      {item.label}
+                    </Button>
+                  );
+                })}
+              </Stack>
+
+              <Box sx={{ height: 1, bgcolor: "divider" }} />
 
               <Stack spacing={1}>
                 {username ? <ReleaseNotesCenter username={username} /> : null}
-                <Button variant="outlined" onClick={handleLanguageToggle}>
-                  {currentLanguage === "en" ? "中文" : "EN"}
+                <Button
+                  variant="outlined"
+                  startIcon={<LanguageRoundedIcon />}
+                  onClick={handleLanguageToggle}
+                  sx={{ borderRadius: 2.5 }}
+                >
+                  {currentLanguage === "en" ? "中文" : "English"}
                 </Button>
-                <Button variant="outlined" color="inherit" onClick={handleLogout}>
+                <Button
+                  variant="text"
+                  color="inherit"
+                  startIcon={<LogoutRoundedIcon />}
+                  onClick={handleLogout}
+                  sx={{ borderRadius: 2.5, color: "text.secondary" }}
+                >
                   {t("nav.logout")}
                 </Button>
               </Stack>
@@ -391,10 +539,26 @@ export default function App() {
             <Container maxWidth={false} disableGutters>
               <Box sx={{ py: { xs: 2, md: 0 } }}>
                 <Routes>
-                  <Route path="/reminders" element={<ReminderPage reminders={reminders} setReminders={handleSetReminders} />} />
-                  <Route path="/" element={<TodayPage tasks={tasks} setTasks={handleSetTasks} />} />
-                  <Route path="/week" element={<WeekPage tasks={tasks} setTasks={handleSetTasks} completionsRev={0} />} />
-                  <Route path="/month" element={<MonthPage tasks={tasks} setTasks={handleSetTasks} />} />
+                  <Route
+                    path="/reminders"
+                    element={
+                      <ReminderPage reminders={reminders} setReminders={handleSetReminders} />
+                    }
+                  />
+                  <Route
+                    path="/"
+                    element={<TodayPage tasks={tasks} setTasks={handleSetTasks} />}
+                  />
+                  <Route
+                    path="/week"
+                    element={
+                      <WeekPage tasks={tasks} setTasks={handleSetTasks} completionsRev={0} />
+                    }
+                  />
+                  <Route
+                    path="/month"
+                    element={<MonthPage tasks={tasks} setTasks={handleSetTasks} />}
+                  />
                   <Route path="/help" element={<HelpPage />} />
                 </Routes>
               </Box>
@@ -412,10 +576,11 @@ export default function App() {
           left: 0,
           right: 0,
           zIndex: mobileNavZIndex,
-          borderTopLeftRadius: 16,
-          borderTopRightRadius: 16,
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
           overflow: "hidden",
           pointerEvents: "auto",
+          boxShadow: "0 -10px 30px rgba(15, 23, 42, 0.12)",
         }}
       >
         <BottomNavigation
@@ -426,6 +591,7 @@ export default function App() {
             position: "relative",
             zIndex: mobileNavZIndex,
             pointerEvents: "auto",
+            height: 68,
           }}
         >
           {navigationItems.map((item) => (
@@ -436,6 +602,11 @@ export default function App() {
               value={item.to}
               label={item.label}
               icon={item.icon}
+              sx={{
+                "&.Mui-selected": {
+                  "& .MuiBottomNavigationAction-label": { fontWeight: 700 },
+                },
+              }}
             />
           ))}
         </BottomNavigation>
