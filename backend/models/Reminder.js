@@ -6,13 +6,13 @@ const mongoose = require('mongoose');
 const reminderSchema = new mongoose.Schema({
   id: { type: String, required: true },
   title: { type: String, required: true },
-  content: { type: String },
+  content: { type: String, default: "" },
   emergency: { type: Number, default: 5 },
   done: { type: Boolean, default: false },
-  userId: { type: String, required: true },
-  createdAt: { type: String },
-  updatedAt: { type: String }
-}, { strict: false });
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  createdAt: { type: String, default: () => new Date().toISOString() },
+  updatedAt: { type: String, default: () => new Date().toISOString() }
+});
 
 reminderSchema.index({ userId: 1, id: 1 }, { unique: true });
 

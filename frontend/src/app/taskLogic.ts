@@ -3,28 +3,32 @@
 // EFFECT: Converts raw planner data into the day and week views used across the scheduling features
 import dayjs from "dayjs";
 import type { Task } from "../types";
-import { ymd } from "./date";
 import type { CompletionMap } from "./completions";
 import { isDoneForDate } from "./completions";
-import { getTaskOccurrence, isRecurringTask } from "./tasks";
+import {
+  getTaskOccurrenceFromNormalizedTask,
+  listRecurringOccurrenceDatesForNormalizedTask,
+  normalizeTask,
+} from "./tasks";
 
 // INPUT: all tasks, selected date, and recurring-task completions
 // OUTPUT: tasks visible on the selected day
 // EFFECT: Resolves which temporary and permanent tasks belong in the Today and Month views
 export function tasksForDate(all: Task[], dateYmd: string, completions: CompletionMap): Task[] {
   return all
+    .map(normalizeTask)
     .flatMap((task) => {
-      const occurrence = getTaskOccurrence(task, dateYmd);
+      const occurrence = getTaskOccurrenceFromNormalizedTask(task, dateYmd);
       if (!occurrence) return [];
-      if (isRecurringTask(task) && isDoneForDate(completions, task.id, dateYmd)) return [];
+      if (task.recurrence?.frequency !== "NONE" && isDoneForDate(completions, task.id, dateYmd)) return [];
       return [occurrence];
     })
     .sort((a, b) => {
-    const ea = a.emergency ?? 5;
-    const eb = b.emergency ?? 5;
-    if (ea !== eb) return ea - eb;
-    return a.title.localeCompare(b.title);
-  });
+      const ea = a.emergency ?? 5;
+      const eb = b.emergency ?? 5;
+      if (ea !== eb) return ea - eb;
+      return a.title.localeCompare(b.title);
+    });
 }
 
 // INPUT: all tasks, recurring-task completions, and visible calendar range
@@ -37,6 +41,7 @@ export function toCalendarEventsForRange(
   rangeEnd: dayjs.Dayjs
 ) {
   const events: any[] = [];
+  const normalizedTasks = all.map(normalizeTask);
 
   const permanentColorMap: { [level: number]: { bg: string; border: string; text: string } } = {
     1: { bg: "#0D47A1", border: "#08306B", text: "#FFFFFF" },
@@ -54,10 +59,10 @@ export function toCalendarEventsForRange(
     5: { bg: "#FFFDE7", border: "#FFF9C4", text: "#000000" },
   };
 
-  for (const t of all) {
-    if (isRecurringTask(t)) continue;
+  for (const task of normalizedTasks) {
+    if (task.recurrence?.frequency !== "NONE") continue;
 
-    const occurrence = getTaskOccurrence(t, t.beginDate ?? t.date ?? "");
+    const occurrence = getTaskOccurrenceFromNormalizedTask(task, task.beginDate ?? "");
     if (!occurrence?.beginDate) continue;
 
     const d = dayjs(occurrence.beginDate);
@@ -68,36 +73,34 @@ export function toCalendarEventsForRange(
     const col = temporaryColorMap[level] ?? temporaryColorMap[5];
 
     events.push({
-      id: t.id,
+      id: task.id,
       title: occurrence.title,
       start: occurrence.beginDate,
       allDay: true,
-      extendedProps: { taskId: t.id },
+      extendedProps: { taskId: task.id },
       backgroundColor: col.bg,
       borderColor: col.border,
       textColor: col.text,
     });
   }
 
-  const recurringTasks = all.filter((task) => isRecurringTask(task));
+  for (const task of normalizedTasks) {
+    if (task.recurrence?.frequency === "NONE") continue;
 
-  for (let cur = rangeStart.startOf("day"); cur.isBefore(rangeEnd, "day"); cur = cur.add(1, "day")) {
-    const dateStr = ymd(cur);
-
-    for (const t of recurringTasks) {
-      const occurrence = getTaskOccurrence(t, dateStr);
+    for (const dateStr of listRecurringOccurrenceDatesForNormalizedTask(task, rangeStart, rangeEnd)) {
+      const occurrence = getTaskOccurrenceFromNormalizedTask(task, dateStr);
       if (!occurrence) continue;
-      if (isDoneForDate(completions, t.id, dateStr)) continue;
+      if (isDoneForDate(completions, task.id, dateStr)) continue;
 
       const level = occurrence.emergency ?? 5;
       const col = permanentColorMap[level] ?? permanentColorMap[5];
 
       events.push({
-        id: `${t.id}::${dateStr}`,
+        id: `${task.id}::${dateStr}`,
         title: occurrence.title,
         start: dateStr,
         allDay: true,
-        extendedProps: { taskId: t.id, occurrenceDate: dateStr, task: occurrence },
+        extendedProps: { taskId: task.id, occurrenceDate: dateStr, task: occurrence },
         backgroundColor: col.bg,
         borderColor: col.border,
         textColor: col.text,

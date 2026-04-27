@@ -21,6 +21,7 @@ import { useTranslation } from "react-i18next";
 
 import type { Reminder } from "../types";
 import { ReminderDialog } from "../components/ReminderDialog";
+import { getPriorityAccent } from "../app/priorities";
 
 export function ReminderPage(props: {
   reminders: Reminder[];
@@ -41,22 +42,6 @@ export function ReminderPage(props: {
 
   function doMarkDone(reminder: Reminder) {
     upsert({ ...reminder, done: true, updatedAt: new Date().toISOString() });
-  }
-
-  function getColor(emergency: number) {
-    switch (emergency) {
-      case 1:
-        return "#ef4444";
-      case 2:
-        return "#f97316";
-      case 3:
-        return "#f59e0b";
-      case 4:
-        return "#10b981";
-      case 5:
-      default:
-        return "#0ea5e9";
-    }
   }
 
   return (
@@ -151,7 +136,7 @@ export function ReminderPage(props: {
       ) : (
         <Box>
           {sortedReminders.map((reminder) => {
-            const color = getColor(reminder.emergency);
+            const color = getPriorityAccent(reminder.emergency);
             return (
               <Card
                 key={reminder.id}

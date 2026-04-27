@@ -45,15 +45,15 @@ import {
   type CompletionMap,
 } from "../app/completions";
 import {
-  applySeriesEdit,
-  applySingleOccurrenceEdit,
   getRepeatFrequency,
   getTaskOccurrence,
   isOneTimeTask,
   isRecurringTask,
-  normalizeTask,
+  removeTaskFromCollection,
+  saveTaskCollection,
   type TaskSaveScope,
 } from "../app/tasks";
+import { getPriorityAccent } from "../app/priorities";
 
 export function TodayPage(props: {
   tasks: Task[];
@@ -114,8 +114,6 @@ export function TodayPage(props: {
   }, [props.tasks, selectedDay, completions]);
 
   const totalTasks = allDayTasks.length + timedTasks.length;
-  const completedTasks = [...allDayTasks, ...timedTasks].filter((task) => task.done).length;
-
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Task | undefined>();
   const [editingSourceTask, setEditingSourceTask] = useState<Task | undefined>();
@@ -130,35 +128,27 @@ export function TodayPage(props: {
     };
   }, [dialogOpen, props.onTaskDialogVisibilityChange]);
 
-  function upsert(task: Task, scope: TaskSaveScope = "series") {
-    if (editingSourceTask && scope === "single" && isRecurringTask(editingSourceTask)) {
-      props.setTasks(
-        props.tasks.map((item) =>
-          item.id === editingSourceTask.id
-            ? applySingleOccurrenceEdit(item, selectedDay, task)
-            : item
-        )
-      );
-      setDialogOpen(false);
-      setEditing(undefined);
-      setEditingSourceTask(undefined);
-      return;
-    }
-
-    const sourceId = editingSourceTask?.id ?? task.id;
-    const nextTask = editingSourceTask ? applySeriesEdit(editingSourceTask, task) : normalizeTask(task);
-    props.setTasks([...props.tasks.filter((item) => item.id !== sourceId), nextTask]);
+  function closeTaskEditor() {
     setDialogOpen(false);
     setEditing(undefined);
     setEditingSourceTask(undefined);
   }
 
+  function upsert(task: Task, scope: TaskSaveScope = "series") {
+    props.setTasks(
+      saveTaskCollection(props.tasks, task, {
+        editingSourceTask,
+        scope: editingSourceTask && isRecurringTask(editingSourceTask) ? scope : "series",
+        occurrenceDateYmd: selectedDay,
+      })
+    );
+    closeTaskEditor();
+  }
+
   function remove(id: string) {
-    props.setTasks(props.tasks.filter((t) => t.id !== id));
+    props.setTasks(removeTaskFromCollection(props.tasks, id));
     setDeleteTask(undefined);
-    setDialogOpen(false);
-    setEditing(undefined);
-    setEditingSourceTask(undefined);
+    closeTaskEditor();
   }
 
   function doMarkDone(task: Task) {
@@ -223,22 +213,6 @@ export function TodayPage(props: {
     });
   }
 
-  function getColor(t: Task) {
-    switch (t.emergency) {
-      case 1:
-        return "#ef4444";
-      case 2:
-        return "#f97316";
-      case 3:
-        return "#f59e0b";
-      case 4:
-        return "#10b981";
-      case 5:
-      default:
-        return "#0ea5e9";
-    }
-  }
-
   function getTaskTypeLabel(task: Task) {
     const frequency = getRepeatFrequency(task);
     if (frequency === "DAILY") return t("today.taskTypes.daily");
@@ -280,7 +254,7 @@ export function TodayPage(props: {
   }
 
   const renderTaskCard = (task: Task) => {
-    const color = getColor(task);
+    const color = getPriorityAccent(task.emergency ?? 5);
     const isToday = selectedDay === ymd(dayjs());
     const isTomorrow = selectedDay === ymd(dayjs().add(1, "day"));
 
@@ -526,11 +500,6 @@ export function TodayPage(props: {
               >
                 {title}
               </Typography>
-              {totalTasks > 0 && (
-                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
-                  {completedTasks} / {totalTasks} · {t("common.done")}
-                </Typography>
-              )}
             </Box>
             <IconButton
               aria-label={t("today.nextDay")}
@@ -660,9 +629,7 @@ export function TodayPage(props: {
         occurrenceDateYmd={editing ? selectedDay : undefined}
         defaultDateYmd={selectedDay}
         onClose={() => {
-          setDialogOpen(false);
-          setEditing(undefined);
-          setEditingSourceTask(undefined);
+          closeTaskEditor();
         }}
         onSave={upsert}
         onDelete={(id) => {

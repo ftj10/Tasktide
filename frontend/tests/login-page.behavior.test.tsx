@@ -1,7 +1,7 @@
 // INPUT: login page UI with i18n state
 // OUTPUT: behavior coverage for pre-login localization
 // EFFECT: Verifies users can switch the authentication screen between English and Chinese before signing in
-import { screen } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -9,8 +9,22 @@ import i18n from "../src/i18n";
 import { LoginPage } from "../src/pages/LoginPage";
 import { renderWithProviders } from "./test-utils";
 
+const storageMocks = vi.hoisted(() => ({
+  setAuth: vi.fn(),
+}));
+
+vi.mock("../src/app/storage", async () => {
+  const actual = await vi.importActual<typeof import("../src/app/storage")>("../src/app/storage");
+  return {
+    ...actual,
+    setAuth: storageMocks.setAuth,
+  };
+});
+
 describe("LoginPage behavior", () => {
   beforeEach(async () => {
+    storageMocks.setAuth.mockReset();
+    vi.unstubAllGlobals();
     await i18n.changeLanguage("en");
   });
 
@@ -41,5 +55,27 @@ describe("LoginPage behavior", () => {
     expect(screen.getByRole("heading", { name: "创建账号" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "注册" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "已有账号？去登录" })).toBeInTheDocument();
+  });
+
+  it("stores the returned role when login succeeds", async () => {
+    const user = userEvent.setup();
+    const onLoginSuccess = vi.fn();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ token: "signed-token", username: "tom", role: "ADMIN" }),
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    renderWithProviders(<LoginPage onLoginSuccess={onLoginSuccess} />);
+
+    await user.type(screen.getByLabelText(/Username/i), "tom");
+    await user.type(screen.getByLabelText(/Password/i), "secret");
+    await user.click(screen.getByRole("button", { name: "Login" }));
+
+    await waitFor(() => {
+      expect(storageMocks.setAuth).toHaveBeenCalledWith("signed-token", "tom", "ADMIN");
+      expect(onLoginSuccess).toHaveBeenCalledTimes(1);
+    });
   });
 });

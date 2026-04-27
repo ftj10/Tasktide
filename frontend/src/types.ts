@@ -3,6 +3,7 @@
 // EFFECT: Defines the data contracts exchanged across pages, dialogs, storage helpers, and tests
 export type TaskType = "PERMANENT" | "TEMPORARY" | "ONCE" | "RECURRING";
 export type RepeatFrequency = "NONE" | "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
+export type AuthRole = "USER" | "ADMIN";
 
 export type TaskRecurrence = {
   frequency: RepeatFrequency;

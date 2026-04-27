@@ -47,6 +47,8 @@ vi.mock("../src/app/storage", async () => {
       } satisfies HelpQuestion,
     ]),
     createHelpQuestion: vi.fn().mockResolvedValue(undefined),
+    deleteHelpQuestion: vi.fn().mockResolvedValue(undefined),
+    isAdminUser: () => false,
     logoutUser: vi.fn(),
     rolloverIfNeeded: (tasks: unknown) => tasks,
   };
@@ -75,12 +77,12 @@ describe("frontend smoke", () => {
   });
 
   it("renders the week page", () => {
-    renderWithProviders(<WeekPage tasks={[]} setTasks={vi.fn()} completionsRev={0} />);
+    renderWithProviders(<WeekPage tasks={[]} setTasks={vi.fn()} />);
     expect(screen.getByText("calendar")).toBeInTheDocument();
   });
 
   it("renders the month page", () => {
-    renderWithProviders(<MonthPage tasks={[]} setTasks={vi.fn()} />);
+    renderWithProviders(<MonthPage tasks={[]} />);
     expect(screen.getByText("Sun")).toBeInTheDocument();
   });
 

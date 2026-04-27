@@ -1,11 +1,16 @@
 // INPUT: recurrence-aware task fixtures and selected planner dates
 // OUTPUT: behavior coverage for repeat expansion, legacy-task compatibility, and occurrence overrides
 // EFFECT: Verifies the planner keeps rendering old datasets while supporting new repeat options and single-day edits
+import dayjs from "dayjs";
 import { describe, expect, it } from "vitest";
 
 import type { Task } from "../src/types";
 import { tasksForDate } from "../src/app/taskLogic";
-import { applySingleOccurrenceEdit, normalizeTask } from "../src/app/tasks";
+import {
+  applySingleOccurrenceEdit,
+  listRecurringOccurrenceDatesForNormalizedTask,
+  normalizeTask,
+} from "../src/app/tasks";
 
 describe("task logic behavior", () => {
   it("renders a legacy weekly task on its stored weekday", () => {
@@ -98,5 +103,30 @@ describe("task logic behavior", () => {
 
     expect(tasksForDate([updatedSeries], "2026-04-22", {})[0].title).toBe("Only this Wednesday");
     expect(tasksForDate([updatedSeries], "2026-04-29", {})[0].title).toBe("Series title");
+  });
+
+  it("lists recurring weekly occurrences only inside the requested visible range", () => {
+    const recurringTask = normalizeTask({
+      id: "weekly-range",
+      title: "Weekly range task",
+      type: "RECURRING",
+      beginDate: "2026-04-22",
+      createdAt: "2026-04-22T00:00:00.000Z",
+      updatedAt: "2026-04-22T00:00:00.000Z",
+      recurrence: {
+        frequency: "WEEKLY",
+        interval: 1,
+        weekdays: [1, 3, 5],
+        until: null,
+      },
+    });
+
+    const visibleDates = listRecurringOccurrenceDatesForNormalizedTask(
+      recurringTask,
+      dayjs("2026-04-24"),
+      dayjs("2026-05-01")
+    );
+
+    expect(visibleDates).toEqual(["2026-04-24", "2026-04-27", "2026-04-29"]);
   });
 });

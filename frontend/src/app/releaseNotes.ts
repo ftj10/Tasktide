@@ -14,6 +14,70 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-04-27-admin-help-access-and-windowed-week-events",
+    version: "v1.10.0",
+    releasedAt: "2026-04-27",
+    title: {
+      en: "Admin help controls and windowed Week events",
+      zh: "管理员帮助控制与按窗口生成的 Week 事件"
+    },
+    summary: {
+      en: "Accounts now carry USER or ADMIN roles, Help questions stay owner-only for non-admin users while admins can review and delete them, and Week only expands recurring events for the visible range while caching repeated occurrence windows.",
+      zh: "账号现在会携带 USER 或 ADMIN 角色，帮助问题会对普通用户保持仅限本人查看，而管理员可以审核和删除问题，Week 也只会为可见范围展开重复事件，并缓存重复使用的发生日期窗口。"
+    },
+    changes: {
+      en: [
+        "Added persistent USER and ADMIN roles to accounts and included the session role in login responses.",
+        "Scoped help-question reads so standard users only see their own submissions while admins can review every question, including legacy rows that only have username ownership.",
+        "Added optional ADMIN_USERNAMES bootstrap config for admin privileges.",
+        "Added admin-only help-question deletion from the Help Center and backend API.",
+        "Backfilled missing user role fields on successful login so older accounts are written back to the dataset.",
+        "Updated the Help Center copy to describe the admin review flow, role-specific question lists, and the fact that My Questions is the standard non-admin view.",
+        "Reworked Week recurring event expansion so it only generates occurrences for the visible range and reuses cached occurrence windows.",
+        "Added backend and frontend regression coverage for admin-scoped help access, owner-only help reads, admin deletion, role-aware login persistence, and visible-range recurring occurrence generation."
+      ],
+      zh: [
+        "为账号新增持久化的 USER 与 ADMIN 角色，并在登录响应中返回当前会话角色。",
+        "将帮助问题读取改为按权限范围展示，普通用户只能看到自己的提交，管理员可以查看全部问题，同时兼容只保留了用户名归属的旧数据。",
+        "新增可选的 ADMIN_USERNAMES 配置，用于初始化管理员权限。",
+        "新增帮助中心和后端接口中的管理员专用帮助问题删除功能。",
+        "在成功登录时回填缺失的用户角色字段，让旧账号也会把角色写回数据集。",
+        "更新帮助中心文案，说明管理员审核流程、按角色区分的问题列表，以及“我的问题”是普通用户视图这一点。",
+        "重构 Week 的重复事件展开逻辑，只为当前可见范围生成发生项，并复用缓存的日期窗口。",
+        "新增管理员帮助访问、仅限本人帮助读取、管理员删除、登录角色持久化以及可见范围重复发生项生成的前后端回归测试。"
+      ]
+    }
+  },
+  {
+    id: "2026-04-27-help-post-safety-and-week-override-timing",
+    version: "v1.9.2",
+    releasedAt: "2026-04-27",
+    title: {
+      en: "Safer help posts and accurate recurring event timing",
+      zh: "更安全的帮助提问与准确的重复事件时间"
+    },
+    summary: {
+      en: "Shared help questions now save as new server-owned posts, failed submissions keep the draft, and Week respects one-day recurring-task time overrides when placing calendar events.",
+      zh: "共享帮助问题现在会保存为新的服务器端帖子，发布失败时会保留草稿，同时 Week 在放置日历事件时也会正确使用重复任务单次覆盖后的时间。"
+    },
+    changes: {
+      en: [
+        "Changed shared help-question posting to create new server-owned posts instead of overwriting older questions through public ids.",
+        "Kept the help-question draft visible and showed an error message when question posting fails.",
+        "Fixed Week calendar events so single-occurrence recurring-task overrides now use the correct title and time slot.",
+        "Replaced JSON-stringify task and reminder sync comparisons with explicit field comparisons and removed the shell-level task-dialog DOM observer.",
+        "Tightened reminder and help-question schema fields and added backend reminder CRUD coverage plus frontend regression coverage for help-question failures and recurring-event override timing."
+      ],
+      zh: [
+        "将共享帮助问题的发布改为创建新的服务器端帖子，不再通过公开 id 覆盖旧问题。",
+        "在帮助问题发布失败时保留草稿，并显示明确的错误提示。",
+        "修复 Week 日历事件，让重复任务的单次覆盖现在会使用正确的标题与时间段。",
+        "用显式字段比较替换任务和提醒同步时的 JSON-stringify 比较，并移除了应用外壳中用于任务弹窗的 DOM 观察器。",
+        "收紧提醒与帮助问题的数据模型字段，并新增提醒 CRUD 的后端覆盖，以及帮助问题失败流程与重复事件覆盖时间的前端回归测试。"
+      ]
+    }
+  },
+  {
     id: "2026-04-27-task-dialog-mobile-nav-visibility",
     version: "v1.9.1",
     releasedAt: "2026-04-27",

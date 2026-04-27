@@ -84,7 +84,7 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
         setUsername("");
         setPassword("");
       } else {
-        setAuth(data.token, data.username);
+        setAuth(data.token, data.username, data.role);
         onLoginSuccess();
       }
     } catch (err: unknown) {

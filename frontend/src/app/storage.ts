@@ -1,7 +1,7 @@
 // INPUT: localStorage credentials and frontend payloads
 // OUTPUT: auth helpers plus backend persistence functions for tasks, reminders, and help questions
 // EFFECT: Connects browser state to the authenticated planner API and keeps week rollover metadata current
-import type { HelpQuestion, Reminder, Task } from "../types";
+import type { AuthRole, HelpQuestion, Reminder, Task } from "../types";
 import dayjs from "dayjs";
 import { weekStartMonday } from "./date";
 import { normalizeTasks } from "./tasks";
@@ -9,6 +9,7 @@ import { normalizeTasks } from "./tasks";
 const WEEK_KEY = "weekly_todo_lastWeekStart_v1";
 const TOKEN_KEY = "todo_jwt_token";
 const USERNAME_KEY = "todo_username";
+const ROLE_KEY = "todo_user_role";
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:2676';
 
@@ -33,6 +34,32 @@ async function authorizedRequest(path: string, options: RequestInit = {}): Promi
   return response;
 }
 
+async function readErrorMessage(response: Response, fallbackMessage: string) {
+  try {
+    const payload = await response.clone().json();
+    if (payload && typeof payload.error === "string" && payload.error.trim()) {
+      return payload.error;
+    }
+  } catch {
+    return fallbackMessage;
+  }
+
+  return fallbackMessage;
+}
+
+async function requestJson<T>(path: string, options: RequestInit = {}, fallbackMessage = "Network response was not ok") {
+  const response = await authorizedRequest(path, options);
+  if (!response) throw new Error("Authorized request unavailable");
+  if (!response.ok) throw new Error(await readErrorMessage(response, fallbackMessage));
+  return response.json() as Promise<T>;
+}
+
+async function requestOk(path: string, options: RequestInit = {}, fallbackMessage = "Network response was not ok") {
+  const response = await authorizedRequest(path, options);
+  if (!response) throw new Error("Authorized request unavailable");
+  if (!response.ok) throw new Error(await readErrorMessage(response, fallbackMessage));
+}
+
 // INPUT: none
 // OUTPUT: saved JWT token
 // EFFECT: Supplies the auth feature with the current session token
@@ -43,12 +70,25 @@ export function getToken() { return localStorage.getItem(TOKEN_KEY); }
 // EFFECT: Supplies the shell and release-notes features with the signed-in display name
 export function getUsername() { return localStorage.getItem(USERNAME_KEY); }
 
+// INPUT: none
+// OUTPUT: saved session role
+// EFFECT: Supplies role-aware frontend features with the signed-in privilege level
+export function getUserRole(): AuthRole {
+  return localStorage.getItem(ROLE_KEY) === "ADMIN" ? "ADMIN" : "USER";
+}
+
+// INPUT: none
+// OUTPUT: admin privilege flag
+// EFFECT: Lets frontend features switch between owner-only and admin-wide help views
+export function isAdminUser() { return getUserRole() === "ADMIN"; }
+
 // INPUT: backend login response fields
 // OUTPUT: persisted auth keys
 // EFFECT: Starts a signed-in browser session for the planner features
-export function setAuth(token: string, username: string) {
+export function setAuth(token: string, username: string, role: AuthRole = "USER") {
   localStorage.setItem(TOKEN_KEY, token);
   localStorage.setItem(USERNAME_KEY, username);
+  localStorage.setItem(ROLE_KEY, role);
 }
 
 // INPUT: none
@@ -57,6 +97,7 @@ export function setAuth(token: string, username: string) {
 export function logoutUser() {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USERNAME_KEY);
+  localStorage.removeItem(ROLE_KEY);
 }
 
 // INPUT: none
@@ -64,10 +105,7 @@ export function logoutUser() {
 // EFFECT: Hydrates the signed-in planner with the user's saved tasks
 export async function loadTasks(): Promise<Task[]> {
   try {
-    const response = await authorizedRequest('/tasks');
-    if (!response) throw new Error("Authorized request unavailable");
-    if (!response.ok) throw new Error("Network response was not ok");
-    return normalizeTasks(await response.json());
+    return normalizeTasks(await requestJson<Task[]>('/tasks'));
   } catch (error) {
     console.error("Failed to load from server", error);
     throw error;
@@ -79,15 +117,13 @@ export async function loadTasks(): Promise<Task[]> {
 // EFFECT: Creates a task via the task CRUD API
 export async function createTask(task: Task): Promise<void> {
   try {
-    const response = await authorizedRequest('/tasks', {
+    await requestOk('/tasks', {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(task),
     });
-    if (!response) throw new Error("Authorized request unavailable");
-    if (!response.ok) throw new Error("Network response was not ok");
   } catch (error) {
     console.error("Failed to create task", error);
     throw error;
@@ -99,15 +135,13 @@ export async function createTask(task: Task): Promise<void> {
 // EFFECT: Updates a task via the task CRUD API
 export async function updateTask(task: Task): Promise<void> {
   try {
-    const response = await authorizedRequest(`/tasks/${task.id}`, {
+    await requestOk(`/tasks/${task.id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(task),
     });
-    if (!response) throw new Error("Authorized request unavailable");
-    if (!response.ok) throw new Error("Network response was not ok");
   } catch (error) {
     console.error("Failed to update task", error);
     throw error;
@@ -119,11 +153,9 @@ export async function updateTask(task: Task): Promise<void> {
 // EFFECT: Deletes a task via the task CRUD API
 export async function deleteTask(taskId: string): Promise<void> {
   try {
-    const response = await authorizedRequest(`/tasks/${taskId}`, {
+    await requestOk(`/tasks/${taskId}`, {
       method: 'DELETE',
     });
-    if (!response) throw new Error("Authorized request unavailable");
-    if (!response.ok) throw new Error("Network response was not ok");
   } catch (error) {
     console.error("Failed to delete task", error);
     throw error;
@@ -135,10 +167,7 @@ export async function deleteTask(taskId: string): Promise<void> {
 // EFFECT: Hydrates the reminder feature for the signed-in user
 export async function loadReminders(): Promise<Reminder[]> {
   try {
-    const response = await authorizedRequest('/reminders');
-    if (!response) throw new Error("Authorized request unavailable");
-    if (!response.ok) throw new Error("Network response was not ok");
-    return await response.json();
+    return await requestJson<Reminder[]>('/reminders');
   } catch (error) {
     console.error("Failed to load reminders", error);
     throw error;
@@ -150,15 +179,13 @@ export async function loadReminders(): Promise<Reminder[]> {
 // EFFECT: Creates a reminder via the reminder CRUD API
 export async function createReminder(reminder: Reminder): Promise<void> {
   try {
-    const response = await authorizedRequest('/reminders', {
+    await requestOk('/reminders', {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(reminder),
     });
-    if (!response) throw new Error("Authorized request unavailable");
-    if (!response.ok) throw new Error("Network response was not ok");
   } catch (error) {
     console.error("Failed to create reminder", error);
     throw error;
@@ -170,15 +197,13 @@ export async function createReminder(reminder: Reminder): Promise<void> {
 // EFFECT: Updates a reminder via the reminder CRUD API
 export async function updateReminder(reminder: Reminder): Promise<void> {
   try {
-    const response = await authorizedRequest(`/reminders/${reminder.id}`, {
+    await requestOk(`/reminders/${reminder.id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(reminder),
     });
-    if (!response) throw new Error("Authorized request unavailable");
-    if (!response.ok) throw new Error("Network response was not ok");
   } catch (error) {
     console.error("Failed to update reminder", error);
     throw error;
@@ -190,11 +215,9 @@ export async function updateReminder(reminder: Reminder): Promise<void> {
 // EFFECT: Deletes a reminder via the reminder CRUD API
 export async function deleteReminder(reminderId: string): Promise<void> {
   try {
-    const response = await authorizedRequest(`/reminders/${reminderId}`, {
+    await requestOk(`/reminders/${reminderId}`, {
       method: 'DELETE',
     });
-    if (!response) throw new Error("Authorized request unavailable");
-    if (!response.ok) throw new Error("Network response was not ok");
   } catch (error) {
     console.error("Failed to delete reminder", error);
     throw error;
@@ -202,14 +225,11 @@ export async function deleteReminder(reminderId: string): Promise<void> {
 }
 
 // INPUT: none
-// OUTPUT: shared help-question list
-// EFFECT: Loads the public help board visible to authenticated users
+// OUTPUT: role-scoped help-question list
+// EFFECT: Loads either the signed-in user's questions or the admin review board
 export async function loadHelpQuestions(): Promise<HelpQuestion[]> {
   try {
-    const response = await authorizedRequest('/help-questions');
-    if (!response) return [];
-    if (!response.ok) throw new Error("Network response was not ok");
-    return await response.json();
+    return await requestJson<HelpQuestion[]>('/help-questions');
   } catch (error) {
     console.error("Failed to load help questions", error);
     return [];
@@ -218,20 +238,33 @@ export async function loadHelpQuestions(): Promise<HelpQuestion[]> {
 
 // INPUT: new help question payload
 // OUTPUT: persisted help question record
-// EFFECT: Publishes a signed-in user's question to the shared help board
-export async function createHelpQuestion(question: { id: string; question: string; createdAt: string }): Promise<void> {
+// EFFECT: Publishes a signed-in user's question to the help board for admin review
+export async function createHelpQuestion(question: { question: string }): Promise<HelpQuestion> {
   try {
-    const response = await authorizedRequest('/help-questions', {
+    return await requestJson<HelpQuestion>('/help-questions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(question),
     });
-    if (!response) return;
-    if (!response.ok) throw new Error("Network response was not ok");
   } catch (error) {
     console.error("Failed to save help question", error);
+    throw error;
+  } 
+}
+
+// INPUT: help question id
+// OUTPUT: delete completion
+// EFFECT: Removes one help question from the admin review board
+export async function deleteHelpQuestion(questionId: string): Promise<void> {
+  try {
+    await requestOk(`/help-questions/${questionId}`, {
+      method: 'DELETE',
+    });
+  } catch (error) {
+    console.error("Failed to delete help question", error);
+    throw error;
   }
 }
 

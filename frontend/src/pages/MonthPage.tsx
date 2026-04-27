@@ -16,10 +16,10 @@ import { tasksForDate } from "../app/taskLogic";
 import { ymd } from "../app/date";
 import { COMPLETIONS_KEY, loadCompletions, type CompletionMap } from "../app/completions";
 
-// INPUT: task collection and save callback
+// INPUT: task collection
 // OUTPUT: month calendar page
 // EFFECT: Builds the month overview feature from planner tasks and completion state
-export function MonthPage(props: { tasks: Task[]; setTasks: (next: Task[]) => void }) {
+export function MonthPage(props: { tasks: Task[] }) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const theme = useTheme();

@@ -1,5 +1,5 @@
 // INPUT: backend models, crypto helpers, and Express app
-// OUTPUT: behavior coverage for auth and help-question routes
+// OUTPUT: behavior coverage for auth, task, reminder, and help-question routes
 // EFFECT: Verifies core backend feature flows without reaching external services
 const test = require('node:test');
 const assert = require('node:assert/strict');
@@ -15,6 +15,9 @@ const { app } = require('../server');
 const { invokeApp } = require('./helpers/http');
 
 const originals = {
+  env: {
+    adminUsernames: process.env.ADMIN_USERNAMES,
+  },
   bcrypt: {
     genSalt: bcrypt.genSalt,
     hash: bcrypt.hash,
@@ -27,6 +30,7 @@ const originals = {
   user: {
     findOne: User.findOne,
     save: User.prototype.save,
+    updateOne: User.updateOne,
   },
   task: {
     find: Task.find,
@@ -44,7 +48,8 @@ const originals = {
   },
   helpQuestion: {
     find: HelpQuestion.find,
-    updateOne: HelpQuestion.updateOne,
+    create: HelpQuestion.create,
+    findOneAndDelete: HelpQuestion.findOneAndDelete,
   },
 };
 
@@ -52,6 +57,11 @@ const originals = {
 // OUTPUT: restored test doubles
 // EFFECT: Resets backend feature stubs between behavior tests
 function resetStubs() {
+  if (typeof originals.env.adminUsernames === 'string') {
+    process.env.ADMIN_USERNAMES = originals.env.adminUsernames;
+  } else {
+    delete process.env.ADMIN_USERNAMES;
+  }
   bcrypt.genSalt = originals.bcrypt.genSalt;
   bcrypt.hash = originals.bcrypt.hash;
   bcrypt.compare = originals.bcrypt.compare;
@@ -59,6 +69,7 @@ function resetStubs() {
   jwt.verify = originals.jwt.verify;
   User.findOne = originals.user.findOne;
   User.prototype.save = originals.user.save;
+  User.updateOne = originals.user.updateOne;
   Task.find = originals.task.find;
   Task.deleteMany = originals.task.deleteMany;
   Task.updateOne = originals.task.updateOne;
@@ -70,7 +81,8 @@ function resetStubs() {
   Reminder.findOneAndUpdate = originals.reminder.findOneAndUpdate;
   Reminder.findOneAndDelete = originals.reminder.findOneAndDelete;
   HelpQuestion.find = originals.helpQuestion.find;
-  HelpQuestion.updateOne = originals.helpQuestion.updateOne;
+  HelpQuestion.create = originals.helpQuestion.create;
+  HelpQuestion.findOneAndDelete = originals.helpQuestion.findOneAndDelete;
 }
 
 test.afterEach(() => {
@@ -84,7 +96,7 @@ test('behavior: register hashes the password and saves the user', async () => {
 
   let savedUser;
   User.prototype.save = async function save() {
-    savedUser = { username: this.username, password: this.password };
+    savedUser = { username: this.username, password: this.password, role: this.role };
   };
 
   const result = await invokeApp(app, '/register', {
@@ -94,11 +106,13 @@ test('behavior: register hashes the password and saves the user', async () => {
 
   assert.equal(result.statusCode, 201);
   assert.deepEqual(result.json, { message: 'Registered' });
-  assert.deepEqual(savedUser, { username: 'tom', password: 'hashed:secret' });
+  assert.deepEqual(savedUser, { username: 'tom', password: 'hashed:secret', role: 'USER' });
 });
 
 test('behavior: login returns a token for valid credentials', async () => {
-  User.findOne = async () => ({ _id: 'user-1', username: 'tom', password: 'hashed' });
+  process.env.ADMIN_USERNAMES = 'tom';
+  User.findOne = async () => ({ _id: 'user-1', username: 'tom', password: 'hashed', role: 'USER' });
+  User.updateOne = async () => ({ matchedCount: 0 });
   bcrypt.compare = async () => true;
   jwt.sign = () => 'signed-token';
 
@@ -108,20 +122,164 @@ test('behavior: login returns a token for valid credentials', async () => {
   });
 
   assert.equal(result.statusCode, 200);
-  assert.deepEqual(result.json, { token: 'signed-token', username: 'tom' });
+  assert.deepEqual(result.json, { token: 'signed-token', username: 'tom', role: 'ADMIN' });
 });
 
-test('behavior: authenticated help question submission stores the public question with the username', async () => {
-  jwt.verify = (token, secret, callback) => callback(null, { userId: 'user-1', username: 'tom' });
+test('behavior: login backfills a missing stored role for legacy users', async () => {
+  User.findOne = async () => ({ _id: 'user-1', username: 'tom', password: 'hashed' });
+  bcrypt.compare = async () => true;
+  jwt.sign = () => 'signed-token';
 
   let updateFilter;
   let updatePayload;
   let updateOptions;
-  HelpQuestion.updateOne = async (filter, payload, options) => {
+  User.updateOne = async (filter, payload, options) => {
     updateFilter = filter;
     updatePayload = payload;
     updateOptions = options;
-    return { upsertedCount: 1 };
+    return { matchedCount: 1 };
+  };
+
+  const result = await invokeApp(app, '/login', {
+    method: 'POST',
+    body: { username: 'tom', password: 'secret' },
+  });
+
+  assert.equal(result.statusCode, 200);
+  assert.deepEqual(result.json, { token: 'signed-token', username: 'tom', role: 'USER' });
+  assert.deepEqual(updateFilter, { _id: 'user-1' });
+  assert.deepEqual(updatePayload, { $set: { role: 'USER' } });
+  assert.deepEqual(updateOptions, { runValidators: true });
+});
+
+test('behavior: authenticated help question fetch returns only the current user questions for standard users', async () => {
+  jwt.verify = (token, secret, callback) =>
+    callback(null, { userId: '507f1f77bcf86cd799439011', username: 'tom', role: 'USER' });
+
+  let capturedFilter;
+  let capturedProjection;
+  let capturedSort;
+  HelpQuestion.find = (filter, projection) => {
+    capturedFilter = filter;
+    capturedProjection = projection;
+    return {
+      sort: async (sortSpec) => {
+        capturedSort = sortSpec;
+        return [
+          {
+            id: 'q1',
+            username: 'tom',
+            question: 'How do I use week view?',
+            createdAt: '2026-04-21T10:00:00.000Z',
+          },
+        ];
+      },
+    };
+  };
+
+  const result = await invokeApp(app, '/help-questions', {
+    headers: { Authorization: 'Bearer token' },
+  });
+
+  assert.equal(result.statusCode, 200);
+  assert.deepEqual(capturedFilter, {
+    $or: [
+      { userId: '507f1f77bcf86cd799439011' },
+      { userId: { $exists: false }, username: 'tom' },
+      { userId: null, username: 'tom' },
+    ],
+  });
+  assert.deepEqual(capturedProjection, { _id: 0, __v: 0, userId: 0 });
+  assert.deepEqual(capturedSort, { createdAt: -1 });
+  assert.deepEqual(result.json, [
+    {
+      id: 'q1',
+      username: 'tom',
+      question: 'How do I use week view?',
+      createdAt: '2026-04-21T10:00:00.000Z',
+    },
+  ]);
+});
+
+test('behavior: authenticated help question fetch falls back to username for legacy rows when the session user id is missing', async () => {
+  jwt.verify = (token, secret, callback) =>
+    callback(null, { username: 'tom', role: 'USER' });
+
+  let capturedFilter;
+  HelpQuestion.find = (filter) => {
+    capturedFilter = filter;
+    return {
+      sort: async () => [],
+    };
+  };
+
+  const result = await invokeApp(app, '/help-questions', {
+    headers: { Authorization: 'Bearer token' },
+  });
+
+  assert.equal(result.statusCode, 200);
+  assert.deepEqual(capturedFilter, {
+    $or: [
+      { userId: { $exists: false }, username: 'tom' },
+      { userId: null, username: 'tom' },
+    ],
+  });
+});
+
+test('behavior: authenticated help question fetch returns all questions for admins', async () => {
+  jwt.verify = (token, secret, callback) =>
+    callback(null, { userId: 'user-1', username: 'tom', role: 'ADMIN' });
+
+  let capturedFilter;
+  HelpQuestion.find = (filter) => {
+    capturedFilter = filter;
+    return {
+      sort: async () => [
+        {
+          id: 'q1',
+          username: 'tom',
+          question: 'How do I use week view?',
+          createdAt: '2026-04-21T10:00:00.000Z',
+        },
+        {
+          id: 'q2',
+          username: 'alice',
+          question: 'Can admins review everything?',
+          createdAt: '2026-04-20T10:00:00.000Z',
+        },
+      ],
+    };
+  };
+
+  const result = await invokeApp(app, '/help-questions', {
+    headers: { Authorization: 'Bearer token' },
+  });
+
+  assert.equal(result.statusCode, 200);
+  assert.deepEqual(capturedFilter, {});
+  assert.deepEqual(result.json, [
+    {
+      id: 'q1',
+      username: 'tom',
+      question: 'How do I use week view?',
+      createdAt: '2026-04-21T10:00:00.000Z',
+    },
+    {
+      id: 'q2',
+      username: 'alice',
+      question: 'Can admins review everything?',
+      createdAt: '2026-04-20T10:00:00.000Z',
+    },
+  ]);
+});
+
+test('behavior: authenticated help question submission stores a new help question with the username', async () => {
+  jwt.verify = (token, secret, callback) => callback(null, { userId: '507f1f77bcf86cd799439011', username: 'tom', role: 'USER' });
+
+  let createdPayload;
+  HelpQuestion.create = async (payload) => {
+    createdPayload = payload;
+    return payload;
   };
 
   const result = await invokeApp(app, '/help-questions', {
@@ -135,17 +293,64 @@ test('behavior: authenticated help question submission stores the public questio
   });
 
   assert.equal(result.statusCode, 201);
-  assert.deepEqual(result.json, { message: 'Saved' });
-  assert.deepEqual(updateFilter, { id: 'q1' });
-  assert.deepEqual(updatePayload, {
-    $set: {
-      id: 'q1',
-      username: 'tom',
+  assert.equal(createdPayload.userId, '507f1f77bcf86cd799439011');
+  assert.equal(createdPayload.username, 'tom');
+  assert.equal(createdPayload.question, 'How do I use week view?');
+  assert.notEqual(createdPayload.id, 'q1');
+  assert.notEqual(createdPayload.createdAt, '2026-04-21T10:00:00.000Z');
+  assert.match(createdPayload.id, /^[0-9a-f-]{36}$/i);
+  assert.deepEqual(result.json, {
+    id: createdPayload.id,
+    username: 'tom',
+    question: 'How do I use week view?',
+    createdAt: createdPayload.createdAt,
+  });
+});
+
+test('behavior: help question submission rejects sessions without a valid owner id', async () => {
+  jwt.verify = (token, secret, callback) => callback(null, { username: 'tom', role: 'USER' });
+
+  const result = await invokeApp(app, '/help-questions', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer token' },
+    body: {
       question: 'How do I use week view?',
-      createdAt: '2026-04-21T10:00:00.000Z',
     },
   });
-  assert.deepEqual(updateOptions, { upsert: true, runValidators: true, setDefaultsOnInsert: true });
+
+  assert.equal(result.statusCode, 403);
+  assert.deepEqual(result.json, { error: 'Invalid session' });
+});
+
+test('behavior: non-admin help question delete is rejected', async () => {
+  jwt.verify = (token, secret, callback) => callback(null, { userId: 'user-1', username: 'tom', role: 'USER' });
+
+  const result = await invokeApp(app, '/help-questions/q1', {
+    method: 'DELETE',
+    headers: { Authorization: 'Bearer token' },
+  });
+
+  assert.equal(result.statusCode, 403);
+  assert.deepEqual(result.json, { error: 'Admin access required' });
+});
+
+test('behavior: admin help question delete removes the selected question', async () => {
+  jwt.verify = (token, secret, callback) => callback(null, { userId: 'admin-1', username: 'root', role: 'ADMIN' });
+
+  let deleteFilter;
+  HelpQuestion.findOneAndDelete = async (filter) => {
+    deleteFilter = filter;
+    return { id: 'q1' };
+  };
+
+  const result = await invokeApp(app, '/help-questions/q1', {
+    method: 'DELETE',
+    headers: { Authorization: 'Bearer token' },
+  });
+
+  assert.equal(result.statusCode, 200);
+  assert.deepEqual(result.json, { message: 'Deleted' });
+  assert.deepEqual(deleteFilter, { id: 'q1' });
 });
 
 test('behavior: authenticated task fetch returns the current user tasks', async () => {
@@ -322,4 +527,139 @@ test('behavior: task delete removes one task for the authenticated user', async 
   assert.equal(result.statusCode, 200);
   assert.deepEqual(result.json, { message: 'Deleted' });
   assert.deepEqual(deleteFilter, { id: 'task-2', userId: 'user-1' });
+});
+
+test('behavior: authenticated reminder fetch returns the current user reminders', async () => {
+  jwt.verify = (token, secret, callback) => callback(null, { userId: 'user-1', username: 'tom' });
+  let cleanupFilter;
+  Reminder.deleteMany = async (filter) => {
+    cleanupFilter = filter;
+    return { deletedCount: 1 };
+  };
+  Reminder.find = async () => ([
+    {
+      id: 'reminder-1',
+      title: 'Follow up',
+      done: false,
+    },
+  ]);
+
+  const result = await invokeApp(app, '/reminders', {
+    headers: { Authorization: 'Bearer token' },
+  });
+
+  assert.equal(result.statusCode, 200);
+  assert.deepEqual(cleanupFilter, {
+    userId: 'user-1',
+    done: true,
+    updatedAt: { $lt: cleanupFilter.updatedAt.$lt },
+  });
+  assert.deepEqual(result.json, [
+    {
+      id: 'reminder-1',
+      title: 'Follow up',
+      done: false,
+    },
+  ]);
+});
+
+test('behavior: reminder create stores one reminder for the authenticated user', async () => {
+  jwt.verify = (token, secret, callback) => callback(null, { userId: 'user-1', username: 'tom' });
+  Reminder.deleteMany = async () => ({ deletedCount: 0 });
+
+  let updateFilter;
+  let updatePayload;
+  let updateOptions;
+  Reminder.updateOne = async (filter, payload, options) => {
+    updateFilter = filter;
+    updatePayload = payload;
+    updateOptions = options;
+    return { upsertedCount: 1 };
+  };
+
+  const result = await invokeApp(app, '/reminders', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer token' },
+    body: {
+      id: 'reminder-2',
+      title: 'Write summary',
+      content: 'Send the weekly recap',
+      emergency: 2,
+      done: false,
+    },
+  });
+
+  assert.equal(result.statusCode, 201);
+  assert.deepEqual(result.json, { message: 'Created' });
+  assert.deepEqual(updateFilter, { id: 'reminder-2', userId: 'user-1' });
+  assert.deepEqual(updatePayload, {
+    $set: {
+      id: 'reminder-2',
+      title: 'Write summary',
+      content: 'Send the weekly recap',
+      emergency: 2,
+      done: false,
+      userId: 'user-1',
+    },
+  });
+  assert.deepEqual(updateOptions, { upsert: true, runValidators: true, setDefaultsOnInsert: true });
+});
+
+test('behavior: reminder update rewrites one reminder for the authenticated user', async () => {
+  jwt.verify = (token, secret, callback) => callback(null, { userId: 'user-1', username: 'tom' });
+  Reminder.deleteMany = async () => ({ deletedCount: 0 });
+
+  let updateFilter;
+  let updatePayload;
+  let updateOptions;
+  Reminder.findOneAndUpdate = async (filter, payload, options) => {
+    updateFilter = filter;
+    updatePayload = payload;
+    updateOptions = options;
+    return { ...payload };
+  };
+
+  const result = await invokeApp(app, '/reminders/reminder-2', {
+    method: 'PUT',
+    headers: { Authorization: 'Bearer token' },
+    body: {
+      id: 'reminder-2',
+      title: 'Write summary',
+      content: 'Send the updated weekly recap',
+      emergency: 1,
+      done: true,
+    },
+  });
+
+  assert.equal(result.statusCode, 200);
+  assert.deepEqual(result.json, { message: 'Updated' });
+  assert.deepEqual(updateFilter, { id: 'reminder-2', userId: 'user-1' });
+  assert.deepEqual(updatePayload, {
+    id: 'reminder-2',
+    title: 'Write summary',
+    content: 'Send the updated weekly recap',
+    emergency: 1,
+    done: true,
+    userId: 'user-1',
+  });
+  assert.deepEqual(updateOptions, { returnDocument: 'after', runValidators: true });
+});
+
+test('behavior: reminder delete removes one reminder for the authenticated user', async () => {
+  jwt.verify = (token, secret, callback) => callback(null, { userId: 'user-1', username: 'tom' });
+
+  let deleteFilter;
+  Reminder.findOneAndDelete = async (filter) => {
+    deleteFilter = filter;
+    return { id: 'reminder-2' };
+  };
+
+  const result = await invokeApp(app, '/reminders/reminder-2', {
+    method: 'DELETE',
+    headers: { Authorization: 'Bearer token' },
+  });
+
+  assert.equal(result.statusCode, 200);
+  assert.deepEqual(result.json, { message: 'Deleted' });
+  assert.deepEqual(deleteFilter, { id: 'reminder-2', userId: 'user-1' });
 });

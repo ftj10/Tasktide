@@ -33,7 +33,7 @@ describe("MonthPage behavior", () => {
     const todayDate = dayjs().format("YYYY-MM-DD");
     const todayNumber = String(dayjs().date());
 
-    renderWithProviders(<MonthPage tasks={[]} setTasks={vi.fn()} />);
+    renderWithProviders(<MonthPage tasks={[]} />);
 
     await user.click(screen.getAllByText(todayNumber)[0]);
 
@@ -41,7 +41,7 @@ describe("MonthPage behavior", () => {
   });
 
   it("renders only the month task grid without the extra header controls", () => {
-    renderWithProviders(<MonthPage tasks={[]} setTasks={vi.fn()} />);
+    renderWithProviders(<MonthPage tasks={[]} />);
 
     expect(screen.getByText(dayjs().format("MMMM YYYY"))).toBeInTheDocument();
     expect(screen.getByText("Jump to Current Month")).toBeInTheDocument();
@@ -52,7 +52,7 @@ describe("MonthPage behavior", () => {
 
   it("changes month when the reduced month grid is swiped vertically on mobile", () => {
     setScreenWidth(390);
-    renderWithProviders(<MonthPage tasks={[]} setTasks={vi.fn()} />);
+    renderWithProviders(<MonthPage tasks={[]} />);
 
     const nextMonthDay = dayjs().add(1, "month").date(1).format("D");
     const swipeSurface = screen.getByTestId("month-grid-surface");
@@ -66,7 +66,7 @@ describe("MonthPage behavior", () => {
 
   it("hides month arrow buttons on mobile while keeping the jump button", () => {
     setScreenWidth(390);
-    renderWithProviders(<MonthPage tasks={[]} setTasks={vi.fn()} />);
+    renderWithProviders(<MonthPage tasks={[]} />);
 
     expect(screen.queryByLabelText("Previous month")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Next month")).not.toBeInTheDocument();
@@ -75,7 +75,7 @@ describe("MonthPage behavior", () => {
 
   it("changes month with arrow buttons on desktop", async () => {
     const user = userEvent.setup();
-    renderWithProviders(<MonthPage tasks={[]} setTasks={vi.fn()} />);
+    renderWithProviders(<MonthPage tasks={[]} />);
 
     const nextMonthDay = dayjs().add(1, "month").date(1).format("D");
     await user.click(screen.getByLabelText("Next month"));
@@ -86,7 +86,7 @@ describe("MonthPage behavior", () => {
   it("jumps back to the current month when the month jump button is pressed", async () => {
     const user = userEvent.setup();
 
-    renderWithProviders(<MonthPage tasks={[]} setTasks={vi.fn()} />);
+    renderWithProviders(<MonthPage tasks={[]} />);
 
     const swipeSurface = screen.getByTestId("month-grid-surface");
     fireEvent.touchStart(swipeSurface, { touches: [{ clientX: 120, clientY: 260 }] });
@@ -112,7 +112,6 @@ describe("MonthPage behavior", () => {
             updatedAt: "2026-04-20T00:00:00.000Z",
           },
         ]}
-        setTasks={vi.fn()}
       />
     );
 

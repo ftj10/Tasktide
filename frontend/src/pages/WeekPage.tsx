@@ -1,4 +1,4 @@
-// INPUT: task collection plus completion refresh state
+// INPUT: task collection plus task-editing actions
 // OUTPUT: weekly calendar page with navigation and task editing actions
 // EFFECT: Turns planner tasks into week-view events and connects week interactions back to task dialogs and day routing
 import {
@@ -29,35 +29,19 @@ import type { Task } from "../types";
 import { toCalendarEventsForRange } from "../app/taskLogic";
 import { TaskDialog } from "../components/TaskDialog";
 import { ConfirmDeleteDialog } from "../components/ConfirmDeleteDialog";
-import { loadCompletions } from "../app/completions";
+import { COMPLETIONS_KEY, loadCompletions } from "../app/completions";
 import { weekStartMonday, ymd } from "../app/date";
 import {
-  applySeriesEdit,
-  applySingleOccurrenceEdit,
   getTaskOccurrence,
-  normalizeTask,
+  removeTaskFromCollection,
+  saveTaskCollection,
   type TaskSaveScope,
 } from "../app/tasks";
-
-function getTaskColors(task?: Task) {
-  if (task?.done) {
-    return { bg: "#e5e7eb", border: "#cbd5e1", text: "#6b7280" };
-  }
-
-  const palette = ["#ef4444", "#f97316", "#f59e0b", "#10b981", "#0ea5e9"];
-  const baseColor = palette[(task?.emergency || 5) - 1];
-
-  return {
-    bg: baseColor,
-    border: baseColor,
-    text: "#ffffff",
-  };
-}
+import { getPriorityColors } from "../app/priorities";
 
 export function WeekPage(props: {
   tasks: Task[];
   setTasks: (next: Task[]) => void;
-  completionsRev: number;
   onTaskDialogVisibilityChange?: (open: boolean) => void;
 }) {
   const { t } = useTranslation();
@@ -76,6 +60,11 @@ export function WeekPage(props: {
   const [mobilePageKind, setMobilePageKind] = useState<"first" | "second">(() =>
     dayjs().diff(dayjs(weekStartMonday(dayjs())), "day") >= 4 ? "second" : "first"
   );
+  const [desktopVisibleRange, setDesktopVisibleRange] = useState(() => {
+    const start = dayjs(weekStartMonday(dayjs()));
+    return { start, end: start.add(7, "day") };
+  });
+  const [completionsRevision, setCompletionsRevision] = useState(0);
   const mobilePagerRef = useRef<HTMLDivElement | null>(null);
   const mobileTransitionLockRef = useRef(false);
   const mobileScrollSettleRef = useRef<number | null>(null);
@@ -87,78 +76,21 @@ export function WeekPage(props: {
     };
   }, [dialogOpen, props.onTaskDialogVisibilityChange]);
 
-  const events = useMemo(() => {
-    const completions = loadCompletions();
-    const baseEvents = toCalendarEventsForRange(
-      props.tasks,
-      completions,
-      dayjs().subtract(1, "year"),
-      dayjs().add(1, "year")
-    );
+  const taskById = useMemo(() => new Map(props.tasks.map((task) => [task.id, task])), [props.tasks]);
+  const completions = useMemo(() => loadCompletions(), [completionsRevision]);
 
-    return baseEvents.map((ev: any) => {
-      const taskId = ev.extendedProps?.taskId;
-      const task = props.tasks.find((t) => t.id === taskId);
-      const colors = getTaskColors(task);
-
-      const dateYmd =
-        typeof ev.start === "string"
-          ? ev.start.substring(0, 10)
-          : dayjs(ev.start).format("YYYY-MM-DD");
-
-      if (task && task.startTime) {
-        const startAt = dayjs(`${dateYmd}T${task.startTime}:00`);
-        const implicitEndAt = startAt.add(1, "hour");
-        const dayEndAt = dayjs(`${dateYmd}T23:59:00`);
-        const endAt = task.endTime
-          ? dayjs(`${dateYmd}T${task.endTime}:00`)
-          : implicitEndAt.isAfter(dayEndAt)
-          ? dayEndAt
-          : implicitEndAt;
-
-        return {
-          ...ev,
-          start: startAt.format("YYYY-MM-DDTHH:mm:ss"),
-          end: endAt.format("YYYY-MM-DDTHH:mm:ss"),
-          allDay: false,
-          backgroundColor: colors.bg,
-          borderColor: colors.border,
-          textColor: colors.text,
-          extendedProps: { ...ev.extendedProps, task },
-        };
+  useEffect(() => {
+    function onStorage(event: StorageEvent) {
+      if (event.key === COMPLETIONS_KEY) {
+        setCompletionsRevision((current) => current + 1);
       }
-
-      return {
-        ...ev,
-        allDay: true,
-        backgroundColor: colors.bg,
-        borderColor: colors.border,
-        textColor: colors.text,
-        extendedProps: { ...ev.extendedProps, task },
-      };
-    });
-  }, [props.tasks, props.completionsRev]);
-
-  function upsert(task: Task, scope: TaskSaveScope = "series") {
-    if (editingSourceTask && scope === "single" && defaultDate) {
-      props.setTasks(
-        props.tasks.map((item) =>
-          item.id === editingSourceTask.id
-            ? applySingleOccurrenceEdit(item, defaultDate, task)
-            : item
-        )
-      );
-      setDialogOpen(false);
-      setEditing(undefined);
-      setEditingSourceTask(undefined);
-      setDefaultStartTime(undefined);
-      setDefaultEndTime(undefined);
-      return;
     }
 
-    const sourceId = editingSourceTask?.id ?? task.id;
-    const nextTask = editingSourceTask ? applySeriesEdit(editingSourceTask, task) : normalizeTask(task);
-    props.setTasks([...props.tasks.filter((item) => item.id !== sourceId), nextTask]);
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+  function closeTaskEditor() {
     setDialogOpen(false);
     setEditing(undefined);
     setEditingSourceTask(undefined);
@@ -166,14 +98,81 @@ export function WeekPage(props: {
     setDefaultEndTime(undefined);
   }
 
+  function buildEventsForRange(rangeStart: dayjs.Dayjs, rangeEnd: dayjs.Dayjs) {
+    const baseEvents = toCalendarEventsForRange(
+      props.tasks,
+      completions,
+      rangeStart,
+      rangeEnd
+    );
+
+    return baseEvents.map((ev: any) => {
+      const sourceTask =
+        taskById.get(ev.extendedProps?.taskId as string) ?? (ev.extendedProps?.sourceTask as Task | undefined);
+      const occurrenceTask = ev.extendedProps?.task as Task | undefined;
+      const displayTask = occurrenceTask ?? sourceTask;
+      const colors = getPriorityColors(displayTask);
+
+      const dateYmd =
+        typeof ev.start === "string"
+          ? ev.start.substring(0, 10)
+          : dayjs(ev.start).format("YYYY-MM-DD");
+
+      if (displayTask?.startTime) {
+        const startAt = dayjs(`${dateYmd}T${displayTask.startTime}:00`);
+        const implicitEndAt = startAt.add(1, "hour");
+        const dayEndAt = dayjs(`${dateYmd}T23:59:00`);
+        const endAt = displayTask.endTime
+          ? dayjs(`${dateYmd}T${displayTask.endTime}:00`)
+          : implicitEndAt.isAfter(dayEndAt)
+          ? dayEndAt
+          : implicitEndAt;
+
+        return {
+          ...ev,
+          title: displayTask?.title ?? ev.title,
+          start: startAt.format("YYYY-MM-DDTHH:mm:ss"),
+          end: endAt.format("YYYY-MM-DDTHH:mm:ss"),
+          allDay: false,
+          backgroundColor: colors.bg,
+          borderColor: colors.border,
+          textColor: colors.text,
+          extendedProps: { ...ev.extendedProps, sourceTask, task: displayTask },
+        };
+      }
+
+      return {
+        ...ev,
+        title: displayTask?.title ?? ev.title,
+        allDay: true,
+        backgroundColor: colors.bg,
+        borderColor: colors.border,
+        textColor: colors.text,
+        extendedProps: { ...ev.extendedProps, sourceTask, task: displayTask },
+      };
+    });
+  }
+
+  const desktopEvents = useMemo(
+    () => buildEventsForRange(desktopVisibleRange.start, desktopVisibleRange.end),
+    [completions, desktopVisibleRange.end, desktopVisibleRange.start, props.tasks]
+  );
+
+  function upsert(task: Task, scope: TaskSaveScope = "series") {
+    props.setTasks(
+      saveTaskCollection(props.tasks, task, {
+        editingSourceTask,
+        scope,
+        occurrenceDateYmd: defaultDate,
+      })
+    );
+    closeTaskEditor();
+  }
+
   function remove(id: string) {
-    props.setTasks(props.tasks.filter((t) => t.id !== id));
+    props.setTasks(removeTaskFromCollection(props.tasks, id));
     setDeleteTask(undefined);
-    setDialogOpen(false);
-    setEditing(undefined);
-    setEditingSourceTask(undefined);
-    setDefaultStartTime(undefined);
-    setDefaultEndTime(undefined);
+    closeTaskEditor();
   }
 
   const mobilePages = useMemo(() => {
@@ -237,6 +236,15 @@ export function WeekPage(props: {
     ];
   }, [mobilePageKind, mobileWeekStart]);
 
+  const mobilePagesWithEvents = useMemo(
+    () =>
+      mobilePages.map((page) => ({
+        ...page,
+        events: buildEventsForRange(page.start, page.end),
+      })),
+    [completions, mobilePages, props.tasks]
+  );
+
   function scrollToMobilePage(pageIndex: number, behavior: ScrollBehavior = "auto") {
     const pager = mobilePagerRef.current;
     if (!pager) return;
@@ -297,7 +305,7 @@ export function WeekPage(props: {
     setDialogOpen(true);
   }
 
-  function renderCalendar(pageStart?: dayjs.Dayjs, pageEnd?: dayjs.Dayjs, pageKey?: string) {
+  function renderCalendar(events: any[], pageStart?: dayjs.Dayjs, pageEnd?: dayjs.Dayjs, pageKey?: string) {
     const isMobileSlice = !!pageStart && !!pageEnd && !!pageKey;
     const allowRangeCreate = isMobileSlice && viewMode === "timeGrid";
 
@@ -346,6 +354,22 @@ export function WeekPage(props: {
         selectable={allowRangeCreate}
         selectMirror={allowRangeCreate}
         selectLongPressDelay={350}
+        datesSet={(info) => {
+          if (isMobileSlice) return;
+          setDesktopVisibleRange((current) => {
+            const nextStart = dayjs(info.start);
+            const nextEnd = dayjs(info.end);
+
+            if (ymd(current.start) === ymd(nextStart) && ymd(current.end) === ymd(nextEnd)) {
+              return current;
+            }
+
+            return {
+              start: nextStart,
+              end: nextEnd,
+            };
+          });
+        }}
         navLinkDayClick={(date) => {
           navigate(`/?date=${dayjs(date).format("YYYY-MM-DD")}`);
         }}
@@ -407,12 +431,12 @@ export function WeekPage(props: {
           );
         }}
         eventClick={(info) => {
-          const taskId = info.event.extendedProps.taskId as string;
-          const task = props.tasks.find((t) => t.id === taskId);
+          const task = info.event.extendedProps.sourceTask as Task | undefined;
           if (!task) return;
-          const occurrenceDate = info.event.startStr.slice(0, 10);
+          const occurrenceDate =
+            (info.event.extendedProps.occurrenceDate as string | undefined) ?? info.event.startStr.slice(0, 10);
           setEditingSourceTask(task);
-          setEditing(getTaskOccurrence(task, occurrenceDate) ?? normalizeTask(task));
+          setEditing(getTaskOccurrence(task, occurrenceDate) ?? task);
           setDefaultDate(occurrenceDate);
           setDefaultStartTime(undefined);
           setDefaultEndTime(undefined);
@@ -604,7 +628,7 @@ export function WeekPage(props: {
               "&::-webkit-scrollbar": { display: "none" },
             }}
           >
-            {mobilePages.map((page) => (
+            {mobilePagesWithEvents.map((page) => (
               <Box
                 key={`${page.key}-${viewMode}-${mobilePageKind}-${ymd(mobileWeekStart)}`}
                 sx={{
@@ -649,7 +673,7 @@ export function WeekPage(props: {
                       },
                     }}
                   >
-                    {renderCalendar(page.start, page.end, page.key)}
+                    {renderCalendar(page.events, page.start, page.end, page.key)}
                   </Box>
                 </Paper>
               </Box>
@@ -709,7 +733,7 @@ export function WeekPage(props: {
               },
             }}
           >
-            {renderCalendar()}
+            {renderCalendar(desktopEvents)}
           </Box>
         </Paper>
       )}
@@ -722,13 +746,7 @@ export function WeekPage(props: {
         defaultDateYmd={defaultDate || ""}
         defaultStartTime={defaultStartTime}
         defaultEndTime={defaultEndTime}
-        onClose={() => {
-          setDialogOpen(false);
-          setEditing(undefined);
-          setEditingSourceTask(undefined);
-          setDefaultStartTime(undefined);
-          setDefaultEndTime(undefined);
-        }}
+        onClose={closeTaskEditor}
         onSave={upsert}
         onDelete={(id) => {
           const task = props.tasks.find((item) => item.id === id);

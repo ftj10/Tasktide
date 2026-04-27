@@ -7,6 +7,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, beforeEach, expect, it, vi } from "vitest";
 
 import i18n from "../src/i18n";
+import { weekdayISO, weekStartMonday } from "../src/app/date";
 import type { Task } from "../src/types";
 import { WeekPage } from "../src/pages/WeekPage";
 import { renderWithProviders } from "./test-utils";
@@ -89,14 +90,14 @@ describe("WeekPage behavior", () => {
       id: "t1",
       title: "Design review",
       type: "TEMPORARY",
-      date: "2026-04-20",
+      date: dayjs().format("YYYY-MM-DD"),
       emergency: 3,
       createdAt: "2026-04-20T00:00:00.000Z",
       updatedAt: "2026-04-20T00:00:00.000Z",
     };
     const setTasks = vi.fn();
 
-    renderWithProviders(<WeekPage tasks={[task]} setTasks={setTasks} completionsRev={0} />);
+    renderWithProviders(<WeekPage tasks={[task]} setTasks={setTasks} />);
 
     await user.click(screen.getByRole("button", { name: "Design review" }));
     await user.click(screen.getByRole("button", { name: "Delete" }));
@@ -113,7 +114,7 @@ describe("WeekPage behavior", () => {
   it("jumps to Today when a week date header is clicked", async () => {
     const user = userEvent.setup();
 
-    renderWithProviders(<WeekPage tasks={[]} setTasks={vi.fn()} completionsRev={0} />);
+    renderWithProviders(<WeekPage tasks={[]} setTasks={vi.fn()} />);
 
     await user.click(screen.getByRole("button", { name: "jump-day" }));
 
@@ -124,7 +125,7 @@ describe("WeekPage behavior", () => {
     const user = userEvent.setup();
     const setTasks = vi.fn();
 
-    renderWithProviders(<WeekPage tasks={[]} setTasks={setTasks} completionsRev={0} />);
+    renderWithProviders(<WeekPage tasks={[]} setTasks={setTasks} />);
 
     await user.click(screen.getByRole("button", { name: "blank-slot" }));
     await user.click(screen.getByRole("button", { name: "Add Task" }));
@@ -137,14 +138,14 @@ describe("WeekPage behavior", () => {
   });
 
   it("uses time grid as the default week view on desktop and mobile", () => {
-    renderWithProviders(<WeekPage tasks={[]} setTasks={vi.fn()} completionsRev={0} />);
+    renderWithProviders(<WeekPage tasks={[]} setTasks={vi.fn()} />);
 
     const latestDesktopCalendar = calendarRenderProps.at(-1);
     expect(latestDesktopCalendar.initialView).toBe("timeGridWeek");
 
     calendarRenderProps.length = 0;
     setScreenWidth(390);
-    renderWithProviders(<WeekPage tasks={[]} setTasks={vi.fn()} completionsRev={0} />);
+    renderWithProviders(<WeekPage tasks={[]} setTasks={vi.fn()} />);
 
     const latestMobileCalendars = calendarRenderProps.slice(-3);
     expect(latestMobileCalendars[0].initialView).toBe("mobileTimeGrid");
@@ -153,7 +154,7 @@ describe("WeekPage behavior", () => {
   it("rolls mobile week view from a 3-day page into the next week's 4-day page", () => {
     setScreenWidth(390);
 
-    renderWithProviders(<WeekPage tasks={[]} setTasks={vi.fn()} completionsRev={0} />);
+    renderWithProviders(<WeekPage tasks={[]} setTasks={vi.fn()} />);
 
     const latestCalendarProps = calendarRenderProps.slice(-3);
     const pageLengths = latestCalendarProps.map((item) =>
@@ -174,7 +175,7 @@ describe("WeekPage behavior", () => {
     vi.useFakeTimers();
     setScreenWidth(390);
 
-    renderWithProviders(<WeekPage tasks={[]} setTasks={vi.fn()} completionsRev={0} />);
+    renderWithProviders(<WeekPage tasks={[]} setTasks={vi.fn()} />);
     const initialCalendarProps = calendarRenderProps.slice(-3);
     act(() => {
       vi.advanceTimersByTime(100);
@@ -211,7 +212,7 @@ describe("WeekPage behavior", () => {
     setScreenWidth(390);
     const user = userEvent.setup();
 
-    renderWithProviders(<WeekPage tasks={[]} setTasks={vi.fn()} completionsRev={0} />);
+    renderWithProviders(<WeekPage tasks={[]} setTasks={vi.fn()} />);
 
     expect(screen.queryByRole("button", { name: "Add Task" })).not.toBeInTheDocument();
 
@@ -222,5 +223,40 @@ describe("WeekPage behavior", () => {
     expect(screen.getByLabelText("Begin date")).toHaveValue("2026-04-24");
     expect(screen.getByLabelText("Start Time (Optional)")).toHaveValue("09:30");
     expect(screen.getByLabelText("End Time (Optional)")).toHaveValue("11:00");
+  });
+
+  it("uses the occurrence override time for recurring events in the calendar", () => {
+    const occurrenceStart = dayjs(weekStartMonday(dayjs())).add(1, "day");
+    const occurrenceDate = occurrenceStart.format("YYYY-MM-DD");
+    const recurringTask: Task = {
+      id: "recurring-1",
+      title: "Team sync",
+      type: "RECURRING",
+      beginDate: occurrenceDate,
+      recurrence: {
+        frequency: "WEEKLY",
+        interval: 1,
+        weekdays: [weekdayISO(occurrenceStart)],
+        until: null,
+      },
+      occurrenceOverrides: {
+        [occurrenceDate]: {
+          title: "Team sync - moved",
+          startTime: "14:30",
+          endTime: "15:15",
+        },
+      },
+      createdAt: "2026-04-20T00:00:00.000Z",
+      updatedAt: "2026-04-20T00:00:00.000Z",
+    };
+
+    renderWithProviders(<WeekPage tasks={[recurringTask]} setTasks={vi.fn()} />);
+
+    const latestDesktopCalendar = calendarRenderProps.at(-1);
+    const event = latestDesktopCalendar.events.find((item: any) => item.id === `recurring-1::${occurrenceDate}`);
+
+    expect(event.title).toBe("Team sync - moved");
+    expect(event.start).toBe(`${occurrenceDate}T14:30:00`);
+    expect(event.end).toBe(`${occurrenceDate}T15:15:00`);
   });
 });

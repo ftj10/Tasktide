@@ -52,6 +52,7 @@ import {
   pruneStoredNotificationHistory,
   recordNotificationFired,
 } from "./app/notificationHistory";
+import { areTasksEqual } from "./app/tasks";
 
 import { TodayPage } from "./pages/TodayPage";
 import { WeekPage } from "./pages/WeekPage";
@@ -60,6 +61,18 @@ import { ReminderPage } from "./pages/ReminderPage";
 import { MonthPage } from "./pages/MonthPage";
 import { ReleaseNotesCenter } from "./components/ReleaseNotesCenter";
 import { HelpPage } from "./pages/HelpPage";
+
+function areRemindersEqual(source: Reminder, target: Reminder) {
+  return (
+    source.id === target.id &&
+    source.title === target.title &&
+    source.content === target.content &&
+    source.emergency === target.emergency &&
+    source.done === target.done &&
+    source.createdAt === target.createdAt &&
+    source.updatedAt === target.updatedAt
+  );
+}
 
 export default function App() {
   const { t, i18n } = useTranslation();
@@ -70,7 +83,6 @@ export default function App() {
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [taskDialogOpen, setTaskDialogOpen] = useState(false);
-  const mobileNavigationRef = useRef<HTMLDivElement | null>(null);
   const tasksRef = useRef<Task[]>([]);
   const remindersRef = useRef<Reminder[]>([]);
   const taskSyncQueue = useRef(Promise.resolve());
@@ -129,7 +141,7 @@ export default function App() {
     const createdTasks = nextTasks.filter((task) => !prevById.has(task.id));
     const updatedTasks = nextTasks.filter((task) => {
       const previousTask = prevById.get(task.id);
-      return previousTask && JSON.stringify(previousTask) !== JSON.stringify(task);
+      return previousTask && !areTasksEqual(previousTask, task);
     });
     const deletedTaskIds = prevTasks
       .filter((task) => !nextById.has(task.id))
@@ -158,7 +170,7 @@ export default function App() {
     const createdReminders = nextReminders.filter((reminder) => !prevById.has(reminder.id));
     const updatedReminders = nextReminders.filter((reminder) => {
       const previousReminder = prevById.get(reminder.id);
-      return previousReminder && JSON.stringify(previousReminder) !== JSON.stringify(reminder);
+      return previousReminder && !areRemindersEqual(previousReminder, reminder);
     });
     const deletedReminderIds = prevReminders
       .filter((reminder) => !nextById.has(reminder.id))
@@ -212,34 +224,6 @@ export default function App() {
       window.removeEventListener("pointerdown", requestPermission);
       window.removeEventListener("keydown", requestPermission);
     };
-  }, []);
-
-  useEffect(() => {
-    const syncTaskDialogOpen = () => {
-      const nextTaskDialogOpen =
-        Boolean(document.querySelector('[data-task-dialog="true"]')) ||
-        document.body.style.overflow === "hidden";
-
-      setTaskDialogOpen(nextTaskDialogOpen);
-      if (mobileNavigationRef.current) {
-        mobileNavigationRef.current.style.display = nextTaskDialogOpen ? "none" : "";
-      }
-    };
-
-    syncTaskDialogOpen();
-
-    const observer = new MutationObserver(() => {
-      syncTaskDialogOpen();
-    });
-
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ["data-task-dialog", "style"],
-    });
-
-    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
@@ -595,14 +579,13 @@ export default function App() {
                       <WeekPage
                         tasks={tasks}
                         setTasks={handleSetTasks}
-                        completionsRev={0}
                         onTaskDialogVisibilityChange={handleTaskDialogVisibilityChange}
                       />
                     }
                   />
                   <Route
                     path="/month"
-                    element={<MonthPage tasks={tasks} setTasks={handleSetTasks} />}
+                    element={<MonthPage tasks={tasks} />}
                   />
                   <Route path="/help" element={<HelpPage />} />
                 </Routes>
@@ -613,11 +596,11 @@ export default function App() {
       </Box>
 
       <Paper
-        ref={mobileNavigationRef}
         className="mobile-bottom-navigation"
+        style={taskDialogOpen ? { display: "none" } : undefined}
         elevation={8}
         sx={{
-          display: { xs: taskDialogOpen ? "none" : "block", md: "none" },
+          display: { xs: "block", md: "none" },
           position: "fixed",
           bottom: 0,
           left: 0,

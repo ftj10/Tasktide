@@ -2,6 +2,7 @@
 // OUTPUT: Express application plus startup helpers
 // EFFECT: Exposes the backend API used by the weekly planner features and persists data through MongoDB models
 require('dotenv').config();
+const { randomUUID } = require('node:crypto');
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -22,6 +23,72 @@ app.get('/ping', (req, res) => {
   console.log('Keep-alive ping received at:', new Date().toISOString());
   res.status(200).send('hi,afausbeweufhqweuofbajksbfweq');
 });
+
+function parseConfiguredAdminUsernames() {
+  return new Set(
+    String(process.env.ADMIN_USERNAMES ?? '')
+      .split(',')
+      .map((value) => value.trim().toLowerCase())
+      .filter(Boolean)
+  );
+}
+
+function normalizeRole(role) {
+  return role === 'ADMIN' || role === 'USER' ? role : null;
+}
+
+function resolveUserRole(user) {
+  if (parseConfiguredAdminUsernames().has(String(user?.username ?? '').trim().toLowerCase())) {
+    return 'ADMIN';
+  }
+  const storedRole = normalizeRole(user?.role);
+  if (storedRole) return storedRole;
+  return 'USER';
+}
+
+function toSessionUser(user) {
+  return {
+    userId: user.userId ?? user._id,
+    username: user.username,
+    role: resolveUserRole(user),
+  };
+}
+
+function buildHelpQuestionFilter(user) {
+  if (user.role === 'ADMIN') return {};
+
+  const username = String(user.username ?? '').trim();
+  if (!username) return null;
+
+  const legacyOwnershipFilters = [
+    { userId: { $exists: false }, username },
+    { userId: null, username },
+  ];
+
+  if (mongoose.Types.ObjectId.isValid(user.userId)) {
+    return {
+      $or: [
+        { userId: user.userId },
+        ...legacyOwnershipFilters,
+      ],
+    };
+  }
+
+  return { $or: legacyOwnershipFilters };
+}
+
+async function persistResolvedUserRole(user) {
+  const storedRole = normalizeRole(user?.role);
+  if (storedRole) return storedRole;
+
+  const resolvedRole = resolveUserRole(user);
+  await User.updateOne(
+    { _id: user._id },
+    { $set: { role: resolvedRole } },
+    { runValidators: true }
+  );
+  return resolvedRole;
+}
 
 // INPUT: userId
 // OUTPUT: cleanup completion
@@ -71,7 +138,7 @@ const authenticateToken = (req, res, next) => {
 
   jwt.verify(token, process.env.JWT_SECRET, (err, decodedUser) => {
     if (err) return res.status(403).json({ error: "Invalid token" });
-    req.user = decodedUser; 
+    req.user = toSessionUser(decodedUser);
     next();
   });
 };
@@ -89,7 +156,11 @@ app.post('/register', async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
     
-    const newUser = new User({ username, password: hashedPassword });
+    const newUser = new User({
+      username,
+      password: hashedPassword,
+      role: resolveUserRole({ username }),
+    });
     await newUser.save();
 
     res.status(201).json({ message: "Registered" });
@@ -99,7 +170,7 @@ app.post('/register', async (req, res) => {
 });
 
 // INPUT: username and password
-// OUTPUT: JWT token plus username for the frontend session
+// OUTPUT: JWT token plus session profile for the frontend session
 // EFFECT: Starts an authenticated planner session for an existing user
 app.post('/login', async (req, res) => {
   try {
@@ -111,9 +182,11 @@ app.post('/login', async (req, res) => {
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) return res.status(400).json({ error: "Invalid credentials" });
 
-    const token = jwt.sign({ userId: user._id, username: user.username }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    const role = await persistResolvedUserRole(user);
+    const sessionUser = toSessionUser({ userId: user._id, username: user.username, role });
+    const token = jwt.sign(sessionUser, process.env.JWT_SECRET, { expiresIn: '7d' });
     
-    res.status(200).json({ token, username: user.username });
+    res.status(200).json({ token, username: user.username, role: sessionUser.role });
   } catch (err) {
     res.status(500).json({ error: "Failed to log in" });
   }
@@ -125,7 +198,7 @@ app.post('/login', async (req, res) => {
 app.get('/tasks', authenticateToken, async (req, res) => {
   try {
     await cleanupTasksForUser(req.user.userId);
-    const tasks = await Task.find({ userId: req.user.userId }, { _id: 0, __v: 0 });
+    const tasks = await Task.find({ userId: req.user.userId }, { _id: 0, __v: 0, userId: 0 });
     res.status(200).json(tasks);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch" });
@@ -195,7 +268,7 @@ app.delete('/tasks/:id', authenticateToken, async (req, res) => {
 app.get('/reminders', authenticateToken, async (req, res) => {
   try {
     await cleanupRemindersForUser(req.user.userId);
-    const reminders = await Reminder.find({ userId: req.user.userId }, { _id: 0, __v: 0 });
+    const reminders = await Reminder.find({ userId: req.user.userId }, { _id: 0, __v: 0, userId: 0 });
     res.status(200).json(reminders);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch" });
@@ -256,11 +329,15 @@ app.delete('/reminders/:id', authenticateToken, async (req, res) => {
 });
 
 // INPUT: authenticated help-board request
-// OUTPUT: public help questions ordered by recency
-// EFFECT: Supplies the shared help center with cross-user questions
+// OUTPUT: role-scoped help questions ordered by recency
+// EFFECT: Supplies admins with all help posts and standard users with only their own posts
 app.get('/help-questions', authenticateToken, async (req, res) => {
   try {
-    const questions = await HelpQuestion.find({}, { _id: 0, __v: 0 }).sort({ createdAt: -1 });
+    const filter = buildHelpQuestionFilter(req.user);
+    if (!filter) {
+      return res.status(403).json({ error: "Invalid session" });
+    }
+    const questions = await HelpQuestion.find(filter, { _id: 0, __v: 0, userId: 0 }).sort({ createdAt: -1 });
     res.status(200).json(questions);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch" });
@@ -268,30 +345,56 @@ app.get('/help-questions', authenticateToken, async (req, res) => {
 });
 
 // INPUT: authenticated username plus help question payload
-// OUTPUT: save confirmation or validation error
-// EFFECT: Adds a new public question to the shared help board
+// OUTPUT: saved help question or validation error
+// EFFECT: Adds one new help post that stays owned by the signed-in user and visible to admins
 app.post('/help-questions', authenticateToken, async (req, res) => {
   try {
-    const { id, question, createdAt } = req.body;
+    const { question } = req.body;
     if (!question || !String(question).trim()) {
       return res.status(400).json({ error: "Question is required" });
     }
+    if (!mongoose.Types.ObjectId.isValid(req.user.userId)) {
+      return res.status(403).json({ error: "Invalid session" });
+    }
 
     const questionPayload = {
-      id,
+      id: randomUUID(),
+      userId: req.user.userId,
       username: req.user.username,
       question: String(question).trim(),
-      createdAt,
+      createdAt: new Date().toISOString(),
     };
 
-    const result = await HelpQuestion.updateOne(
-      { id: questionPayload.id },
-      { $set: questionPayload },
-      { upsert: true, runValidators: true, setDefaultsOnInsert: true }
-    );
-    res.status(result.upsertedCount > 0 ? 201 : 200).json({ message: result.upsertedCount > 0 ? "Saved" : "Already saved" });
+    await HelpQuestion.create(questionPayload);
+
+    res.status(201).json({
+      id: questionPayload.id,
+      username: questionPayload.username,
+      question: questionPayload.question,
+      createdAt: questionPayload.createdAt,
+    });
   } catch (err) {
     res.status(500).json({ error: "Failed to save" });
+  }
+});
+
+// INPUT: authenticated admin session plus help question id
+// OUTPUT: delete confirmation or access error
+// EFFECT: Lets admins remove help questions from the review board
+app.delete('/help-questions/:id', authenticateToken, async (req, res) => {
+  try {
+    if (req.user.role !== 'ADMIN') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    const deletedQuestion = await HelpQuestion.findOneAndDelete({ id: req.params.id });
+    if (!deletedQuestion) {
+      return res.status(404).json({ error: "Help question not found" });
+    }
+
+    res.status(200).json({ message: "Deleted" });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to delete" });
   }
 });
 
@@ -321,4 +424,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { app, authenticateToken, connectDatabase, startServer };
+module.exports = { app, authenticateToken, connectDatabase, startServer, resolveUserRole };

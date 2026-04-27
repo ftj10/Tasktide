@@ -148,8 +148,10 @@ const resources = {
       },
       help: {
         title: "Help Center",
-        subtitle: "Learn how to use the planner, check common answers, and post a question that everyone can see.",
-        submitSuccess: "Your question is now visible to everyone.",
+        subtitleUser: "Learn how to use the planner, check common answers, and send a question to the admin review board.",
+        subtitleAdmin: "Learn how to use the planner, check common answers, and review every submitted help question.",
+        submitSuccess: "Your question has been saved.",
+        submitError: "We couldn't post your question. Your draft is still here.",
         guides: {
           title: "How To Use This Website",
           step0: "Use the EN / 中文 button on the login page whenever you want to switch the sign-in flow between English and Chinese before entering the app.",
@@ -176,7 +178,7 @@ const resources = {
           },
           q4: {
             question: "Who can see the submitted questions?",
-            answer: "All signed-in users can see the shared question list, and new questions appear there after submission."
+            answer: "Standard users can only see their own submitted questions in the My Questions list, while admin accounts can review the full question list and delete questions when needed. Every submission is stored as its own post instead of overwriting an older question."
           },
           q5: {
             question: "How does clicking in Week view work?",
@@ -188,7 +190,7 @@ const resources = {
           },
           q7: {
             question: "What happens if a save request fails?",
-            answer: "The app reloads tasks or reminders from the server after a failed save so unsaved local changes do not replace your stored data."
+            answer: "The app reloads tasks or reminders from the server after a failed save so unsaved local changes do not replace your stored data. If posting a help question fails, the draft stays in the editor and the page shows an error instead of a fake success message."
           },
           q8: {
             question: "Can I change the language before logging in?",
@@ -209,7 +211,12 @@ const resources = {
           submit: "Send Question"
         },
         community: {
-          title: "Shared Questions",
+          titleUser: "My Questions",
+          titleAdmin: "All User Questions",
+          scopeUser: "Only you and admin accounts can see the questions in this list.",
+          scopeAdmin: "Admin view: you can review questions from every signed-in user.",
+          deleteSuccess: "The question has been deleted.",
+          deleteError: "We couldn't delete that question.",
           empty: "No questions yet.",
           meta: "Asked by {{username}} on {{createdAt}}"
         }
@@ -413,8 +420,10 @@ const resources = {
       },
       help: {
         title: "帮助中心",
-        subtitle: "了解如何使用这个计划工具、查看常见问答，并提交所有人都能看到的问题。",
-        submitSuccess: "你的问题现在已经对所有人可见。",
+        subtitleUser: "了解如何使用这个计划工具、查看常见问答，并把问题提交到管理员审核列表。",
+        subtitleAdmin: "了解如何使用这个计划工具、查看常见问答，并查看所有用户提交的问题。",
+        submitSuccess: "你的问题已保存。",
+        submitError: "问题发布失败，草稿会保留在输入框中。",
         guides: {
           title: "网站使用说明",
           step0: "如果你想在登录前切换语言，可以先使用登录页上的 EN / 中文 按钮，在英文和中文之间切换认证界面。",
@@ -441,7 +450,7 @@ const resources = {
           },
           q4: {
             question: "谁可以看到提交的问题？",
-            answer: "所有已登录用户都可以看到共享问题列表，新问题提交后会立即显示在那里。"
+            answer: "普通用户只能在“我的问题”列表中看到自己提交的问题，而管理员账号可以查看完整的问题列表，并在需要时删除问题。每次提交都会作为独立帖子保存，不会覆盖旧问题。"
           },
           q5: {
             question: "Week 页面中的点击行为是什么？",
@@ -453,7 +462,7 @@ const resources = {
           },
           q7: {
             question: "如果保存请求失败会怎样？",
-            answer: "当保存失败时，应用会从服务器重新加载任务或提醒，避免未保存的本地变更覆盖你已经存储的数据。"
+            answer: "当保存失败时，应用会从服务器重新加载任务或提醒，避免未保存的本地变更覆盖你已经存储的数据。如果帮助问题发布失败，草稿会保留在输入框中，页面也会显示错误提示，而不是误报成功。"
           },
           q8: {
             question: "我可以在登录前切换语言吗？",
@@ -474,7 +483,12 @@ const resources = {
           submit: "发送问题"
         },
         community: {
-          title: "共享问题",
+          titleUser: "我的问题",
+          titleAdmin: "所有用户问题",
+          scopeUser: "这个列表中的问题只有你和管理员账号可以看到。",
+          scopeAdmin: "管理员视图：你可以查看所有已登录用户提交的问题。",
+          deleteSuccess: "该问题已删除。",
+          deleteError: "无法删除该问题。",
           empty: "还没有问题。",
           meta: "{{username}} 提问于 {{createdAt}}"
         }

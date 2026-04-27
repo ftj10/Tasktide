@@ -1,5 +1,24 @@
 # Release Notes
 
+## v1.10.0 - 2026-04-27
+
+- Added persistent `USER` and `ADMIN` roles to accounts and included the session role in login responses.
+- Scoped help-question reads so standard users only see their own submissions while admins can review every question, including legacy rows that only have username ownership.
+- Added optional `ADMIN_USERNAMES` bootstrap config for admin privileges.
+- Added admin-only help-question deletion from the Help Center and backend API.
+- Backfilled missing user `role` fields on successful login so older accounts are written back to the dataset.
+- Updated the Help Center copy to describe the admin review flow, role-specific question lists, and the fact that `My Questions` is the standard non-admin view.
+- Reworked Week recurring event expansion so it only generates occurrences for the visible range and reuses cached occurrence windows.
+- Added backend and frontend regression coverage for admin-scoped help access, owner-only help reads, admin deletion, role-aware login persistence, and visible-range recurring occurrence generation.
+
+## v1.9.2 - 2026-04-27
+
+- Changed shared help-question posting to create new server-owned posts instead of overwriting older questions through public ids.
+- Kept the help-question draft visible and showed an error message when question posting fails.
+- Fixed Week calendar events so single-occurrence recurring-task overrides now use the correct title and time slot.
+- Replaced JSON-stringify task and reminder sync comparisons with explicit field comparisons and removed the shell-level task-dialog DOM observer.
+- Tightened reminder and help-question schema fields and added backend reminder CRUD coverage plus frontend regression coverage for help-question failures and recurring-event override timing.
+
 ## v1.9.1 - 2026-04-27
 
 - Hid the mobile bottom navigation while add-task and edit-task dialogs are open.

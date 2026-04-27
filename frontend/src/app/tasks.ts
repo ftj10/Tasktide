@@ -8,6 +8,9 @@ import { weekdayISO, ymd } from "./date";
 
 export type TaskSaveScope = "series" | "single";
 
+const OCCURRENCE_RANGE_CACHE_LIMIT = 500;
+const occurrenceRangeCache = new Map<string, string[]>();
+
 export function normalizeTask(task: Task): Task {
   const beginDate = task.beginDate ?? task.date ?? normalizeLegacyPermanentBeginDate(task);
   const recurrence = normalizeRecurrence(task, beginDate);
@@ -55,15 +58,54 @@ export function getRepeatLabelKey(task: Task) {
 
 export function getTaskOccurrence(task: Task, dateYmd: string): Task | null {
   const normalized = normalizeTask(task);
-  if (normalized.recurrence?.frequency === "NONE") {
-    if (normalized.beginDate !== dateYmd || normalized.done) return null;
-    return normalized;
+  return getTaskOccurrenceFromNormalizedTask(normalized, dateYmd);
+}
+
+export function getTaskOccurrenceFromNormalizedTask(task: Task, dateYmd: string): Task | null {
+  if (task.recurrence?.frequency === "NONE") {
+    if (task.beginDate !== dateYmd || task.done) return null;
+    return task;
   }
 
-  if (!matchesRecurrence(normalized, dateYmd)) return null;
+  if (!matchesRecurrence(task, dateYmd)) return null;
 
-  const override = normalized.occurrenceOverrides?.[dateYmd];
-  return override ? { ...normalized, ...override } : normalized;
+  const override = task.occurrenceOverrides?.[dateYmd];
+  return override ? { ...task, ...override } : task;
+}
+
+export function listRecurringOccurrenceDatesForNormalizedTask(
+  task: Task,
+  rangeStart: dayjs.Dayjs,
+  rangeEnd: dayjs.Dayjs
+) {
+  const recurrence = task.recurrence;
+  const beginDate = task.beginDate;
+  if (!recurrence || recurrence.frequency === "NONE" || !beginDate) return [];
+
+  const safeRangeStart = rangeStart.startOf("day");
+  const safeRangeEnd = rangeEnd.startOf("day");
+  if (!safeRangeStart.isBefore(safeRangeEnd, "day")) return [];
+
+  const cacheKey = [
+    task.id,
+    beginDate,
+    recurrence.frequency,
+    recurrence.interval ?? 1,
+    recurrence.until ?? "",
+    (recurrence.weekdays ?? []).join(","),
+    (recurrence.monthDays ?? []).join(","),
+    ymd(safeRangeStart),
+    ymd(safeRangeEnd),
+  ].join("|");
+  const cached = occurrenceRangeCache.get(cacheKey);
+  if (cached) return cached;
+
+  const dates = listRecurringOccurrenceDates(task, safeRangeStart, safeRangeEnd);
+  if (occurrenceRangeCache.size >= OCCURRENCE_RANGE_CACHE_LIMIT) {
+    occurrenceRangeCache.clear();
+  }
+  occurrenceRangeCache.set(cacheKey, dates);
+  return dates;
 }
 
 export function applySeriesEdit(sourceTask: Task, editedTask: Task): Task {
@@ -99,6 +141,65 @@ export function applySingleOccurrenceEdit(sourceTask: Task, dateYmd: string, edi
     },
     updatedAt: edited.updatedAt,
   };
+}
+
+export function saveTaskCollection(
+  allTasks: Task[],
+  savedTask: Task,
+  options: {
+    editingSourceTask?: Task;
+    scope?: TaskSaveScope;
+    occurrenceDateYmd?: string;
+  } = {}
+) {
+  if (
+    options.editingSourceTask &&
+    isRecurringTask(options.editingSourceTask) &&
+    options.scope === "single" &&
+    options.occurrenceDateYmd
+  ) {
+    return allTasks.map((item) =>
+      item.id === options.editingSourceTask?.id
+        ? applySingleOccurrenceEdit(item, options.occurrenceDateYmd, savedTask)
+        : item
+    );
+  }
+
+  const sourceId = options.editingSourceTask?.id ?? savedTask.id;
+  const nextTask = options.editingSourceTask
+    ? applySeriesEdit(options.editingSourceTask, savedTask)
+    : normalizeTask(savedTask);
+
+  return [...allTasks.filter((item) => item.id !== sourceId), nextTask];
+}
+
+export function removeTaskFromCollection(allTasks: Task[], taskId: string) {
+  return allTasks.filter((task) => task.id !== taskId);
+}
+
+export function areTasksEqual(sourceTask: Task, targetTask: Task) {
+  const source = normalizeTask(sourceTask);
+  const target = normalizeTask(targetTask);
+
+  return (
+    source.id === target.id &&
+    source.title === target.title &&
+    source.type === target.type &&
+    source.weekday === target.weekday &&
+    source.date === target.date &&
+    source.beginDate === target.beginDate &&
+    source.emergency === target.emergency &&
+    Boolean(source.done) === Boolean(target.done) &&
+    source.createdAt === target.createdAt &&
+    source.updatedAt === target.updatedAt &&
+    (source.location ?? "") === (target.location ?? "") &&
+    (source.mapProvider ?? "google") === (target.mapProvider ?? "google") &&
+    (source.startTime ?? "") === (target.startTime ?? "") &&
+    (source.endTime ?? "") === (target.endTime ?? "") &&
+    (source.description ?? "") === (target.description ?? "") &&
+    areRecurrencesEqual(source.recurrence, target.recurrence) &&
+    areOccurrenceOverridesEqual(source.occurrenceOverrides, target.occurrenceOverrides)
+  );
 }
 
 function normalizeLegacyPermanentBeginDate(task: Task) {
@@ -167,6 +268,55 @@ function uniqueSortedNumbers(values?: number[]) {
   return [...new Set((values ?? []).filter((value) => Number.isFinite(value)))].sort((a, b) => a - b);
 }
 
+function areRecurrencesEqual(source?: TaskRecurrence, target?: TaskRecurrence) {
+  if (!source && !target) return true;
+  if (!source || !target) return false;
+
+  return (
+    source.frequency === target.frequency &&
+    (source.interval ?? 1) === (target.interval ?? 1) &&
+    (source.until ?? null) === (target.until ?? null) &&
+    areNumberArraysEqual(source.weekdays, target.weekdays) &&
+    areNumberArraysEqual(source.monthDays, target.monthDays)
+  );
+}
+
+function areNumberArraysEqual(source?: number[], target?: number[]) {
+  const left = source ?? [];
+  const right = target ?? [];
+  if (left.length !== right.length) return false;
+
+  return left.every((value, index) => value === right[index]);
+}
+
+function areOccurrenceOverridesEqual(
+  source?: Record<string, TaskOccurrenceOverride>,
+  target?: Record<string, TaskOccurrenceOverride>
+) {
+  const sourceEntries = Object.entries(source ?? {}).sort(([leftKey], [rightKey]) => leftKey.localeCompare(rightKey));
+  const targetEntries = Object.entries(target ?? {}).sort(([leftKey], [rightKey]) => leftKey.localeCompare(rightKey));
+
+  if (sourceEntries.length !== targetEntries.length) return false;
+
+  return sourceEntries.every(([sourceDate, sourceOverride], index) => {
+    const [targetDate, targetOverride] = targetEntries[index] ?? [];
+
+    return sourceDate === targetDate && areOccurrenceOverrideFieldsEqual(sourceOverride, targetOverride);
+  });
+}
+
+function areOccurrenceOverrideFieldsEqual(source?: TaskOccurrenceOverride, target?: TaskOccurrenceOverride) {
+  return (
+    (source?.title ?? "") === (target?.title ?? "") &&
+    source?.emergency === target?.emergency &&
+    (source?.location ?? "") === (target?.location ?? "") &&
+    (source?.mapProvider ?? "google") === (target?.mapProvider ?? "google") &&
+    (source?.startTime ?? "") === (target?.startTime ?? "") &&
+    (source?.endTime ?? "") === (target?.endTime ?? "") &&
+    (source?.description ?? "") === (target?.description ?? "")
+  );
+}
+
 function matchesRecurrence(task: Task, dateYmd: string) {
   const recurrence = task.recurrence;
   const beginDate = task.beginDate;
@@ -204,6 +354,115 @@ function matchesRecurrence(task: Task, dateYmd: string) {
   }
 
   return false;
+}
+
+function listRecurringOccurrenceDates(task: Task, rangeStart: dayjs.Dayjs, rangeEnd: dayjs.Dayjs) {
+  const recurrence = task.recurrence;
+  const beginDate = task.beginDate;
+  if (!recurrence || recurrence.frequency === "NONE" || !beginDate) return [];
+
+  const start = dayjs(beginDate).startOf("day");
+  const until = recurrence.until ? dayjs(recurrence.until).startOf("day") : null;
+  const results: string[] = [];
+
+  if (recurrence.frequency === "DAILY") {
+    const interval = recurrence.interval ?? 1;
+    const firstCandidateBase = rangeStart.isAfter(start, "day") ? rangeStart : start;
+    const dayDiff = firstCandidateBase.diff(start, "day");
+    const remainder = dayDiff % interval;
+    let cursor = remainder === 0 ? firstCandidateBase : firstCandidateBase.add(interval - remainder, "day");
+
+    while (cursor.isBefore(rangeEnd, "day")) {
+      if (until && cursor.isAfter(until, "day")) break;
+      results.push(ymd(cursor));
+      cursor = cursor.add(interval, "day");
+    }
+
+    return results;
+  }
+
+  if (recurrence.frequency === "WEEKLY") {
+    const interval = recurrence.interval ?? 1;
+    const weekdays = new Set(recurrence.weekdays ?? []);
+    const firstCandidateBase = rangeStart.isAfter(start, "day") ? rangeStart : start;
+    const initialCycle = Math.floor(firstCandidateBase.diff(start, "day") / 7);
+    const cycleRemainder = initialCycle % interval;
+    let cycleIndex = cycleRemainder === 0 ? initialCycle : initialCycle + (interval - cycleRemainder);
+
+    for (
+      let cycleStart = start.add(cycleIndex * 7, "day");
+      cycleStart.isBefore(rangeEnd, "day");
+      cycleStart = cycleStart.add(interval * 7, "day")
+    ) {
+      for (let offset = 0; offset < 7; offset += 1) {
+        const candidate = cycleStart.add(offset, "day");
+        if (candidate.isBefore(firstCandidateBase, "day")) continue;
+        if (!candidate.isBefore(rangeEnd, "day")) break;
+        if (until && candidate.isAfter(until, "day")) return results;
+        if (weekdays.has(weekdayISO(candidate))) {
+          results.push(ymd(candidate));
+        }
+      }
+    }
+
+    return results;
+  }
+
+  if (recurrence.frequency === "MONTHLY") {
+    const interval = recurrence.interval ?? 1;
+    const monthDays = recurrence.monthDays ?? [];
+    const startMonthIndex = start.year() * 12 + start.month();
+    const rangeMonthIndex = rangeStart.year() * 12 + rangeStart.month();
+    const initialMonthDiff = Math.max(0, rangeMonthIndex - startMonthIndex);
+    const monthRemainder = initialMonthDiff % interval;
+    let monthDiff = monthRemainder === 0 ? initialMonthDiff : initialMonthDiff + (interval - monthRemainder);
+
+    for (
+      let currentMonth = start.startOf("month").add(monthDiff, "month");
+      currentMonth.isBefore(rangeEnd, "day");
+      currentMonth = currentMonth.add(interval, "month")
+    ) {
+      for (const monthDay of monthDays) {
+        const candidate = createCalendarDate(currentMonth.year(), currentMonth.month(), monthDay);
+        if (!candidate) continue;
+        if (candidate.isBefore(start, "day")) continue;
+        if (candidate.isBefore(rangeStart, "day")) continue;
+        if (!candidate.isBefore(rangeEnd, "day")) continue;
+        if (until && candidate.isAfter(until, "day")) return results;
+        results.push(ymd(candidate));
+      }
+    }
+
+    return results;
+  }
+
+  if (recurrence.frequency === "YEARLY") {
+    const interval = recurrence.interval ?? 1;
+    const initialYearDiff = Math.max(0, rangeStart.year() - start.year());
+    const yearRemainder = initialYearDiff % interval;
+    let yearDiff = yearRemainder === 0 ? initialYearDiff : initialYearDiff + (interval - yearRemainder);
+
+    while (start.year() + yearDiff <= rangeEnd.year()) {
+      const candidateYear = start.year() + yearDiff;
+      const candidate = createCalendarDate(candidateYear, start.month(), start.date());
+      if (candidate && !candidate.isBefore(rangeEnd, "day")) break;
+      if (candidate && until && candidate.isAfter(until, "day")) break;
+      if (candidate && !candidate.isBefore(rangeStart, "day") && !candidate.isBefore(start, "day")) {
+        results.push(ymd(candidate));
+      }
+      yearDiff += interval;
+    }
+  }
+
+  return results;
+}
+
+function createCalendarDate(year: number, monthIndex: number, dayOfMonth: number) {
+  const candidate = dayjs(new Date(year, monthIndex, dayOfMonth)).startOf("day");
+  if (candidate.year() !== year || candidate.month() !== monthIndex || candidate.date() !== dayOfMonth) {
+    return null;
+  }
+  return candidate;
 }
 
 function pickEditableFields(task: Task) {

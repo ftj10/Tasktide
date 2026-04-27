@@ -1,6 +1,6 @@
 // INPUT: authenticated help-question access plus translated help content
-// OUTPUT: help center page with guides, FAQ entries, and shared questions
-// EFFECT: Delivers onboarding content and the public question board for signed-in users
+// OUTPUT: help center page with guides, FAQ entries, and role-scoped questions
+// EFFECT: Delivers onboarding content and the help board for signed-in users and admins
 import { useEffect, useMemo, useState } from "react";
 import {
   Accordion,
@@ -27,7 +27,8 @@ import ForumRoundedIcon from "@mui/icons-material/ForumRounded";
 import { useTranslation } from "react-i18next";
 
 import type { HelpQuestion } from "../types";
-import { createHelpQuestion, loadHelpQuestions } from "../app/storage";
+import { ConfirmDeleteDialog } from "../components/ConfirmDeleteDialog";
+import { createHelpQuestion, deleteHelpQuestion, isAdminUser, loadHelpQuestions } from "../app/storage";
 
 export function HelpPage() {
   const { t, i18n } = useTranslation();
@@ -35,8 +36,14 @@ export function HelpPage() {
   const [draftQuestion, setDraftQuestion] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState("");
+  const [submitSeverity, setSubmitSeverity] = useState<"success" | "error">("success");
+  const [boardMessage, setBoardMessage] = useState("");
+  const [boardSeverity, setBoardSeverity] = useState<"success" | "error">("success");
+  const [deleteTarget, setDeleteTarget] = useState<HelpQuestion | undefined>();
   const currentLanguage = i18n.resolvedLanguage?.startsWith("zh") ? "zh" : "en";
+  const isAdmin = isAdminUser();
 
   const guideSteps = useMemo(
     () => [
@@ -80,22 +87,38 @@ export function HelpPage() {
     if (!draftQuestion.trim()) return;
     setIsSubmitting(true);
     setSubmitMessage("");
-    const nextQuestion: HelpQuestion = {
-      id: globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`,
-      username: "",
-      question: draftQuestion.trim(),
-      createdAt: new Date().toISOString(),
-    };
-    await createHelpQuestion({
-      id: nextQuestion.id,
-      question: nextQuestion.question,
-      createdAt: nextQuestion.createdAt,
-    });
-    const nextQuestions = await loadHelpQuestions();
-    setQuestions(nextQuestions);
-    setDraftQuestion("");
-    setSubmitMessage(t("help.submitSuccess"));
-    setIsSubmitting(false);
+    try {
+      const savedQuestion = await createHelpQuestion({
+        question: draftQuestion.trim(),
+      });
+      setQuestions((current) => [savedQuestion, ...current]);
+      setDraftQuestion("");
+      setSubmitSeverity("success");
+      setSubmitMessage(t("help.submitSuccess"));
+    } catch {
+      setSubmitSeverity("error");
+      setSubmitMessage(t("help.submitError"));
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleDeleteQuestion() {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+    setBoardMessage("");
+    try {
+      await deleteHelpQuestion(deleteTarget.id);
+      setQuestions((current) => current.filter((item) => item.id !== deleteTarget.id));
+      setBoardSeverity("success");
+      setBoardMessage(t("help.community.deleteSuccess"));
+      setDeleteTarget(undefined);
+    } catch {
+      setBoardSeverity("error");
+      setBoardMessage(t("help.community.deleteError"));
+    } finally {
+      setIsDeleting(false);
+    }
   }
 
   function formatDate(value: string) {
@@ -167,7 +190,7 @@ export function HelpPage() {
               color="text.secondary"
               sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}
             >
-              {t("help.subtitle")}
+              {t(isAdmin ? "help.subtitleAdmin" : "help.subtitleUser")}
             </Typography>
           </Box>
         </Stack>
@@ -245,7 +268,7 @@ export function HelpPage() {
             {sectionHeader(<ForumRoundedIcon />, t("help.ask.title"), "#10b981")}
             <Stack spacing={2}>
               {submitMessage ? (
-                <Alert severity="success" sx={{ borderRadius: 2 }}>
+                <Alert severity={submitSeverity} sx={{ borderRadius: 2 }}>
                   {submitMessage}
                 </Alert>
               ) : null}
@@ -272,7 +295,19 @@ export function HelpPage() {
 
         <Card>
           <CardContent>
-            {sectionHeader(<ForumRoundedIcon />, t("help.community.title"), "#f59e0b")}
+            {sectionHeader(
+              <ForumRoundedIcon />,
+              t(isAdmin ? "help.community.titleAdmin" : "help.community.titleUser"),
+              "#f59e0b"
+            )}
+            <Alert severity={isAdmin ? "info" : "success"} sx={{ mb: 2, borderRadius: 2 }}>
+              {t(isAdmin ? "help.community.scopeAdmin" : "help.community.scopeUser")}
+            </Alert>
+            {boardMessage ? (
+              <Alert severity={boardSeverity} sx={{ mb: 2, borderRadius: 2 }}>
+                {boardMessage}
+              </Alert>
+            ) : null}
             {isLoading ? (
               <Box sx={{ display: "flex", justifyContent: "center", py: 3 }}>
                 <CircularProgress size={28} />
@@ -292,15 +327,31 @@ export function HelpPage() {
                       "&:hover": { bgcolor: alpha("#4f46e5", 0.04) },
                     }}
                   >
-                    <Typography variant="body1" sx={{ mb: 0.75, fontWeight: 500 }}>
-                      {item.question}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {t("help.community.meta", {
-                        username: item.username,
-                        createdAt: formatDate(item.createdAt),
-                      })}
-                    </Typography>
+                    <Stack direction="row" spacing={2} justifyContent="space-between" alignItems="flex-start">
+                      <Box sx={{ minWidth: 0, flex: 1 }}>
+                        <Typography variant="body1" sx={{ mb: 0.75, fontWeight: 500 }}>
+                          {item.question}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {t("help.community.meta", {
+                            username: item.username,
+                            createdAt: formatDate(item.createdAt),
+                          })}
+                        </Typography>
+                      </Box>
+                      {isAdmin ? (
+                        <Button
+                          color="error"
+                          size="small"
+                          variant="outlined"
+                          disabled={isDeleting}
+                          onClick={() => setDeleteTarget(item)}
+                          sx={{ flexShrink: 0, borderRadius: 2 }}
+                        >
+                          {t("common.delete")}
+                        </Button>
+                      ) : null}
+                    </Stack>
                   </Paper>
                 ))}
               </Stack>
@@ -308,6 +359,14 @@ export function HelpPage() {
           </CardContent>
         </Card>
       </Stack>
+      <ConfirmDeleteDialog
+        open={!!deleteTarget}
+        title={deleteTarget?.question ?? ""}
+        onCancel={() => {
+          if (!isDeleting) setDeleteTarget(undefined);
+        }}
+        onConfirm={() => void handleDeleteQuestion()}
+      />
     </Box>
   );
 }
