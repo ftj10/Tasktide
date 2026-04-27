@@ -40,6 +40,8 @@ export function TaskDialog(props: {
   open: boolean;
   mode: Mode;
   defaultDateYmd: string;
+  defaultStartTime?: string;
+  defaultEndTime?: string;
   task?: Task;
   occurrenceDateYmd?: string;
   onClose: () => void;
@@ -70,6 +72,8 @@ export function TaskDialog(props: {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       emergency: 5,
+      startTime: props.defaultStartTime || undefined,
+      endTime: props.defaultEndTime || undefined,
       recurrence: {
         frequency: "NONE" as const,
         interval: 1,
@@ -77,7 +81,7 @@ export function TaskDialog(props: {
       },
       occurrenceOverrides: {},
     } satisfies Task;
-  }, [props.defaultDateYmd, props.mode, props.task]);
+  }, [props.defaultDateYmd, props.defaultEndTime, props.defaultStartTime, props.mode, props.task]);
 
   const [title, setTitle] = useState(base.title);
   const [beginDate, setBeginDate] = useState(base.beginDate ?? props.defaultDateYmd);

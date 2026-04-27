@@ -1,5 +1,18 @@
 # Release Notes
 
+## v1.9.0 - 2026-04-26
+
+- Changed Week to open in Time Grid by default on desktop and mobile.
+- Removed the global `Add Task` button from the mobile Week page.
+- Added press-hold time-range selection in the mobile Week time grid so task creation starts from the selected context.
+- Prefilled new Week mobile tasks with the selected date, start time, and end time from the pressed range.
+- Reduced Month view to the task grid only by removing its extra header controls while keeping vertical swipe navigation directly on the grid.
+- Added a `Jump to Current Month` button back to Month view without restoring the removed header shell.
+- Kept Month day cells focused on task previews instead of extra task-count labels.
+- Raised the mobile bottom navigation above overlapping planner content so nav taps win over the Week grid underneath.
+- Expanded README and in-app Help content to document the simplified Month layout.
+- Added frontend regression coverage for the simplified Month grid swipe layout, restored Month jump button, and stronger mobile bottom-navigation layering alongside the existing Week behavior changes.
+
 ## v1.8.0 - 2026-04-26
 
 - Replaced per-notification `localStorage` keys with one retained `notification-history` record.

@@ -93,6 +93,17 @@ describe("App behavior", () => {
     expect(screen.getAllByRole("link", { name: "Today" }).length).toBeGreaterThan(0);
   });
 
+  it("keeps mobile bottom navigation above overlapping page content", async () => {
+    setScreenWidth(390);
+
+    renderWithProviders(<App />);
+
+    const mobileNavigation = await screen.findByLabelText("Mobile navigation");
+    const mobileNavigationPaper = mobileNavigation.parentElement;
+
+    expect(mobileNavigationPaper).toHaveStyle({ zIndex: "1700" });
+  });
+
   it("reloads server tasks after a failed task save so local-only edits do not linger", async () => {
     const user = userEvent.setup();
     storageMocks.createTask.mockRejectedValueOnce(new Error("save failed"));

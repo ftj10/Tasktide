@@ -1,8 +1,8 @@
 // INPUT: month page and mocked navigation
-// OUTPUT: behavior coverage for month-cell navigation
-// EFFECT: Verifies the month overview links the user back to the selected Today date
+// OUTPUT: behavior coverage for month-grid navigation
+// EFFECT: Verifies the reduced month view keeps the task grid, date navigation, and grid swipe behavior
 import dayjs from "dayjs";
-import { screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, beforeEach, expect, it, vi } from "vitest";
 
@@ -36,5 +36,62 @@ describe("MonthPage behavior", () => {
     await user.click(screen.getAllByText(todayNumber)[0]);
 
     expect(navigateMock).toHaveBeenCalledWith(`/?date=${todayDate}`);
+  });
+
+  it("renders only the month task grid without the extra header controls", () => {
+    renderWithProviders(<MonthPage tasks={[]} setTasks={vi.fn()} />);
+
+    expect(screen.queryByText(dayjs().format("MMMM YYYY"))).not.toBeInTheDocument();
+    expect(screen.getByText("Jump to Current Month")).toBeInTheDocument();
+    expect(screen.getByTestId("month-grid-surface")).toBeInTheDocument();
+  });
+
+  it("changes month when the reduced month grid is swiped vertically", () => {
+    renderWithProviders(<MonthPage tasks={[]} setTasks={vi.fn()} />);
+
+    const previousMonthDay = dayjs().subtract(1, "month").date(1).format("D");
+    const swipeSurface = screen.getByTestId("month-grid-surface");
+
+    fireEvent.touchStart(swipeSurface, { touches: [{ clientX: 120, clientY: 260 }] });
+    fireEvent.touchMove(swipeSurface, { touches: [{ clientX: 126, clientY: 120 }] });
+    fireEvent.touchEnd(swipeSurface);
+
+    expect(screen.getAllByText(previousMonthDay).length).toBeGreaterThan(0);
+  });
+
+  it("jumps back to the current month when the month jump button is pressed", async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(<MonthPage tasks={[]} setTasks={vi.fn()} />);
+
+    const swipeSurface = screen.getByTestId("month-grid-surface");
+    fireEvent.touchStart(swipeSurface, { touches: [{ clientX: 120, clientY: 260 }] });
+    fireEvent.touchMove(swipeSurface, { touches: [{ clientX: 126, clientY: 120 }] });
+    fireEvent.touchEnd(swipeSurface);
+
+    await user.click(screen.getByRole("button", { name: "Jump to Current Month" }));
+
+    expect(screen.getAllByText(String(dayjs().date())).length).toBeGreaterThan(0);
+  });
+
+  it("does not show a per-day task-count label in month cells", () => {
+    renderWithProviders(
+      <MonthPage
+        tasks={[
+          {
+            id: "task-1",
+            title: "Plan roadmap",
+            type: "ONCE",
+            date: dayjs().format("YYYY-MM-DD"),
+            emergency: 2,
+            createdAt: "2026-04-20T00:00:00.000Z",
+            updatedAt: "2026-04-20T00:00:00.000Z",
+          },
+        ]}
+        setTasks={vi.fn()}
+      />
+    );
+
+    expect(screen.queryByText(/1 tasks?/i)).not.toBeInTheDocument();
   });
 });

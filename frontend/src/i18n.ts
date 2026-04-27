@@ -103,11 +103,19 @@ const resources = {
         title: "Week View",
         listView: "List View",
         timeGridView: "Time Grid",
-        todayButton: "Today"
+        todayButton: "Today",
+        mobileCreateHint: "On phones, press-hold a time range in Time Grid to create a task there.",
+        defaultView: "Default: Time Grid",
+        mobileSwipeHint: "Swipe sideways through the week",
+        desktopHint: "Time placement first"
       },
       month: {
         jumpToCurrentMonth: "Jump to Current Month",
         moreTasks: "+{{count}} more",
+        mobileSwipeHint: "Swipe up or down to change month",
+        mobileGestureDescription: "Swipe up for previous month or down for next month.",
+        desktopHint: "Arrow navigation on desktop",
+        scanHint: "Scan workload by day",
         weekdays: {
           sun: "Sun",
           mon: "Mon",
@@ -146,7 +154,7 @@ const resources = {
           title: "How To Use This Website",
           step0: "Use the EN / 中文 button on the login page whenever you want to switch the sign-in flow between English and Chinese before entering the app.",
           step1: "Use Today to add, edit, complete, or move tasks for the current day. Task forms now start from a begin date and a repeat window.",
-          step2: "Use Week and Month to review your schedule and jump between dates quickly.",
+          step2: "Use Week and Month to review your schedule and jump between dates quickly. Week now opens in Time Grid by default, and on phones you can press-hold a time range before creating a task while Month stays as a simplified task grid.",
           step3: "Use Reminders for ongoing notes that should stay visible until you mark them done.",
           step4: "On phones, use the bottom navigation to switch between planner sections, while larger screens keep the sidebar visible.",
           step5: "Task, Reminder, and repeat-option forms open full-screen on mobile for easier editing, and stay centered as dialogs on larger screens.",
@@ -172,11 +180,11 @@ const resources = {
           },
           q5: {
             question: "How does clicking in Week view work?",
-            answer: "Click a day header to jump to that date in Today, click an empty spot so the next new task uses that date by default, and on mobile keep swiping through 4-day then 3-day week pages across each week."
+            answer: "Click a day header to jump to that date in Today, click an empty spot on larger screens so the next new task uses that date by default, and on mobile the Week page now opens in Time Grid so you can press-hold a time range immediately while swiping through each week's 4-day and 3-day pages."
           },
           q6: {
             question: "How does the layout change on mobile devices?",
-            answer: "The planner switches to a bottom navigation layout, narrows typography, uses a swipeable Week view that rolls from 4 days to 3 days and into the next week, and expands Task and Reminder forms to full-screen for easier touch use."
+            answer: "The planner switches to a bottom navigation layout, narrows typography, uses a swipeable Week view that rolls from 4 days to 3 days and into the next week, replaces the Week add button with press-hold time-range creation, keeps Month as a simplified task grid, and expands Task and Reminder forms to full-screen for easier touch use."
           },
           q7: {
             question: "What happens if a save request fails?",
@@ -360,11 +368,19 @@ const resources = {
         title: "周视图",
         listView: "列表视图",
         timeGridView: "时间网格",
-        todayButton: "今天"
+        todayButton: "今天",
+        mobileCreateHint: "在手机上可直接在时间网格中长按一段时间范围，在该时段创建任务。",
+        defaultView: "默认：时间网格",
+        mobileSwipeHint: "左右滑动浏览本周",
+        desktopHint: "优先按时间安排"
       },
       month: {
         jumpToCurrentMonth: "跳到当前月份",
         moreTasks: "+{{count}} 个更多",
+        mobileSwipeHint: "上下滑动切换月份",
+        mobileGestureDescription: "向上滑到上个月，向下滑到下个月。",
+        desktopHint: "桌面端使用箭头切换",
+        scanHint: "按天查看任务密度",
         weekdays: {
           sun: "日",
           mon: "一",
@@ -403,7 +419,7 @@ const resources = {
           title: "网站使用说明",
           step0: "如果你想在登录前切换语言，可以先使用登录页上的 EN / 中文 按钮，在英文和中文之间切换认证界面。",
           step1: "在 Today 页面中添加、编辑、完成或移动当天任务。任务表单现在会先设置开始日期，再进入重复设置窗口。",
-          step2: "在 Week 和 Month 页面快速查看整体安排并跳转日期。",
+          step2: "在 Week 和 Month 页面快速查看整体安排并跳转日期。Week 现在默认进入时间网格；在手机上可直接长按时间范围创建任务，而 Month 则保持为简化后的任务网格。",
           step3: "使用 Reminders 记录持续存在、直到你手动完成的提醒事项。",
           step4: "在手机上可使用底部导航切换页面；在较大屏幕上会显示侧边栏导航。",
           step5: "Task、Reminder 和重复设置表单在手机上会全屏打开，较大屏幕上则保持居中弹窗。",
@@ -429,11 +445,11 @@ const resources = {
           },
           q5: {
             question: "Week 页面中的点击行为是什么？",
-            answer: "点击某一天的日期标题会跳转到对应的 Today 页面；点击周历中的空白区域后，再新增任务时会默认带入该日期；在手机上还可以持续左右滑动，在每周的 4 天页与 3 天页之间切换并进入下一周。"
+            answer: "点击某一天的日期标题会跳转到对应的 Today 页面；在较大屏幕上点击周历中的空白区域后，再新增任务时会默认带入该日期；在手机上 Week 页面默认就是时间网格，可直接长按某段时间范围打开该时段的任务创建流程，同时仍可在每周的 4 天页与 3 天页之间持续滑动并进入下一周。"
           },
           q6: {
             question: "移动设备上的布局会怎样变化？",
-            answer: "应用会切换到底部导航、缩小排版字号，并让 Week 页面改为可持续左右滑动的布局，按每周先 4 天再 3 天的顺序切换，同时让 Task 与 Reminder 表单改为全屏显示，方便触控操作。"
+            answer: "应用会切换到底部导航、缩小排版字号，并让 Week 页面改为可持续左右滑动的布局，按每周先 4 天再 3 天的顺序切换，同时把 Week 页面上的新增任务入口改成长按时间范围，并让 Month 页面保持为简化后的任务网格，同时让 Task 与 Reminder 表单改为全屏显示，方便触控操作。"
           },
           q7: {
             question: "如果保存请求失败会怎样？",

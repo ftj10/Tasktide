@@ -14,6 +14,45 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-04-26-mobile-week-range-create",
+    version: "v1.9.0",
+    releasedAt: "2026-04-26",
+    title: {
+      en: "Week Time Grid default and mobile gesture navigation",
+      zh: "Week 默认时间网格与移动端手势导航"
+    },
+    summary: {
+      en: "Week now opens in Time Grid by default, mobile Week creates tasks from a press-held time range, and Month uses a simpler grid-only layout with direct grid swipes.",
+      zh: "Week 现在默认以时间网格打开，移动端 Week 可通过长按时间范围创建任务，而 Month 则使用了更简洁的纯任务网格布局，并支持直接在网格中滑动切换月份。"
+    },
+    changes: {
+      en: [
+        "Changed Week to open in Time Grid by default on desktop and mobile.",
+        "Removed the global Add Task button from the mobile Week header.",
+        "Added press-hold time-range selection in the mobile Week time grid before task creation opens.",
+        "Prefilled the new task dialog with the selected date, start time, and end time from the chosen range.",
+        "Reduced Month view to the task grid only by removing its extra header controls while keeping vertical swipe navigation directly on the grid.",
+        "Added a Jump to Current Month button back to Month view without restoring the removed header shell.",
+        "Removed the per-day task-count label from Month cards so the cells stay focused on task previews.",
+        "Raised the mobile bottom navigation above overlapping planner content so nav taps win over the Week grid underneath.",
+        "Documented the simplified Month layout in README and in-app Help.",
+        "Added frontend regression coverage for default Week Time Grid behavior, mobile Week range-first creation, the simplified Month grid swipe layout, the restored Month jump button, and stronger mobile bottom-navigation layering."
+      ],
+      zh: [
+        "将 Week 改为在桌面端和移动端默认以时间网格打开。",
+        "移除了移动端 Week 页头中的全局 Add Task 按钮。",
+        "在移动端 Week 时间网格中新增长按时间范围后再打开创建任务流程。",
+        "将新任务弹窗预填为所选时间范围对应的日期、开始时间与结束时间。",
+        "将 Month 简化为仅保留任务网格，移除了额外的页头控件，同时保留直接在网格中上下滑动切换月份。",
+        "在不恢复已移除页头外壳的前提下，为 Month 页面重新加入 Jump to Current Month 按钮。",
+        "移除了 Month 日期卡片中的每日任务数量标签，让每个格子专注显示任务预览。",
+        "提高了移动端底部导航的层级，让它在与 Week 页面内容重叠时优先响应点击。",
+        "在 README 与应用内 Help 中补充 Month 简化布局的说明。",
+        "新增 Week 默认时间网格、移动端 Week 按时间范围创建任务、Month 纯网格滑动布局、Month 返回本月按钮，以及更强的移动端底部导航层级的前端回归测试。"
+      ]
+    }
+  },
+  {
     id: "2026-04-26-bounded-notification-history",
     version: "v1.8.0",
     releasedAt: "2026-04-26",

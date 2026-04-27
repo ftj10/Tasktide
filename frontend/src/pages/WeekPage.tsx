@@ -1,7 +1,7 @@
 // INPUT: task collection plus completion refresh state
 // OUTPUT: weekly calendar page with navigation and task editing actions
 // EFFECT: Turns planner tasks into week-view events and connects week interactions back to task dialogs and day routing
-import { Box, Button, Stack, ToggleButton, ToggleButtonGroup, Typography, useMediaQuery, useTheme } from "@mui/material";
+import { Box, Button, Chip, Stack, ToggleButton, ToggleButtonGroup, Typography, useMediaQuery, useTheme } from "@mui/material";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import FullCalendar from "@fullcalendar/react";
@@ -61,7 +61,9 @@ export function WeekPage(props: {
   const [editingSourceTask, setEditingSourceTask] = useState<Task | undefined>();
   const [deleteTask, setDeleteTask] = useState<Task | undefined>();
   const [defaultDate, setDefaultDate] = useState<string | undefined>();
-  const [viewMode, setViewMode] = useState<"dayGrid" | "timeGrid">("dayGrid");
+  const [defaultStartTime, setDefaultStartTime] = useState<string | undefined>();
+  const [defaultEndTime, setDefaultEndTime] = useState<string | undefined>();
+  const [viewMode, setViewMode] = useState<"dayGrid" | "timeGrid">("timeGrid");
   const [mobileWeekStart, setMobileWeekStart] = useState(() => dayjs(weekStartMonday(dayjs())));
   const [mobilePageKind, setMobilePageKind] = useState<"first" | "second">(() =>
     dayjs().diff(dayjs(weekStartMonday(dayjs())), "day") >= 4 ? "second" : "first"
@@ -131,6 +133,8 @@ export function WeekPage(props: {
       setDialogOpen(false);
       setEditing(undefined);
       setEditingSourceTask(undefined);
+      setDefaultStartTime(undefined);
+      setDefaultEndTime(undefined);
       return;
     }
 
@@ -140,6 +144,8 @@ export function WeekPage(props: {
     setDialogOpen(false);
     setEditing(undefined);
     setEditingSourceTask(undefined);
+    setDefaultStartTime(undefined);
+    setDefaultEndTime(undefined);
   }
 
   function remove(id: string) {
@@ -148,6 +154,8 @@ export function WeekPage(props: {
     setDialogOpen(false);
     setEditing(undefined);
     setEditingSourceTask(undefined);
+    setDefaultStartTime(undefined);
+    setDefaultEndTime(undefined);
   }
 
   const mobilePages = useMemo(() => {
@@ -247,13 +255,29 @@ export function WeekPage(props: {
     setMobilePageKind("second");
   }
 
+  // INPUT: calendar selection payload from Week mobile time grid
+  // OUTPUT: prefilled create-dialog state
+  // EFFECT: Converts a long-pressed time range into Week-local task creation defaults
+  function openCreateDialogForRange(startIso: string, endIso: string) {
+    const startAt = dayjs(startIso);
+    const endAt = dayjs(endIso);
+
+    setEditing(undefined);
+    setEditingSourceTask(undefined);
+    setDefaultDate(startAt.format("YYYY-MM-DD"));
+    setDefaultStartTime(startAt.format("HH:mm"));
+    setDefaultEndTime(endAt.format("HH:mm"));
+    setDialogOpen(true);
+  }
+
   function renderCalendar(pageStart?: dayjs.Dayjs, pageEnd?: dayjs.Dayjs, pageKey?: string) {
     const isMobileSlice = !!pageStart && !!pageEnd && !!pageKey;
+    const allowRangeCreate = isMobileSlice && viewMode === "timeGrid";
 
     return (
       <FullCalendar
         plugins={[timeGridPlugin, dayGridPlugin, interactionPlugin]}
-        initialView={isMobileSlice ? (viewMode === "dayGrid" ? "mobileDayGrid" : "mobileTimeGrid") : "dayGridWeek"}
+        initialView={isMobileSlice ? (viewMode === "dayGrid" ? "mobileDayGrid" : "mobileTimeGrid") : "timeGridWeek"}
         views={
           isMobileSlice
             ? {
@@ -286,6 +310,9 @@ export function WeekPage(props: {
           timeGridWeek: t("week.timeGridView")
         }}
         navLinks={true}
+        selectable={allowRangeCreate}
+        selectMirror={allowRangeCreate}
+        selectLongPressDelay={350}
         navLinkDayClick={(date) => {
           navigate(`/?date=${dayjs(date).format("YYYY-MM-DD")}`);
         }}
@@ -346,10 +373,18 @@ export function WeekPage(props: {
           setEditingSourceTask(task);
           setEditing(getTaskOccurrence(task, occurrenceDate) ?? normalizeTask(task));
           setDefaultDate(occurrenceDate);
+          setDefaultStartTime(undefined);
+          setDefaultEndTime(undefined);
           setDialogOpen(true);
         }}
         dateClick={(info) => {
           setDefaultDate(info.dateStr.slice(0, 10));
+        }}
+        selectAllow={(info) => allowRangeCreate && !info.allDay}
+        select={(info) => {
+          if (!allowRangeCreate || info.allDay) return;
+          openCreateDialogForRange(info.startStr, info.endStr);
+          info.view.calendar.unselect();
         }}
         height="auto"
         contentHeight="auto"
@@ -361,16 +396,56 @@ export function WeekPage(props: {
 
   return (
     <Box sx={{ width: "100%", maxWidth: 1200, mx: "auto", px: { xs: 1.5, sm: 2, md: 3 }, py: { xs: 1, sm: 2 } }}>
-      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2, flexWrap: "wrap", gap: 1 }}>
-        <Typography variant="h6" sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }}>{t('week.title')}</Typography>
-        <Button variant="contained" onClick={() => { setEditing(undefined); setDialogOpen(true); }}>
-          {t('today.addTask')}
-        </Button>
-      </Stack>
+      <Box
+        sx={{
+          mb: 2,
+          p: { xs: 1.5, sm: 2 },
+          borderRadius: { xs: 3, sm: 4 },
+          background: "linear-gradient(135deg, rgba(13,71,161,0.10), rgba(38,198,218,0.10))",
+          border: "1px solid rgba(33, 150, 243, 0.14)",
+          boxShadow: "0 12px 32px rgba(15, 23, 42, 0.06)",
+        }}
+      >
+        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ flexWrap: "wrap", gap: 1 }}>
+          <Stack spacing={0.75}>
+            <Typography variant="h6" sx={{ fontSize: { xs: "1rem", sm: "1.35rem" }, fontWeight: 700 }}>{t("week.title")}</Typography>
+            <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
+              <Chip size="small" label={t("week.defaultView")} color="primary" variant="outlined" />
+              <Chip size="small" label={isMobile ? t("week.mobileSwipeHint") : t("week.desktopHint")} variant="outlined" />
+            </Stack>
+          </Stack>
+          {!isMobile ? (
+            <Button variant="contained" onClick={() => {
+              setEditing(undefined);
+              setEditingSourceTask(undefined);
+              setDefaultStartTime(undefined);
+              setDefaultEndTime(undefined);
+              setDialogOpen(true);
+            }}>
+              {t("today.addTask")}
+            </Button>
+          ) : null}
+        </Stack>
+      </Box>
 
       {isMobile ? (
         <Box sx={{ width: "100%" }}>
-          <Stack direction="row" justifyContent="center" sx={{ mb: 1 }}>
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+            sx={{
+              mb: 1.25,
+              px: 1.25,
+              py: 1,
+              borderRadius: 3,
+              bgcolor: "rgba(255,255,255,0.9)",
+              border: "1px solid rgba(15, 23, 42, 0.08)",
+            }}
+          >
+            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+              {mobilePages[1]?.label}
+            </Typography>
             <Button
               variant="text"
               onClick={() => {
@@ -390,11 +465,21 @@ export function WeekPage(props: {
               if (nextView) setViewMode(nextView);
             }}
             fullWidth
-            sx={{ mb: 1.5 }}
+            sx={{
+              mb: 1.25,
+              bgcolor: "rgba(255,255,255,0.92)",
+              borderRadius: 3,
+              p: 0.25,
+              boxShadow: "0 8px 24px rgba(15, 23, 42, 0.06)",
+            }}
           >
             <ToggleButton value="dayGrid">{t("week.listView")}</ToggleButton>
             <ToggleButton value="timeGrid">{t("week.timeGridView")}</ToggleButton>
           </ToggleButtonGroup>
+
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5, textAlign: "center", px: 1 }}>
+            {t("week.mobileCreateHint")}
+          </Typography>
 
           <Box
             data-testid="mobile-week-pager"
@@ -445,17 +530,58 @@ export function WeekPage(props: {
                   scrollSnapAlign: "start",
                 }}
               >
-                <Typography variant="subtitle2" sx={{ mb: 1, textAlign: "center" }}>
-                  {page.label}
-                </Typography>
-                {renderCalendar(page.start, page.end, page.key)}
+                <Box
+                  sx={{
+                    borderRadius: 3,
+                    bgcolor: "rgba(255,255,255,0.94)",
+                    border: "1px solid rgba(15, 23, 42, 0.08)",
+                    boxShadow: "0 12px 28px rgba(15, 23, 42, 0.06)",
+                    p: 1,
+                  }}
+                >
+                  <Typography variant="subtitle2" sx={{ mb: 1, textAlign: "center", fontWeight: 700 }}>
+                    {page.label}
+                  </Typography>
+                  <Box
+                    sx={{
+                      "& .fc": { fontSize: "0.82rem" },
+                      "& .fc-theme-standard td, & .fc-theme-standard th": { borderColor: "rgba(15, 23, 42, 0.08)" },
+                      "& .fc-scrollgrid": { borderRadius: 2, overflow: "hidden", borderColor: "rgba(15, 23, 42, 0.08)" },
+                      "& .fc-col-header-cell": { bgcolor: "rgba(13, 71, 161, 0.05)" },
+                      "& .fc-timegrid-slot": { height: "2.6rem" },
+                    }}
+                  >
+                    {renderCalendar(page.start, page.end, page.key)}
+                  </Box>
+                </Box>
               </Box>
             ))}
           </Box>
         </Box>
       ) : (
-        <Box sx={{ width: "100%", overflowX: "auto" }}>
-          <Box sx={{ minWidth: { xs: 560, sm: 700 } }}>
+        <Box
+          sx={{
+            width: "100%",
+            overflowX: "auto",
+            borderRadius: 4,
+            bgcolor: "rgba(255,255,255,0.96)",
+            border: "1px solid rgba(15, 23, 42, 0.08)",
+            boxShadow: "0 18px 40px rgba(15, 23, 42, 0.08)",
+            p: 1.5,
+          }}
+        >
+          <Box
+            sx={{
+              minWidth: { xs: 560, sm: 700 },
+              "& .fc": { fontSize: "0.92rem" },
+              "& .fc-toolbar-title": { fontSize: "1.1rem", fontWeight: 700 },
+              "& .fc-button": { borderRadius: 2, textTransform: "none" },
+              "& .fc-col-header-cell": { bgcolor: "rgba(13, 71, 161, 0.05)" },
+              "& .fc-theme-standard td, & .fc-theme-standard th": { borderColor: "rgba(15, 23, 42, 0.08)" },
+              "& .fc-scrollgrid": { borderRadius: 3, overflow: "hidden", borderColor: "rgba(15, 23, 42, 0.08)" },
+              "& .fc-timegrid-slot": { height: "3rem" },
+            }}
+          >
             {renderCalendar()}
           </Box>
         </Box>
@@ -467,7 +593,15 @@ export function WeekPage(props: {
         task={editing}
         occurrenceDateYmd={editing ? defaultDate : undefined}
         defaultDateYmd={defaultDate || ""}
-        onClose={() => { setDialogOpen(false); setEditing(undefined); setEditingSourceTask(undefined); }}
+        defaultStartTime={defaultStartTime}
+        defaultEndTime={defaultEndTime}
+        onClose={() => {
+          setDialogOpen(false);
+          setEditing(undefined);
+          setEditingSourceTask(undefined);
+          setDefaultStartTime(undefined);
+          setDefaultEndTime(undefined);
+        }}
         onSave={upsert}
         onDelete={(id) => {
           const task = props.tasks.find((item) => item.id === id);

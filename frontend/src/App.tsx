@@ -51,6 +51,7 @@ export default function App() {
   const reminderSyncQueue = useRef(Promise.resolve());
   const lastNotificationCheckRef = useRef<number | null>(null);
   const currentLanguage = i18n.resolvedLanguage?.startsWith("zh") ? "zh" : "en";
+  const mobileNavZIndex = 1700;
 
   async function reloadTasksFromServer() {
     const serverTasks = rolloverIfNeeded(await loadTasks());
@@ -386,7 +387,7 @@ export default function App() {
             </Stack>
           </Paper>
 
-          <Box sx={{ width: "100%", minWidth: 0, pb: { xs: 10, md: 0 } }}>
+          <Box sx={{ width: "100%", minWidth: 0, pb: { xs: 12, md: 0 } }}>
             <Container maxWidth={false} disableGutters>
               <Box sx={{ py: { xs: 2, md: 0 } }}>
                 <Routes>
@@ -410,12 +411,23 @@ export default function App() {
           bottom: 0,
           left: 0,
           right: 0,
+          zIndex: mobileNavZIndex,
           borderTopLeftRadius: 16,
           borderTopRightRadius: 16,
           overflow: "hidden",
+          pointerEvents: "auto",
         }}
       >
-        <BottomNavigation showLabels value={activePath} aria-label={t("nav.mobileNavigation")}>
+        <BottomNavigation
+          showLabels
+          value={activePath}
+          aria-label={t("nav.mobileNavigation")}
+          sx={{
+            position: "relative",
+            zIndex: mobileNavZIndex,
+            pointerEvents: "auto",
+          }}
+        >
           {navigationItems.map((item) => (
             <BottomNavigationAction
               key={item.to}

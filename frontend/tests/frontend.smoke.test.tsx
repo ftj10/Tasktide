@@ -81,7 +81,7 @@ describe("frontend smoke", () => {
 
   it("renders the month page", () => {
     renderWithProviders(<MonthPage tasks={[]} setTasks={vi.fn()} />);
-    expect(screen.getByText("Jump to Current Month")).toBeInTheDocument();
+    expect(screen.getByText("Sun")).toBeInTheDocument();
   });
 
   it("renders the reminder page", () => {
