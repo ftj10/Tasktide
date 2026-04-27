@@ -1,11 +1,12 @@
 // INPUT: app shell with mocked storage and release-note state
 // OUTPUT: behavior coverage for shell-level interactions
 // EFFECT: Verifies top-level planner features such as localization continue to work after shell updates
-import { screen, waitFor } from "@testing-library/react";
+import { act, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, beforeEach, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import i18n from "../src/i18n";
+import { NOTIFICATION_HISTORY_KEY } from "../src/app/notificationHistory";
 import { LATEST_RELEASE_ID } from "../src/app/releaseNotes";
 import App from "../src/App";
 import { renderWithProviders } from "./test-utils";
@@ -57,6 +58,11 @@ describe("App behavior", () => {
     storageMocks.deleteReminder.mockReset().mockResolvedValue(undefined);
     storageMocks.logoutUser.mockReset();
     await i18n.changeLanguage("en");
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
   });
 
   it("switches navigation labels when the language toggle is used", async () => {
@@ -111,5 +117,146 @@ describe("App behavior", () => {
     await waitFor(() => {
       expect(screen.queryByText("Unsaved task")).not.toBeInTheDocument();
     });
+  });
+
+  it("stores daily notification dedupe state in the retained history key", async () => {
+    const notificationMock = vi.fn(function notificationConstructor(this: { close: ReturnType<typeof vi.fn>; onclick: null }) {
+      this.close = vi.fn();
+      this.onclick = null;
+    });
+    const notificationApi = Object.assign(notificationMock, {
+      permission: "granted",
+      requestPermission: vi.fn(),
+    });
+
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-26T09:59:20"));
+    vi.stubGlobal("Notification", notificationApi);
+    Object.defineProperty(window, "Notification", {
+      configurable: true,
+      writable: true,
+      value: notificationApi,
+    });
+
+    await act(async () => {
+      renderWithProviders(<App />);
+    });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(60000);
+    });
+
+    expect(notificationMock).toHaveBeenCalledTimes(1);
+    expect(localStorage.getItem(NOTIFICATION_HISTORY_KEY)).toContain("daily:2026-04-26:10");
+    expect(localStorage.getItem("notified-Sun Apr 26 2026-10")).toBeNull();
+  });
+
+  it("requests notification permission only after a user interaction", async () => {
+    const requestPermission = vi.fn().mockResolvedValue("granted");
+    const notificationApi = function notificationConstructor() {};
+    Object.assign(notificationApi, {
+      permission: "default",
+      requestPermission,
+    });
+
+    vi.stubGlobal("Notification", notificationApi);
+    Object.defineProperty(window, "Notification", {
+      configurable: true,
+      writable: true,
+      value: notificationApi,
+    });
+
+    renderWithProviders(<App />);
+
+    expect(requestPermission).not.toHaveBeenCalled();
+
+    await act(async () => {
+      window.dispatchEvent(new PointerEvent("pointerdown"));
+    });
+
+    expect(requestPermission).toHaveBeenCalledTimes(1);
+  });
+
+  it("prunes stale notification history before writing the next reminder", async () => {
+    const notificationMock = vi.fn(function notificationConstructor(this: { close: ReturnType<typeof vi.fn>; onclick: null }) {
+      this.close = vi.fn();
+      this.onclick = null;
+    });
+    const notificationApi = Object.assign(notificationMock, {
+      permission: "granted",
+      requestPermission: vi.fn(),
+    });
+
+    localStorage.setItem(NOTIFICATION_HISTORY_KEY, JSON.stringify([
+      {
+        id: "daily:2026-04-22:10",
+        firedAt: "2026-04-22T09:59:59.000Z",
+      },
+    ]));
+
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-26T20:59:20"));
+    vi.stubGlobal("Notification", notificationApi);
+    Object.defineProperty(window, "Notification", {
+      configurable: true,
+      writable: true,
+      value: notificationApi,
+    });
+
+    await act(async () => {
+      renderWithProviders(<App />);
+    });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(60000);
+    });
+
+    expect(notificationMock).toHaveBeenCalledTimes(1);
+    expect(localStorage.getItem(NOTIFICATION_HISTORY_KEY)).toBe(JSON.stringify([
+      {
+        id: "daily:2026-04-26:21",
+        firedAt: new Date("2026-04-27T04:00:20.000Z").toISOString(),
+      },
+    ]));
+  });
+
+  it("fires a task reminder when the interval crosses the 15-minute window late", async () => {
+    const notificationMock = vi.fn(function notificationConstructor(this: { close: ReturnType<typeof vi.fn>; onclick: null }) {
+      this.close = vi.fn();
+      this.onclick = null;
+    });
+    const notificationApi = Object.assign(notificationMock, {
+      permission: "granted",
+      requestPermission: vi.fn(),
+    });
+
+    storageMocks.loadTasks.mockResolvedValue([
+      {
+        id: "task-1",
+        title: "Standup",
+        type: "ONCE",
+        date: "2026-04-26",
+        startTime: "14:15",
+        done: false,
+        createdAt: "2026-04-26T08:00:00.000Z",
+        updatedAt: "2026-04-26T08:00:00.000Z",
+      },
+    ]);
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-26T13:59:20"));
+    vi.stubGlobal("Notification", notificationApi);
+    Object.defineProperty(window, "Notification", {
+      configurable: true,
+      writable: true,
+      value: notificationApi,
+    });
+
+    await act(async () => {
+      renderWithProviders(<App />);
+    });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(60000);
+    });
+
+    expect(notificationMock).toHaveBeenCalledTimes(1);
+    expect(localStorage.getItem(NOTIFICATION_HISTORY_KEY)).toContain("task:task-1:2026-04-26");
   });
 });

@@ -27,6 +27,7 @@ import type { Task, Reminder } from "./types";
 import { createReminder, createTask, deleteReminder, deleteTask, getToken, getUsername, loadReminders, loadTasks, logoutUser, rolloverIfNeeded, updateReminder, updateTask } from "./app/storage";
 import { tasksForDate } from "./app/taskLogic";
 import { loadCompletions } from "./app/completions";
+import { hasNotificationFired, pruneStoredNotificationHistory, recordNotificationFired } from "./app/notificationHistory";
 
 import { TodayPage } from "./pages/TodayPage";
 import { WeekPage } from "./pages/WeekPage";
@@ -48,6 +49,7 @@ export default function App() {
   const remindersRef = useRef<Reminder[]>([]);
   const taskSyncQueue = useRef(Promise.resolve());
   const reminderSyncQueue = useRef(Promise.resolve());
+  const lastNotificationCheckRef = useRef<number | null>(null);
   const currentLanguage = i18n.resolvedLanguage?.startsWith("zh") ? "zh" : "en";
 
   async function reloadTasksFromServer() {
@@ -158,73 +160,103 @@ export default function App() {
   }
 
   useEffect(() => {
-    if ("Notification" in window && Notification.permission === "default") {
-      Notification.requestPermission();
+    if (!("Notification" in window) || Notification.permission !== "default") {
+      return;
     }
 
-    const intervalId = setInterval(() => {
-      const now = new Date();
-      const hours = now.getHours();
-      const minutes = now.getMinutes();
+    const requestPermission = () => {
+      void Notification.requestPermission();
+      window.removeEventListener("pointerdown", requestPermission);
+      window.removeEventListener("keydown", requestPermission);
+    };
 
-      if ((hours === 10 || hours === 21) && minutes === 0) {
-        const firedKey = `notified-${now.toDateString()}-${hours}`;
-        
-        if (!localStorage.getItem(firedKey)) {
-          if ("Notification" in window && Notification.permission === "granted") {
-            const notification = new Notification(t("notifications.dailyReminderTitle"), {
-              body: t("notifications.dailyReminderBody"),
-              icon: "/todo.svg"
-            });
+    window.addEventListener("pointerdown", requestPermission, { once: true });
+    window.addEventListener("keydown", requestPermission, { once: true });
 
-            notification.onclick = () => {
-              window.focus(); 
-              notification.close();
-            };
+    return () => {
+      window.removeEventListener("pointerdown", requestPermission);
+      window.removeEventListener("keydown", requestPermission);
+    };
+  }, []);
 
-            localStorage.setItem(firedKey, "true"); 
-          }
-        }
+  useEffect(() => {
+    function maybeShowNotification(title: string, body: string, firedKey: string, now: Date) {
+      if (!("Notification" in window) || Notification.permission !== "granted" || hasNotificationFired(firedKey, now)) {
+        return;
       }
+
+      const notification = new Notification(title, {
+        body,
+        icon: "/todo.svg"
+      });
+
+      notification.onclick = () => {
+        window.focus();
+        notification.close();
+      };
+
+      recordNotificationFired(firedKey, now);
+    }
+
+    function checkNotifications() {
+      const now = new Date();
+      const nowTime = now.getTime();
+      const previousCheckTime = lastNotificationCheckRef.current ?? (nowTime - 60 * 1000);
+      const windowStart = Math.min(previousCheckTime, nowTime);
+      lastNotificationCheckRef.current = nowTime;
+
+      pruneStoredNotificationHistory(now);
+
+      [10, 21].forEach((hour) => {
+        const scheduledTime = dayjs(now).hour(hour).minute(0).second(0).millisecond(0).valueOf();
+
+        if (scheduledTime > windowStart && scheduledTime <= nowTime) {
+          maybeShowNotification(
+            t("notifications.dailyReminderTitle"),
+            t("notifications.dailyReminderBody"),
+            `daily:${dayjs(now).format("YYYY-MM-DD")}:${hour}`,
+            now,
+          );
+        }
+      });
 
       const todayYmd = dayjs(now).format("YYYY-MM-DD");
       const currentCompletions = loadCompletions();
       const todayTasks = tasksForDate(tasksRef.current, todayYmd, currentCompletions);
 
-      todayTasks.forEach(task => {
-        if (task.startTime && !task.done) {
-          const [startHour, startMinute] = task.startTime.split(':').map(Number);
-          const taskTimeInMinutes = startHour * 60 + startMinute;
-          const nowInMinutes = hours * 60 + minutes;
-
-          if (taskTimeInMinutes - nowInMinutes === 15) {
-            const firedKey = `task-notified-${task.id}-${todayYmd}`;
-            
-            if (!localStorage.getItem(firedKey)) {
-              if ("Notification" in window && Notification.permission === "granted") {
-                const notification = new Notification(t("notifications.taskStartingSoonTitle", { title: task.title }), {
-                  body: t("notifications.taskStartingSoonBody", {
-                    time: new Intl.DateTimeFormat(currentLanguage, {
-                      hour: "numeric",
-                      minute: "2-digit",
-                    }).format(new Date(`2000-01-01T${task.startTime}`))
-                  }),
-                  icon: "/todo.svg"
-                });
-                
-                notification.onclick = () => {
-                  window.focus();
-                  notification.close();
-                };
-                
-                localStorage.setItem(firedKey, "true");
-              }
-            }
-          }
+      todayTasks.forEach((task) => {
+        if (!task.startTime || task.done) {
+          return;
         }
-      });
 
-    }, 60000);
+        const [startHour, startMinute] = task.startTime.split(":").map(Number);
+        const reminderTime = dayjs(now)
+          .hour(startHour)
+          .minute(startMinute)
+          .second(0)
+          .millisecond(0)
+          .subtract(15, "minute")
+          .valueOf();
+
+        if (reminderTime > windowStart && reminderTime <= nowTime) {
+          maybeShowNotification(
+            t("notifications.taskStartingSoonTitle", { title: task.title }),
+            t("notifications.taskStartingSoonBody", {
+              time: new Intl.DateTimeFormat(currentLanguage, {
+                hour: "numeric",
+                minute: "2-digit",
+              }).format(new Date(`2000-01-01T${task.startTime}`))
+            }),
+            `task:${task.id}:${todayYmd}`,
+            now,
+          );
+          }
+      });
+    }
+
+    checkNotifications();
+
+    const intervalId = setInterval(checkNotifications, 60000);
 
     return () => clearInterval(intervalId);
   }, [currentLanguage, t]);

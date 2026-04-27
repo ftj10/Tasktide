@@ -14,6 +14,35 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-04-26-bounded-notification-history",
+    version: "v1.8.0",
+    releasedAt: "2026-04-26",
+    title: {
+      en: "Bounded browser notification history",
+      zh: "有上限的浏览器通知历史"
+    },
+    summary: {
+      en: "Browser reminders now tolerate timer drift, ask for notification permission only after user interaction, and keep a bounded three-day notification history.",
+      zh: "浏览器提醒现在可以容忍计时漂移，只会在用户交互后请求通知权限，并保留有上限的三天通知历史。"
+    },
+    changes: {
+      en: [
+        "Replaced per-notification localStorage keys with one retained notification-history entry.",
+        "Changed daily and task reminder checks to use crossed-time windows so delayed intervals do not skip 10:00, 21:00, or 15-minute reminder triggers.",
+        "Moved browser notification permission requests to the first user interaction instead of automatic page load.",
+        "Pruned daily and task reminder notification markers after three days without rewriting storage on every history read.",
+        "Added frontend regression coverage for retained notification history, pruning, permission requests, and shell-level reminder writes."
+      ],
+      zh: [
+        "将每次通知单独的 localStorage key 改为统一的 notification-history 历史记录。",
+        "将每日提醒和任务提醒改为跨时间窗口检查，避免 `10:00`、`21:00` 和提前 15 分钟提醒因定时器延迟而被跳过。",
+        "将浏览器通知权限请求改为等待第一次用户交互，而不是在页面加载时自动触发。",
+        "为每日提醒和任务提醒增加三天保留期，并避免在每次读取历史时都重写存储。",
+        "新增通知历史保留、清理、权限请求，以及应用层提醒写入行为的前端回归测试。"
+      ]
+    }
+  },
+  {
     id: "2026-04-25-repeat-label-spacing",
     version: "v1.7.2",
     releasedAt: "2026-04-25",

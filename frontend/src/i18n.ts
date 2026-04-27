@@ -149,7 +149,8 @@ const resources = {
           step2: "Use Week and Month to review your schedule and jump between dates quickly.",
           step3: "Use Reminders for ongoing notes that should stay visible until you mark them done.",
           step4: "On phones, use the bottom navigation to switch between planner sections, while larger screens keep the sidebar visible.",
-          step5: "Task, Reminder, and repeat-option forms open full-screen on mobile for easier editing, and stay centered as dialogs on larger screens."
+          step5: "Task, Reminder, and repeat-option forms open full-screen on mobile for easier editing, and stay centered as dialogs on larger screens.",
+          step6: "Browser reminder notifications ask for permission after you interact with the app, tolerate timer drift around scheduled times, and clean old reminder markers after three days."
         },
         faq: {
           title: "Common Q&A",
@@ -188,6 +189,10 @@ const resources = {
           q9: {
             question: "What happens when I edit one repeating task occurrence?",
             answer: "After you save changes to a repeating task, the app asks whether to update only that day or the entire series. Single-day edits are stored as occurrence overrides so the original series stays intact."
+          },
+          q10: {
+            question: "Do browser reminder notifications keep growing in storage?",
+            answer: "No. Reminder notification history is kept in one retained browser record, old entries are removed automatically after three days, and the scheduler checks crossed time windows so slight timer delays do not skip reminders."
           }
         },
         ask: {
@@ -401,7 +406,8 @@ const resources = {
           step2: "在 Week 和 Month 页面快速查看整体安排并跳转日期。",
           step3: "使用 Reminders 记录持续存在、直到你手动完成的提醒事项。",
           step4: "在手机上可使用底部导航切换页面；在较大屏幕上会显示侧边栏导航。",
-          step5: "Task、Reminder 和重复设置表单在手机上会全屏打开，较大屏幕上则保持居中弹窗。"
+          step5: "Task、Reminder 和重复设置表单在手机上会全屏打开，较大屏幕上则保持居中弹窗。",
+          step6: "浏览器提醒通知会在你与应用交互后再请求权限，能容忍计划时间附近的定时器漂移，并会在三天后自动清理旧提醒标记。"
         },
         faq: {
           title: "常见问答",
@@ -440,6 +446,10 @@ const resources = {
           q9: {
             question: "修改重复任务的一天时会发生什么？",
             answer: "保存重复任务时，应用会让你选择只修改这一天，还是修改整个系列。只修改这一天时会记录为单次覆盖，不会破坏原来的系列。"
+          },
+          q10: {
+            question: "浏览器提醒通知会一直占用越来越多的存储吗？",
+            answer: "不会。提醒通知历史会保存在一个统一的浏览器记录中，三天前的旧条目会自动删除，而且调度器会检查跨越的时间窗口，避免轻微定时延迟导致提醒被跳过。"
           }
         },
         ask: {

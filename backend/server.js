@@ -163,7 +163,7 @@ app.put('/tasks/:id', authenticateToken, async (req, res) => {
     const updatedTask = await Task.findOneAndUpdate(
       { id: req.params.id, userId: req.user.userId },
       { ...req.body, userId: req.user.userId },
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     );
 
     if (!updatedTask) return res.status(404).json({ error: "Task not found" });
@@ -229,7 +229,7 @@ app.put('/reminders/:id', authenticateToken, async (req, res) => {
     const updatedReminder = await Reminder.findOneAndUpdate(
       { id: req.params.id, userId: req.user.userId },
       { ...req.body, userId: req.user.userId },
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     );
 
     if (!updatedReminder) return res.status(404).json({ error: "Reminder not found" });

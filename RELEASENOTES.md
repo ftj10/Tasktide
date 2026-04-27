@@ -1,5 +1,13 @@
 # Release Notes
 
+## v1.8.0 - 2026-04-26
+
+- Replaced per-notification `localStorage` keys with one retained `notification-history` record.
+- Changed daily and task reminder checks to use crossed-time windows so timer drift does not skip notifications at `10:00`, `21:00`, or the 15-minute task reminder mark.
+- Changed browser notification permission requests to wait for user interaction instead of firing automatically on load.
+- Added automatic cleanup for daily and task notification markers older than three days without rewriting storage on every history read.
+- Added frontend regression coverage for notification-history pruning, interaction-driven permission requests, and drift-tolerant reminder delivery.
+
 ## v1.7.2 - 2026-04-25
 
 - Adjusted the repeat-options selector spacing so its `Repeat` label clears the dialog header and no longer clips.

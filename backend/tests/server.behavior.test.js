@@ -302,7 +302,7 @@ test('behavior: task update rewrites one task for the authenticated user', async
     },
     userId: 'user-1',
   });
-  assert.deepEqual(updateOptions, { new: true, runValidators: true });
+  assert.deepEqual(updateOptions, { returnDocument: 'after', runValidators: true });
 });
 
 test('behavior: task delete removes one task for the authenticated user', async () => {

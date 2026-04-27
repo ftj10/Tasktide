@@ -1,7 +1,7 @@
 {
   "name": "weekly-todo-workspace",
   "private": true,
-  "version": "1.7.2",
+  "version": "1.8.0",
   "scripts": {
     "backup:dataset": "npm --prefix backend run backup:dataset",
     "backup:dataset:auto": "npm --prefix backend run backup:dataset:auto",
