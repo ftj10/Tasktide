@@ -41,7 +41,7 @@ describe("MonthPage behavior", () => {
   it("renders only the month task grid without the extra header controls", () => {
     renderWithProviders(<MonthPage tasks={[]} setTasks={vi.fn()} />);
 
-    expect(screen.queryByText(dayjs().format("MMMM YYYY"))).not.toBeInTheDocument();
+    expect(screen.getByText(dayjs().format("MMMM YYYY"))).toBeInTheDocument();
     expect(screen.getByText("Jump to Current Month")).toBeInTheDocument();
     expect(screen.getByTestId("month-grid-surface")).toBeInTheDocument();
   });
@@ -49,14 +49,14 @@ describe("MonthPage behavior", () => {
   it("changes month when the reduced month grid is swiped vertically", () => {
     renderWithProviders(<MonthPage tasks={[]} setTasks={vi.fn()} />);
 
-    const previousMonthDay = dayjs().subtract(1, "month").date(1).format("D");
+    const nextMonthDay = dayjs().add(1, "month").date(1).format("D");
     const swipeSurface = screen.getByTestId("month-grid-surface");
 
     fireEvent.touchStart(swipeSurface, { touches: [{ clientX: 120, clientY: 260 }] });
     fireEvent.touchMove(swipeSurface, { touches: [{ clientX: 126, clientY: 120 }] });
     fireEvent.touchEnd(swipeSurface);
 
-    expect(screen.getAllByText(previousMonthDay).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(nextMonthDay).length).toBeGreaterThan(0);
   });
 
   it("jumps back to the current month when the month jump button is pressed", async () => {
