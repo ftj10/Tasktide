@@ -3,9 +3,11 @@
 // EFFECT: Supports monthly schedule scanning and day-level navigation into the Today feature
 import dayjs from "dayjs";
 import { useState, useMemo, useEffect, useRef } from "react";
-import { Box, Button, Stack, Typography, Paper } from "@mui/material";
+import { Box, Button, IconButton, Stack, Typography, Paper, useMediaQuery, useTheme } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import CheckIcon from "@mui/icons-material/Check";
 
 import type { Task } from "../types";
@@ -19,6 +21,8 @@ import { COMPLETIONS_KEY, loadCompletions, type CompletionMap } from "../app/com
 export function MonthPage(props: { tasks: Task[]; setTasks: (next: Task[]) => void }) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [currentMonth, setCurrentMonth] = useState(dayjs().startOf("month"));
   const [completions, setCompletions] = useState<CompletionMap>(loadCompletions());
   const monthTouchStartXRef = useRef<number | null>(null);
@@ -100,16 +104,36 @@ export function MonthPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
           px: { xs: 0.25, sm: 0.5 },
         }}
       >
-        <Typography
-          variant="subtitle1"
-          sx={{
-            fontSize: { xs: "0.9rem", sm: "1.05rem" },
-            fontWeight: 700,
-            minWidth: 0,
-          }}
-        >
-          {monthLabel}
-        </Typography>
+        <Stack direction="row" alignItems="center" spacing={0.5} sx={{ minWidth: 0 }}>
+          {!isMobile ? (
+            <IconButton
+              aria-label="Previous month"
+              onClick={() => setCurrentMonth((current) => current.subtract(1, "month"))}
+              size="small"
+            >
+              <ArrowBackIcon fontSize="small" />
+            </IconButton>
+          ) : null}
+          <Typography
+            variant="subtitle1"
+            sx={{
+              fontSize: { xs: "0.9rem", sm: "1.05rem" },
+              fontWeight: 700,
+              minWidth: 0,
+            }}
+          >
+            {monthLabel}
+          </Typography>
+          {!isMobile ? (
+            <IconButton
+              aria-label="Next month"
+              onClick={() => setCurrentMonth((current) => current.add(1, "month"))}
+              size="small"
+            >
+              <ArrowForwardIcon fontSize="small" />
+            </IconButton>
+          ) : null}
+        </Stack>
         <Button
           variant="outlined"
           onClick={() => setCurrentMonth(dayjs().startOf("month"))}
@@ -149,8 +173,8 @@ export function MonthPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
           gridTemplateColumns: "repeat(7, minmax(0, 1fr))",
           gap: { xs: 0.45, sm: 0.85 },
           minWidth: 0,
-          touchAction: "none",
-          overscrollBehaviorY: "contain",
+          touchAction: isMobile ? "none" : "auto",
+          overscrollBehaviorY: isMobile ? "contain" : "auto",
         }}
       >
         {weekDays.map((wd) => (

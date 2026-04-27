@@ -9,6 +9,7 @@ import { describe, beforeEach, expect, it, vi } from "vitest";
 import i18n from "../src/i18n";
 import { MonthPage } from "../src/pages/MonthPage";
 import { renderWithProviders } from "./test-utils";
+import { setScreenWidth } from "./setup";
 
 const navigateMock = vi.fn();
 
@@ -23,6 +24,7 @@ vi.mock("react-router-dom", async () => {
 describe("MonthPage behavior", () => {
   beforeEach(async () => {
     navigateMock.mockReset();
+    setScreenWidth(1024);
     await i18n.changeLanguage("en");
   });
 
@@ -43,10 +45,13 @@ describe("MonthPage behavior", () => {
 
     expect(screen.getByText(dayjs().format("MMMM YYYY"))).toBeInTheDocument();
     expect(screen.getByText("Jump to Current Month")).toBeInTheDocument();
+    expect(screen.getByLabelText("Previous month")).toBeInTheDocument();
+    expect(screen.getByLabelText("Next month")).toBeInTheDocument();
     expect(screen.getByTestId("month-grid-surface")).toBeInTheDocument();
   });
 
-  it("changes month when the reduced month grid is swiped vertically", () => {
+  it("changes month when the reduced month grid is swiped vertically on mobile", () => {
+    setScreenWidth(390);
     renderWithProviders(<MonthPage tasks={[]} setTasks={vi.fn()} />);
 
     const nextMonthDay = dayjs().add(1, "month").date(1).format("D");
@@ -55,6 +60,16 @@ describe("MonthPage behavior", () => {
     fireEvent.touchStart(swipeSurface, { touches: [{ clientX: 120, clientY: 260 }] });
     fireEvent.touchMove(swipeSurface, { touches: [{ clientX: 126, clientY: 120 }] });
     fireEvent.touchEnd(swipeSurface);
+
+    expect(screen.getAllByText(nextMonthDay).length).toBeGreaterThan(0);
+  });
+
+  it("changes month with arrow buttons on desktop", async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<MonthPage tasks={[]} setTasks={vi.fn()} />);
+
+    const nextMonthDay = dayjs().add(1, "month").date(1).format("D");
+    await user.click(screen.getByLabelText("Next month"));
 
     expect(screen.getAllByText(nextMonthDay).length).toBeGreaterThan(0);
   });
