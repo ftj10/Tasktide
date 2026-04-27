@@ -57,6 +57,12 @@ const theme = createTheme({
             "radial-gradient(1200px 600px at 10% -10%, rgba(79, 70, 229, 0.08), transparent 60%), radial-gradient(900px 500px at 110% 10%, rgba(14, 165, 233, 0.08), transparent 60%), #f4f6fb",
           minHeight: "100vh",
         },
+        'body[style*="overflow: hidden"] .mobile-bottom-navigation': {
+          display: "none !important",
+        },
+        'body[style*="overflow: hidden"] .mobile-bottom-navigation-bar': {
+          display: "none !important",
+        },
         "*::-webkit-scrollbar": { width: 10, height: 10 },
         "*::-webkit-scrollbar-thumb": {
           background: "rgba(15, 23, 42, 0.18)",

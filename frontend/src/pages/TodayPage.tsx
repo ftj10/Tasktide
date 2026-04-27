@@ -55,7 +55,11 @@ import {
   type TaskSaveScope,
 } from "../app/tasks";
 
-export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => void }) {
+export function TodayPage(props: {
+  tasks: Task[];
+  setTasks: (next: Task[]) => void;
+  onTaskDialogVisibilityChange?: (open: boolean) => void;
+}) {
   const { t, i18n } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const urlDate = searchParams.get("date");
@@ -118,6 +122,13 @@ export function TodayPage(props: { tasks: Task[]; setTasks: (next: Task[]) => vo
   const [markDoneTask, setMarkDoneTask] = useState<Task | undefined>();
   const [deleteTask, setDeleteTask] = useState<Task | undefined>();
   const [allDoneOpen, setAllDoneOpen] = useState(false);
+
+  useEffect(() => {
+    props.onTaskDialogVisibilityChange?.(dialogOpen);
+    return () => {
+      props.onTaskDialogVisibilityChange?.(false);
+    };
+  }, [dialogOpen, props.onTaskDialogVisibilityChange]);
 
   function upsert(task: Task, scope: TaskSaveScope = "series") {
     if (editingSourceTask && scope === "single" && isRecurringTask(editingSourceTask)) {

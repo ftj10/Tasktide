@@ -104,6 +104,29 @@ describe("App behavior", () => {
     expect(mobileNavigationPaper).toHaveStyle({ zIndex: "1700" });
   });
 
+  it("hides mobile bottom navigation while the task dialog is open", async () => {
+    const user = userEvent.setup();
+    setScreenWidth(390);
+
+    renderWithProviders(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Mobile navigation")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getAllByRole("button", { name: "Add Task" })[0]);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Mobile navigation")).not.toBeVisible();
+    });
+
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Mobile navigation")).toBeVisible();
+    });
+  });
+
   it("reloads server tasks after a failed task save so local-only edits do not linger", async () => {
     const user = userEvent.setup();
     storageMocks.createTask.mockRejectedValueOnce(new Error("save failed"));

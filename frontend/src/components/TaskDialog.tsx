@@ -265,6 +265,7 @@ export function TaskDialog(props: {
         fullScreen={isMobile}
         maxWidth="sm"
         PaperProps={{
+          "data-task-dialog": "true",
           sx: {
             borderRadius: { xs: 0, sm: 3 },
             mx: { xs: 0, sm: 2 },

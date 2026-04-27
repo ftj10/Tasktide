@@ -14,6 +14,33 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-04-27-task-dialog-mobile-nav-visibility",
+    version: "v1.9.1",
+    releasedAt: "2026-04-27",
+    title: {
+      en: "Task-dialog mobile navigation visibility",
+      zh: "任务弹窗期间隐藏移动端底部导航"
+    },
+    summary: {
+      en: "The mobile bottom navigation now hides whenever the add-task or edit-task window is open so the dialog keeps full focus.",
+      zh: "现在当新增任务或编辑任务窗口打开时，移动端底部导航会自动隐藏，让弹窗保持完整焦点。"
+    },
+    changes: {
+      en: [
+        "Hide the mobile bottom navigation while the add-task dialog is open.",
+        "Hide the mobile bottom navigation while the edit-task dialog is open.",
+        "Restore the mobile bottom navigation after the task dialog closes.",
+        "Added frontend regression coverage for task-dialog-driven mobile navigation visibility."
+      ],
+      zh: [
+        "在新增任务弹窗打开时隐藏移动端底部导航。",
+        "在编辑任务弹窗打开时隐藏移动端底部导航。",
+        "在任务弹窗关闭后恢复移动端底部导航。",
+        "新增由任务弹窗控制移动端导航显示状态的前端回归测试。"
+      ]
+    }
+  },
+  {
     id: "2026-04-26-mobile-week-range-create",
     version: "v1.9.0",
     releasedAt: "2026-04-26",

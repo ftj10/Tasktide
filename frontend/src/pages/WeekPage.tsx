@@ -58,6 +58,7 @@ export function WeekPage(props: {
   tasks: Task[];
   setTasks: (next: Task[]) => void;
   completionsRev: number;
+  onTaskDialogVisibilityChange?: (open: boolean) => void;
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -78,6 +79,13 @@ export function WeekPage(props: {
   const mobilePagerRef = useRef<HTMLDivElement | null>(null);
   const mobileTransitionLockRef = useRef(false);
   const mobileScrollSettleRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    props.onTaskDialogVisibilityChange?.(dialogOpen);
+    return () => {
+      props.onTaskDialogVisibilityChange?.(false);
+    };
+  }, [dialogOpen, props.onTaskDialogVisibilityChange]);
 
   const events = useMemo(() => {
     const completions = loadCompletions();

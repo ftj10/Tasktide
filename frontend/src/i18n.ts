@@ -156,7 +156,7 @@ const resources = {
           step1: "Use Today to add, edit, complete, or move tasks for the current day. Task forms now start from a begin date and a repeat window.",
           step2: "Use Week and Month to review your schedule and jump between dates quickly. Week now opens in Time Grid by default, and on phones you can press-hold a time range before creating a task while Month stays as a simplified task grid.",
           step3: "Use Reminders for ongoing notes that should stay visible until you mark them done.",
-          step4: "On phones, use the bottom navigation to switch between planner sections, while larger screens keep the sidebar visible.",
+          step4: "On phones, use the bottom navigation to switch between planner sections, while larger screens keep the sidebar visible. When a task dialog opens, the mobile bottom navigation hides until the task window closes.",
           step5: "Task, Reminder, and repeat-option forms open full-screen on mobile for easier editing, and stay centered as dialogs on larger screens.",
           step6: "Browser reminder notifications ask for permission after you interact with the app, tolerate timer drift around scheduled times, and clean old reminder markers after three days."
         },
@@ -184,7 +184,7 @@ const resources = {
           },
           q6: {
             question: "How does the layout change on mobile devices?",
-            answer: "The planner switches to a bottom navigation layout, narrows typography, uses a swipeable Week view that rolls from 4 days to 3 days and into the next week, replaces the Week add button with press-hold time-range creation, keeps Month as a simplified task grid, and expands Task and Reminder forms to full-screen for easier touch use."
+            answer: "The planner switches to a bottom navigation layout, narrows typography, uses a swipeable Week view that rolls from 4 days to 3 days and into the next week, replaces the Week add button with press-hold time-range creation, keeps Month as a simplified task grid, expands Task and Reminder forms to full-screen for easier touch use, and hides the mobile bottom navigation whenever an add-task or edit-task window is open."
           },
           q7: {
             question: "What happens if a save request fails?",
@@ -421,7 +421,7 @@ const resources = {
           step1: "在 Today 页面中添加、编辑、完成或移动当天任务。任务表单现在会先设置开始日期，再进入重复设置窗口。",
           step2: "在 Week 和 Month 页面快速查看整体安排并跳转日期。Week 现在默认进入时间网格；在手机上可直接长按时间范围创建任务，而 Month 则保持为简化后的任务网格。",
           step3: "使用 Reminders 记录持续存在、直到你手动完成的提醒事项。",
-          step4: "在手机上可使用底部导航切换页面；在较大屏幕上会显示侧边栏导航。",
+          step4: "在手机上可使用底部导航切换页面；在较大屏幕上会显示侧边栏导航。当任务弹窗打开时，移动端底部导航会先隐藏，直到任务窗口关闭。",
           step5: "Task、Reminder 和重复设置表单在手机上会全屏打开，较大屏幕上则保持居中弹窗。",
           step6: "浏览器提醒通知会在你与应用交互后再请求权限，能容忍计划时间附近的定时器漂移，并会在三天后自动清理旧提醒标记。"
         },
@@ -449,7 +449,7 @@ const resources = {
           },
           q6: {
             question: "移动设备上的布局会怎样变化？",
-            answer: "应用会切换到底部导航、缩小排版字号，并让 Week 页面改为可持续左右滑动的布局，按每周先 4 天再 3 天的顺序切换，同时把 Week 页面上的新增任务入口改成长按时间范围，并让 Month 页面保持为简化后的任务网格，同时让 Task 与 Reminder 表单改为全屏显示，方便触控操作。"
+            answer: "应用会切换到底部导航、缩小排版字号，并让 Week 页面改为可持续左右滑动的布局，按每周先 4 天再 3 天的顺序切换，同时把 Week 页面上的新增任务入口改成长按时间范围，并让 Month 页面保持为简化后的任务网格，同时让 Task 与 Reminder 表单改为全屏显示，方便触控操作；当新增任务或编辑任务窗口打开时，移动端底部导航会自动隐藏。"
           },
           q7: {
             question: "如果保存请求失败会怎样？",

@@ -1,6 +1,6 @@
 # Weekly To-Do Application
 
-Current version: `v1.9.0`
+Current version: `v1.9.1`
 
 Weekly To-Do is a full-stack planner for daily tasks, weekly routines, reminders, shared help questions, and calendar-based scheduling.
 
@@ -20,6 +20,7 @@ Deployed Web: [website](https://todo-cfun.onrender.com/)
 - Reminder tracking with priority ordering and completion flow.
 - Shared help center with FAQ content and public user questions.
 - Responsive application shell with a desktop sidebar, mobile bottom navigation, and full-screen mobile task and reminder forms.
+- The mobile bottom navigation hides automatically while add-task and edit-task dialogs are open, then returns after the task dialog closes.
 - Idempotent save routes and client-side recovery that reload persisted planner data after a failed task or reminder sync.
 - Map links for task locations and browser notifications for daily prompts and upcoming timed tasks.
 - Browser notifications now request permission only after a user interaction, tolerate timer drift for daily and task reminders, and keep one retained local record that clears reminder markers older than three days.
@@ -73,6 +74,6 @@ npm test
 - Review [RELEASENOTES.md](RELEASENOTES.md) for repository-level changes.
 - The in-app Updates center mirrors the latest shipped release metadata from `frontend/src/app/releaseNotes.ts`.
 - Older datasets that still use `TEMPORARY` and `PERMANENT` task records remain readable; the frontend normalizes them into the new recurrence model when it loads.
-- On smaller screens, the app uses bottom navigation, a swipe-through Week view with single-step settled paging and default Time Grid focus, press-held time-range task creation in Week, a refreshed Month task grid with direct vertical swipe navigation plus a quick jump-to-current-month action, and full-screen editing dialogs to keep controls touch-friendly.
+- On smaller screens, the app uses bottom navigation, a swipe-through Week view with single-step settled paging and default Time Grid focus, press-held time-range task creation in Week, a refreshed Month task grid with direct vertical swipe navigation plus a quick jump-to-current-month action, and full-screen editing dialogs to keep controls touch-friendly. When a task dialog opens, the mobile bottom navigation hides until that task window closes.
 - The login page language switch uses the same bilingual copy system as the signed-in app, so authentication flows can be changed before sign-in.
 - Keep backend running before opening the frontend locally.

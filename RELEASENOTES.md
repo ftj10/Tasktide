@@ -1,5 +1,12 @@
 # Release Notes
 
+## v1.9.1 - 2026-04-27
+
+- Hid the mobile bottom navigation while add-task and edit-task dialogs are open.
+- Restored the mobile bottom navigation automatically after the task dialog closes.
+- Added frontend regression coverage for task-dialog-driven mobile navigation visibility.
+- Expanded README and in-app release notes to document the updated mobile task-dialog behavior.
+
 ## v1.9.0 - 2026-04-26
 
 - Changed Week to open in Time Grid by default on desktop and mobile.

@@ -69,6 +69,8 @@ export default function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [taskDialogOpen, setTaskDialogOpen] = useState(false);
+  const mobileNavigationRef = useRef<HTMLDivElement | null>(null);
   const tasksRef = useRef<Task[]>([]);
   const remindersRef = useRef<Reminder[]>([]);
   const taskSyncQueue = useRef(Promise.resolve());
@@ -213,6 +215,34 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    const syncTaskDialogOpen = () => {
+      const nextTaskDialogOpen =
+        Boolean(document.querySelector('[data-task-dialog="true"]')) ||
+        document.body.style.overflow === "hidden";
+
+      setTaskDialogOpen(nextTaskDialogOpen);
+      if (mobileNavigationRef.current) {
+        mobileNavigationRef.current.style.display = nextTaskDialogOpen ? "none" : "";
+      }
+    };
+
+    syncTaskDialogOpen();
+
+    const observer = new MutationObserver(() => {
+      syncTaskDialogOpen();
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["data-task-dialog", "style"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
     function maybeShowNotification(title: string, body: string, firedKey: string, now: Date) {
       if (
         !("Notification" in window) ||
@@ -308,6 +338,10 @@ export default function App() {
 
   function handleLanguageToggle() {
     void i18n.changeLanguage(currentLanguage === "en" ? "zh" : "en");
+  }
+
+  function handleTaskDialogVisibilityChange(open: boolean) {
+    setTaskDialogOpen(open);
   }
 
   if (!isAuthenticated) {
@@ -535,7 +569,7 @@ export default function App() {
             </Stack>
           </Paper>
 
-          <Box sx={{ width: "100%", minWidth: 0, pb: { xs: 12, md: 0 } }}>
+          <Box sx={{ width: "100%", minWidth: 0, pb: { xs: taskDialogOpen ? 0 : 12, md: 0 } }}>
             <Container maxWidth={false} disableGutters>
               <Box sx={{ py: { xs: 2, md: 0 } }}>
                 <Routes>
@@ -547,12 +581,23 @@ export default function App() {
                   />
                   <Route
                     path="/"
-                    element={<TodayPage tasks={tasks} setTasks={handleSetTasks} />}
+                    element={
+                      <TodayPage
+                        tasks={tasks}
+                        setTasks={handleSetTasks}
+                        onTaskDialogVisibilityChange={handleTaskDialogVisibilityChange}
+                      />
+                    }
                   />
                   <Route
                     path="/week"
                     element={
-                      <WeekPage tasks={tasks} setTasks={handleSetTasks} completionsRev={0} />
+                      <WeekPage
+                        tasks={tasks}
+                        setTasks={handleSetTasks}
+                        completionsRev={0}
+                        onTaskDialogVisibilityChange={handleTaskDialogVisibilityChange}
+                      />
                     }
                   />
                   <Route
@@ -568,9 +613,11 @@ export default function App() {
       </Box>
 
       <Paper
+        ref={mobileNavigationRef}
+        className="mobile-bottom-navigation"
         elevation={8}
         sx={{
-          display: { xs: "block", md: "none" },
+          display: { xs: taskDialogOpen ? "none" : "block", md: "none" },
           position: "fixed",
           bottom: 0,
           left: 0,
@@ -584,6 +631,7 @@ export default function App() {
         }}
       >
         <BottomNavigation
+          className="mobile-bottom-navigation-bar"
           showLabels
           value={activePath}
           aria-label={t("nav.mobileNavigation")}
