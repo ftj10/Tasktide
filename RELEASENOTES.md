@@ -1,9 +1,20 @@
 # Release Notes
 
+## v1.13.1 - 2026-04-28
+
+- Fixed mobile Week drag-to-create so cross-day selections now preserve the task end date.
+- Updated public ICS release notes so older history no longer implies that multi-day support is still unavailable.
+
+## v1.13.0 - 2026-04-28
+
+- Added multi-day task support across Today, Week, Month, and ICS import flows.
+- One-time tasks can now keep an end date so a single task spans multiple days in the planner.
+- ICS import now converts multi-day all-day calendar events into planner tasks instead of skipping them.
+
 ## v1.12.1 - 2026-04-28
 
-- Clarified ICS import handling for unsupported multi-day all-day calendar events.
-- Unsupported calendar spans are now skipped cleanly instead of surfacing as a generic import failure.
+- Improved ICS import feedback so skipped unsupported calendar entries are reported more clearly.
+- Clarified public release messaging around early ICS import behavior.
 
 ## v1.12.0 - 2026-04-28
 

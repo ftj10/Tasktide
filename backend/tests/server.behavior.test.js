@@ -534,6 +534,30 @@ test('behavior: normalizeTaskWritePayload maps legacy done state to completedAt 
   });
 });
 
+test('behavior: normalizeTaskWritePayload keeps one-time multi-day endDate values', () => {
+  const taskPayload = normalizeTaskWritePayload({
+    id: 'task-range',
+    title: 'Conference',
+    type: 'ONCE',
+    beginDate: '2026-05-01',
+    endDate: '2026-05-03',
+    createdAt: '2026-05-01T09:00:00.000Z',
+    updatedAt: '2026-05-01T09:00:00.000Z',
+  }, 'user-1');
+
+  assert.deepEqual(taskPayload, {
+    id: 'task-range',
+    title: 'Conference',
+    type: 'ONCE',
+    beginDate: '2026-05-01',
+    endDate: '2026-05-03',
+    createdAt: '2026-05-01T09:00:00.000Z',
+    updatedAt: '2026-05-01T09:00:00.000Z',
+    userId: 'user-1',
+    completedAt: null,
+  });
+});
+
 test('behavior: task delete removes one task for the authenticated user', async () => {
   jwt.verify = (token, secret, callback) => callback(null, { userId: 'user-1', username: 'tom' });
 

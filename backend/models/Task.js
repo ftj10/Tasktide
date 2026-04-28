@@ -10,6 +10,7 @@ const taskSchema = new mongoose.Schema({
   date: { type: String },
   weekday: { type: Number },
   beginDate: { type: String },
+  endDate: { type: String },
   recurrence: {
     frequency: { type: String },
     interval: { type: Number },

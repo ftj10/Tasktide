@@ -56,6 +56,7 @@ export function WeekPage(props: {
     occurrenceDateYmd?: string;
   } | undefined>();
   const [defaultDate, setDefaultDate] = useState<string | undefined>();
+  const [defaultEndDate, setDefaultEndDate] = useState<string | undefined>();
   const [defaultStartTime, setDefaultStartTime] = useState<string | undefined>();
   const [defaultEndTime, setDefaultEndTime] = useState<string | undefined>();
   const [viewMode, setViewMode] = useState<"dayGrid" | "timeGrid">("timeGrid");
@@ -85,6 +86,7 @@ export function WeekPage(props: {
     setEditing(undefined);
     setEditingSourceTask(undefined);
     setDefaultStartTime(undefined);
+    setDefaultEndDate(undefined);
     setDefaultEndTime(undefined);
   }
 
@@ -110,9 +112,10 @@ export function WeekPage(props: {
       if (displayTask?.startTime) {
         const startAt = dayjs(`${dateYmd}T${displayTask.startTime}:00`);
         const implicitEndAt = startAt.add(1, "hour");
-        const dayEndAt = dayjs(`${dateYmd}T23:59:00`);
+        const endDateYmd = displayTask.endDate ?? dateYmd;
+        const dayEndAt = dayjs(`${endDateYmd}T23:59:00`);
         const endAt = displayTask.endTime
-          ? dayjs(`${dateYmd}T${displayTask.endTime}:00`)
+          ? dayjs(`${endDateYmd}T${displayTask.endTime}:00`)
           : implicitEndAt.isAfter(dayEndAt)
           ? dayEndAt
           : implicitEndAt;
@@ -296,6 +299,7 @@ export function WeekPage(props: {
     setEditing(undefined);
     setEditingSourceTask(undefined);
     setDefaultDate(startAt.format("YYYY-MM-DD"));
+    setDefaultEndDate(endAt.format("YYYY-MM-DD"));
     setDefaultStartTime(startAt.format("HH:mm"));
     setDefaultEndTime(endAt.format("HH:mm"));
     setDialogOpen(true);
@@ -730,6 +734,7 @@ export function WeekPage(props: {
         task={editing}
         occurrenceDateYmd={editing ? defaultDate : undefined}
         defaultDateYmd={defaultDate || ""}
+        defaultEndDateYmd={defaultEndDate}
         defaultStartTime={defaultStartTime}
         defaultEndTime={defaultEndTime}
         onClose={closeTaskEditor}

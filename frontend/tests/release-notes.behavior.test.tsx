@@ -33,7 +33,7 @@ describe("ReleaseNotesCenter behavior", () => {
   it("shows the latest shipped version in the update dialog", () => {
     renderWithProviders(<ReleaseNotesCenter username="tom" />);
 
-    expect(screen.getByText("v1.12.1")).toBeInTheDocument();
+    expect(screen.getByText("v1.13.1")).toBeInTheDocument();
   });
 
   it("opens the history drawer from the toolbar button", async () => {

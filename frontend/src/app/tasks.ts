@@ -35,11 +35,13 @@ export function normalizeTask(task: Task): Task {
   const beginDate = task.beginDate ?? task.date ?? normalizeLegacyPermanentBeginDate(task);
   const recurrence = normalizeRecurrence(task, beginDate);
   const type = recurrence.frequency === "NONE" ? "ONCE" : "RECURRING";
+  const endDate = type === "ONCE" ? normalizeTaskEndDate(task, beginDate) : undefined;
 
   return {
     ...task,
     type,
     beginDate,
+    endDate,
     recurrence,
     date: type === "ONCE" ? beginDate : undefined,
     weekday:
@@ -84,7 +86,7 @@ export function getTaskOccurrence(task: Task, dateYmd: string): Task | null {
 export function getTaskOccurrenceCompletedAt(task: Task, dateYmd: string) {
   const normalized = normalizeTask(task);
   if (normalized.recurrence?.frequency === "NONE") {
-    return normalized.beginDate === dateYmd ? normalized.completedAt ?? null : null;
+    return isOneTimeTaskVisibleOnDate(normalized, dateYmd) ? normalized.completedAt ?? null : null;
   }
 
   if (normalized.occurrenceOverrides?.[dateYmd]?.deleted) {
@@ -100,7 +102,7 @@ export function isTaskOccurrenceCompleted(task: Task, dateYmd: string) {
 
 export function getTaskOccurrenceSnapshotFromNormalizedTask(task: Task, dateYmd: string): Task | null {
   if (task.recurrence?.frequency === "NONE") {
-    return task.beginDate === dateYmd ? task : null;
+    return isOneTimeTaskVisibleOnDate(task, dateYmd) ? task : null;
   }
 
   if (!matchesRecurrence(task, dateYmd)) return null;
@@ -161,6 +163,7 @@ export function applySeriesEdit(sourceTask: Task, editedTask: Task): Task {
     ...pickEditableFields(edited),
     type: edited.type,
     beginDate: edited.beginDate,
+    endDate: edited.endDate,
     recurrence: edited.recurrence,
     date: edited.date,
     weekday: edited.weekday,
@@ -359,6 +362,7 @@ export function areTasksEqual(sourceTask: Task, targetTask: Task) {
     source.weekday === target.weekday &&
     source.date === target.date &&
     source.beginDate === target.beginDate &&
+    (source.endDate ?? source.beginDate ?? "") === (target.endDate ?? target.beginDate ?? "") &&
     source.emergency === target.emergency &&
     (source.completedAt ?? null) === (target.completedAt ?? null) &&
     source.createdAt === target.createdAt &&
@@ -382,6 +386,12 @@ function normalizeLegacyPermanentBeginDate(task: Task) {
     cursor = cursor.subtract(1, "day");
   }
   return ymd(cursor);
+}
+
+function normalizeTaskEndDate(task: Task, beginDate?: string) {
+  if (!beginDate) return task.endDate;
+  const candidate = task.endDate ?? task.beginDate ?? task.date ?? beginDate;
+  return dayjs(candidate).isBefore(dayjs(beginDate), "day") ? beginDate : candidate;
 }
 
 function normalizeRecurrence(task: Task, beginDate?: string): TaskRecurrence {
@@ -642,12 +652,21 @@ function pickEditableFields(task: Task) {
   return {
     title: task.title,
     emergency: task.emergency,
+    endDate: task.endDate ?? task.beginDate,
     location: task.location ?? "",
     mapProvider: task.mapProvider ?? "google",
     startTime: task.startTime ?? "",
     endTime: task.endTime ?? "",
     description: task.description ?? "",
   };
+}
+
+function isOneTimeTaskVisibleOnDate(task: Task, dateYmd: string) {
+  const beginDate = task.beginDate;
+  if (!beginDate) return false;
+
+  const endDate = task.endDate ?? beginDate;
+  return !dayjs(dateYmd).isBefore(dayjs(beginDate), "day") && !dayjs(dateYmd).isAfter(dayjs(endDate), "day");
 }
 
 function pickOccurrenceOverrideFields(task: Task): TaskOccurrenceOverride {

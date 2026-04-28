@@ -33,6 +33,7 @@ export type Task = {
   weekday?: number;
   date?: string;
   beginDate?: string;
+  endDate?: string;
   recurrence?: TaskRecurrence;
   occurrenceOverrides?: Record<string, TaskOccurrenceOverride>;
   emergency?: number;

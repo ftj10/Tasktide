@@ -31,10 +31,6 @@ export type IcsImportResult = {
   skippedCount: number;
 };
 
-type IcsImportPolicy = {
-  skipped: boolean;
-};
-
 const WEEKDAY_MAP: Record<string, number> = {
   MO: 1,
   TU: 2,
@@ -79,12 +75,6 @@ export function parseIcsTasks(source: string): IcsImportResult {
       continue;
     }
 
-    const importPolicy = classifyImportPolicy(event);
-    if (importPolicy.skipped) {
-      skippedCount += 1;
-      continue;
-    }
-
     const occurrenceOverrides = buildOccurrenceOverrides(
       event,
       exceptionEvents.get(event.uid) ?? []
@@ -96,6 +86,10 @@ export function parseIcsTasks(source: string): IcsImportResult {
         title: event.title || "Imported event",
         type: event.recurrence?.frequency && event.recurrence.frequency !== "NONE" ? "RECURRING" : "ONCE",
         beginDate: event.start.dateYmd,
+        endDate:
+          event.recurrence?.frequency && event.recurrence.frequency !== "NONE"
+            ? undefined
+            : resolveEventEndDate(event.start, event.end),
         date: event.recurrence?.frequency && event.recurrence.frequency !== "NONE" ? undefined : event.start.dateYmd,
         recurrence: event.recurrence ?? { frequency: "NONE", interval: 1, until: null },
         occurrenceOverrides,
@@ -121,18 +115,6 @@ export function parseIcsTasks(source: string): IcsImportResult {
   }
 
   return { tasks, skippedCount };
-}
-
-function classifyImportPolicy(event: ParsedIcsEvent): IcsImportPolicy {
-  if (
-    event.start?.isAllDay &&
-    event.end?.isAllDay &&
-    event.end.dateYmd !== event.start.dateYmd
-  ) {
-    return { skipped: true };
-  }
-
-  return { skipped: false };
 }
 
 function buildOccurrenceOverrides(
@@ -194,6 +176,14 @@ function resolveEndTime(start: ParsedIcsDate, end?: ParsedIcsDate) {
   if (end.dateYmd !== start.dateYmd) return "";
   if (end.time <= start.time) return "";
   return end.time;
+}
+
+function resolveEventEndDate(start: ParsedIcsDate, end?: ParsedIcsDate) {
+  if (!end) return start.dateYmd;
+  if (start.isAllDay && end.isAllDay) {
+    return dayjs(end.dateYmd).subtract(1, "day").format("YYYY-MM-DD");
+  }
+  return end.dateYmd;
 }
 
 function parseIcsEvents(source: string) {

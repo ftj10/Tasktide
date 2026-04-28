@@ -25,6 +25,7 @@ const resources = {
         moveOccurrenceToToday: "Move occurrence to Today",
         repeat: "Repeat",
         beginDate: "Begin date",
+        endDate: "End date",
         date: "Date",
         weekday: "Weekday",
         emergency: "Emergency",
@@ -87,7 +88,7 @@ const resources = {
         importIcsInput: "Import ICS file",
         importSuccess: "Imported {{count}} tasks from {{name}}.",
         importSuccessWithSkipped: "Imported {{count}} tasks from {{name}} and skipped {{skipped}} unsupported entries.",
-        importEmpty: "No importable events were found in {{name}}. Multi-day all-day calendar events are not supported yet.",
+        importEmpty: "No importable events were found in {{name}}.",
         importError: "We couldn't import {{name}}.",
         markAllDone: "Mark All Done",
         activeCount: "Active {{count}}",
@@ -125,7 +126,7 @@ const resources = {
         listView: "List View",
         timeGridView: "Time Grid",
         todayButton: "Today",
-        mobileCreateHint: "On phones, press-hold a time range in Time Grid to create a task there."
+        mobileCreateHint: "On phones, press-hold a time range in Time Grid to create a task there, including ranges that cross into the next day."
       },
       month: {
         jumpToCurrentMonth: "Jump to Current Month",
@@ -174,7 +175,7 @@ const resources = {
           title: "How To Use This Website",
           step0: "Use the EN / 中文 button on the login page whenever you want to switch the sign-in flow between English and Chinese before entering the app.",
           step1: "Use Today to add, edit, complete, or move tasks for the current day. Completed tasks leave the active list immediately, stay retained for 30 days, and contribute to the expandable productivity stats and trend chart shown on the page.",
-          step2: "Use the Import ICS action on Today when you want to turn calendar events from a `.ics` file into planner tasks. The importer keeps single-day all-day items, same-day timed items, and supported daily, weekly, monthly, or yearly repeat rules.",
+          step2: "Use the Import ICS action on Today when you want to turn calendar events from a `.ics` file into planner tasks. The importer keeps multi-day all-day ranges, timed events, and supported daily, weekly, monthly, or yearly repeat rules.",
           step3: "Use Week and Month to review your schedule and jump between dates quickly. Week now opens in Time Grid by default, and on phones you can press-hold a time range before creating a task while Month stays as a simplified task grid.",
           step4: "Use Reminders for ongoing notes that should stay visible until you mark them done.",
           step5: "On phones, use the bottom navigation to switch between planner sections, while larger screens keep the sidebar visible. When a task dialog opens, the mobile bottom navigation hides until the task window closes.",
@@ -201,7 +202,7 @@ const resources = {
           },
           q5: {
             question: "How does clicking in Week view work?",
-            answer: "Click a day header to jump to that date in Today, click an empty spot on larger screens so the next new task uses that date by default, and on mobile the Week page now opens in Time Grid so you can press-hold a time range immediately while swiping through each week's 4-day and 3-day pages."
+            answer: "Click a day header to jump to that date in Today, click an empty spot on larger screens so the next new task uses that date by default, and on mobile the Week page now opens in Time Grid so you can press-hold a time range immediately while swiping through each week's 4-day and 3-day pages. If your selected range crosses into the next day, the new task also keeps that end date."
           },
           q6: {
             question: "How does the layout change on mobile devices?",
@@ -225,7 +226,7 @@ const resources = {
           },
           q11: {
             question: "What does the ICS importer support?",
-            answer: "Import ICS on Today to convert calendar events into tasks. The importer keeps titles, notes, locations, single-day all-day dates, same-day start and end times, and supported daily, weekly, monthly, or yearly repeat rules. Multi-day all-day calendar spans are not supported yet. Unsupported entries are skipped and reported after the import."
+            answer: "Import ICS on Today to convert calendar events into tasks. The importer keeps titles, notes, locations, multi-day all-day ranges, timed events, and supported daily, weekly, monthly, or yearly repeat rules. Unsupported entries are skipped and reported after the import."
           }
         },
         ask: {
@@ -252,6 +253,7 @@ const resources = {
         addTaskTitle: "Add task",
         editTaskTitle: "Edit task",
         taskName: "Task name",
+        endDateError: "End date must be the same as or later than begin date.",
         endTimeError: "End time must be equal to or later than start time.",
         repeatTitle: "Repeat options",
         editRepeat: "Edit",
@@ -323,6 +325,7 @@ const resources = {
         moveOccurrenceToToday: "将本次移到今天",
         repeat: "重复",
         beginDate: "开始日期",
+        endDate: "结束日期",
         date: "日期",
         weekday: "星期",
         emergency: "紧急程度",
@@ -385,7 +388,7 @@ const resources = {
         importIcsInput: "导入 ICS 文件",
         importSuccess: "已从 {{name}} 导入 {{count}} 个任务。",
         importSuccessWithSkipped: "已从 {{name}} 导入 {{count}} 个任务，并跳过 {{skipped}} 个暂不支持的条目。",
-        importEmpty: "{{name}} 中没有可导入的事件。跨天的全天日历事件暂不支持。",
+        importEmpty: "{{name}} 中没有可导入的事件。",
         importError: "无法导入 {{name}}。",
         markAllDone: "全部完成",
         activeCount: "进行中 {{count}}",
@@ -423,7 +426,7 @@ const resources = {
         listView: "列表视图",
         timeGridView: "时间网格",
         todayButton: "今天",
-        mobileCreateHint: "在手机上可直接在时间网格中长按一段时间范围，在该时段创建任务。"
+        mobileCreateHint: "在手机上可直接在时间网格中长按一段时间范围，在该时段创建任务，也支持跨到下一天的范围。"
       },
       month: {
         jumpToCurrentMonth: "跳到当前月份",
@@ -472,7 +475,7 @@ const resources = {
           title: "网站使用说明",
           step0: "如果你想在登录前切换语言，可以先使用登录页上的 EN / 中文 按钮，在英文和中文之间切换认证界面。",
           step1: "在 Today 页面中添加、编辑、完成或移动当天任务。任务完成后会立即从进行中列表隐藏，并保留 30 天的完成数据，同时这些记录也会计入页面上可展开的效率统计与趋势图。",
-          step2: "如果你有日历导出的 `.ics` 文件，可以在 Today 页面使用导入按钮把事件直接转换成任务。导入会保留单日全天项目、同日开始和结束时间，以及受支持的每天、每周、每月、每年重复规则。",
+          step2: "如果你有日历导出的 `.ics` 文件，可以在 Today 页面使用导入按钮把事件直接转换成任务。导入会保留跨天全天范围、定时事件，以及受支持的每天、每周、每月、每年重复规则。",
           step3: "在 Week 和 Month 页面快速查看整体安排并跳转日期。Week 现在默认进入时间网格；在手机上可直接长按时间范围创建任务，而 Month 则保持为简化后的任务网格。",
           step4: "使用 Reminders 记录持续存在、直到你手动完成的提醒事项。",
           step5: "在手机上可使用底部导航切换页面；在较大屏幕上会显示侧边栏导航。当任务弹窗打开时，移动端底部导航会先隐藏，直到任务窗口关闭。",
@@ -499,7 +502,7 @@ const resources = {
           },
           q5: {
             question: "Week 页面中的点击行为是什么？",
-            answer: "点击某一天的日期标题会跳转到对应的 Today 页面；在较大屏幕上点击周历中的空白区域后，再新增任务时会默认带入该日期；在手机上 Week 页面默认就是时间网格，可直接长按某段时间范围打开该时段的任务创建流程，同时仍可在每周的 4 天页与 3 天页之间持续滑动并进入下一周。"
+            answer: "点击某一天的日期标题会跳转到对应的 Today 页面；在较大屏幕上点击周历中的空白区域后，再新增任务时会默认带入该日期；在手机上 Week 页面默认就是时间网格，可直接长按某段时间范围打开该时段的任务创建流程，同时仍可在每周的 4 天页与 3 天页之间持续滑动并进入下一周。如果所选范围跨到下一天，新任务也会保留那个结束日期。"
           },
           q6: {
             question: "移动设备上的布局会怎样变化？",
@@ -523,7 +526,7 @@ const resources = {
           },
           q11: {
             question: "ICS 导入功能支持什么？",
-            answer: "你可以在 Today 页面导入 ICS，把日历事件转换成任务。导入会保留标题、备注、地点、单日全天日期、同一天内的开始和结束时间，以及受支持的每天、每周、每月、每年重复规则。跨天的全天日历事件暂不支持。暂不支持的条目会被跳过，并在导入后提示。"
+            answer: "你可以在 Today 页面导入 ICS，把日历事件转换成任务。导入会保留标题、备注、地点、跨天全天范围、定时事件，以及受支持的每天、每周、每月、每年重复规则。暂不支持的条目会被跳过，并在导入后提示。"
           }
         },
         ask: {
@@ -550,6 +553,7 @@ const resources = {
         addTaskTitle: "添加任务",
         editTaskTitle: "编辑任务",
         taskName: "任务名称",
+        endDateError: "结束日期必须等于或晚于开始日期。",
         endTimeError: "结束时间必须等于或晚于开始时间。",
         repeatTitle: "重复设置",
         editRepeat: "编辑",

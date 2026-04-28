@@ -39,6 +39,29 @@ describe("TaskDialog behavior", () => {
     expect(onSave).not.toHaveBeenCalled();
   });
 
+  it("blocks saving when end date is earlier than begin date", async () => {
+    const user = userEvent.setup();
+    const onSave = vi.fn();
+
+    renderWithProviders(
+      <TaskDialog
+        open
+        mode="create"
+        defaultDateYmd="2026-04-20"
+        onClose={vi.fn()}
+        onSave={onSave}
+      />
+    );
+
+    await user.type(screen.getByLabelText("Task name"), "Trip");
+    await user.clear(screen.getByLabelText("End date"));
+    await user.type(screen.getByLabelText("End date"), "2026-04-19");
+
+    expect(screen.getByText("End date must be the same as or later than begin date.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Add" })).toBeDisabled();
+    expect(onSave).not.toHaveBeenCalled();
+  });
+
   it("uses a full-screen dialog layout on mobile screens", () => {
     setScreenWidth(390);
 

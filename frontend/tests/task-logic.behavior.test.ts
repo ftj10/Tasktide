@@ -195,6 +195,25 @@ describe("task logic behavior", () => {
     expect(completedTasks[0].completedAt).toBe("2026-04-22T10:00:00.000Z");
   });
 
+  it("renders a one-time multi-day task on every day in its date range", () => {
+    const task: Task = {
+      id: "multi-day-1",
+      title: "Conference",
+      type: "ONCE",
+      beginDate: "2026-05-01",
+      endDate: "2026-05-03",
+      date: "2026-05-01",
+      createdAt: "2026-05-01T08:00:00.000Z",
+      updatedAt: "2026-05-01T08:00:00.000Z",
+    };
+
+    expect(tasksForDate([task], "2026-04-30")).toEqual([]);
+    expect(tasksForDate([task], "2026-05-01")).toHaveLength(1);
+    expect(tasksForDate([task], "2026-05-02")).toHaveLength(1);
+    expect(tasksForDate([task], "2026-05-03")).toHaveLength(1);
+    expect(tasksForDate([task], "2026-05-04")).toEqual([]);
+  });
+
   it("lists recurring weekly occurrences only inside the requested visible range", () => {
     const recurringTask = normalizeTask({
       id: "weekly-range",

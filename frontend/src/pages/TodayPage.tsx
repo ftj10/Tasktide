@@ -211,9 +211,11 @@ export function TodayPage(props: {
   function moveTemporaryToToday(task: Task) {
     if (!isOneTimeTask(task)) return;
     const todayYmd = ymd(dayjs());
+    const durationDays = dayjs(task.endDate ?? task.beginDate ?? todayYmd).diff(dayjs(task.beginDate ?? todayYmd), "day");
     upsert({
       ...task,
       beginDate: todayYmd,
+      endDate: dayjs(todayYmd).add(durationDays, "day").format("YYYY-MM-DD"),
       date: todayYmd,
       completedAt: null,
       updatedAt: new Date().toISOString(),
@@ -223,9 +225,11 @@ export function TodayPage(props: {
   function moveTemporaryToTomorrow(task: Task) {
     if (!isOneTimeTask(task)) return;
     const tomorrowYmd = ymd(dayjs().add(1, "day"));
+    const durationDays = dayjs(task.endDate ?? task.beginDate ?? tomorrowYmd).diff(dayjs(task.beginDate ?? tomorrowYmd), "day");
     upsert({
       ...task,
       beginDate: tomorrowYmd,
+      endDate: dayjs(tomorrowYmd).add(durationDays, "day").format("YYYY-MM-DD"),
       date: tomorrowYmd,
       completedAt: null,
       updatedAt: new Date().toISOString(),

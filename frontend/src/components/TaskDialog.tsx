@@ -40,6 +40,7 @@ export function TaskDialog(props: {
   open: boolean;
   mode: Mode;
   defaultDateYmd: string;
+  defaultEndDateYmd?: string;
   defaultStartTime?: string;
   defaultEndTime?: string;
   task?: Task;
@@ -67,6 +68,7 @@ export function TaskDialog(props: {
       title: "",
       type: "ONCE" as const,
       beginDate: d.format("YYYY-MM-DD"),
+      endDate: props.defaultEndDateYmd || d.format("YYYY-MM-DD"),
       date: d.format("YYYY-MM-DD"),
       completedAt: null,
       createdAt: new Date().toISOString(),
@@ -81,10 +83,11 @@ export function TaskDialog(props: {
       },
       occurrenceOverrides: {},
     } satisfies Task;
-  }, [props.defaultDateYmd, props.defaultEndTime, props.defaultStartTime, props.mode, props.task]);
+  }, [props.defaultDateYmd, props.defaultEndDateYmd, props.defaultEndTime, props.defaultStartTime, props.mode, props.task]);
 
   const [title, setTitle] = useState(base.title);
   const [beginDate, setBeginDate] = useState(base.beginDate ?? props.defaultDateYmd);
+  const [endDate, setEndDate] = useState(base.endDate ?? base.beginDate ?? props.defaultDateYmd);
   const [emergency, setEmergency] = useState<number>(base.emergency ?? 5);
   const [location, setLocation] = useState(base.location || "");
   const [description, setDescription] = useState(base.description || "");
@@ -100,7 +103,13 @@ export function TaskDialog(props: {
   const [repeatMonthDays, setRepeatMonthDays] = useState<number[]>(base.recurrence?.monthDays ?? [dayjs(base.beginDate).date()]);
   const [repeatUntilMode, setRepeatUntilMode] = useState<"forever" | "until">(base.recurrence?.until ? "until" : "forever");
   const [repeatUntilDate, setRepeatUntilDate] = useState<string>(base.recurrence?.until ?? "");
-  const hasInvalidEndTime = Boolean(startTime && endTime && endTime < startTime);
+  const hasInvalidDateRange = Boolean(endDate && beginDate && dayjs(endDate).isBefore(dayjs(beginDate), "day"));
+  const hasInvalidEndTime = Boolean(
+    startTime &&
+    endTime &&
+    endDate === beginDate &&
+    endTime < startTime
+  );
   const isRecurringEdit = props.mode === "edit" && repeatFrequency !== "NONE";
 
   const weekdayItems = [
@@ -121,6 +130,7 @@ export function TaskDialog(props: {
     const normalized = normalizeTask(base);
     setTitle(normalized.title);
     setBeginDate(normalized.beginDate ?? props.defaultDateYmd);
+    setEndDate(normalized.endDate ?? normalized.beginDate ?? props.defaultDateYmd);
     setEmergency(normalized.emergency ?? 5);
     setLocation(normalized.location || "");
     setDescription(normalized.description || "");
@@ -151,7 +161,12 @@ export function TaskDialog(props: {
     }
   }, [beginDate, repeatFrequency, repeatMonthDays.length, repeatWeekdays.length]);
 
-  const canSave = title.trim().length > 0 && Boolean(beginDate) && !hasInvalidEndTime;
+  const canSave =
+    title.trim().length > 0 &&
+    Boolean(beginDate) &&
+    Boolean(endDate) &&
+    !hasInvalidDateRange &&
+    !hasInvalidEndTime;
   const repeatSummary = t(getRepeatLabelKey(buildPreviewTask()));
   const canMoveTempToToday = false;
   const canMovePermanentOccurrenceToToday = false;
@@ -188,6 +203,7 @@ export function TaskDialog(props: {
       title: title.trim(),
       type: isRecurring ? "RECURRING" : "ONCE",
       beginDate,
+      endDate: isRecurring ? undefined : endDate,
       recurrence,
       date: isRecurring ? undefined : beginDate,
       weekday:
@@ -262,6 +278,7 @@ export function TaskDialog(props: {
     props.onSave({
       ...buildTask(),
       beginDate: dayjs().format("YYYY-MM-DD"),
+      endDate: dayjs().add(dayjs(endDate).diff(dayjs(beginDate), "day"), "day").format("YYYY-MM-DD"),
       date: dayjs().format("YYYY-MM-DD"),
       completedAt: null,
     }, "series");
@@ -320,13 +337,28 @@ export function TaskDialog(props: {
               </Button>
             </Stack>
 
-            <TextField
-              label={t("common.beginDate")}
-              type="date"
-              value={beginDate}
-              onChange={(event) => setBeginDate(event.target.value)}
-              InputLabelProps={{ shrink: true }}
-            />
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+              <TextField
+                label={t("common.beginDate")}
+                type="date"
+                value={beginDate}
+                onChange={(event) => setBeginDate(event.target.value)}
+                InputLabelProps={{ shrink: true }}
+                fullWidth
+              />
+              {repeatFrequency === "NONE" ? (
+                <TextField
+                  label={t("common.endDate")}
+                  type="date"
+                  value={endDate}
+                  onChange={(event) => setEndDate(event.target.value)}
+                  InputLabelProps={{ shrink: true }}
+                  error={hasInvalidDateRange}
+                  helperText={hasInvalidDateRange ? t("dialog.endDateError") : " "}
+                  fullWidth
+                />
+              ) : null}
+            </Stack>
 
             <FormControl>
               <InputLabel>{t("common.emergency")}</InputLabel>

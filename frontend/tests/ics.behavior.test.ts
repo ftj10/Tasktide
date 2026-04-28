@@ -75,7 +75,7 @@ END:VCALENDAR`);
     });
   });
 
-  it("skips multi-day all-day events because the planner only supports single-day tasks", () => {
+  it("converts multi-day all-day events into one task range", () => {
     const result = parseIcsTasks(`BEGIN:VCALENDAR
 VERSION:2.0
 CALSCALE:GREGORIAN
@@ -89,7 +89,13 @@ DESCRIPTION:Example event description
 END:VEVENT
 END:VCALENDAR`);
 
-    expect(result.tasks).toHaveLength(0);
-    expect(result.skippedCount).toBe(1);
+    expect(result.tasks).toHaveLength(1);
+    expect(result.skippedCount).toBe(0);
+    expect(result.tasks[0]).toMatchObject({
+      title: "My 3-Day Event",
+      beginDate: "2026-05-01",
+      endDate: "2026-05-03",
+      description: "Example event description",
+    });
   });
 });

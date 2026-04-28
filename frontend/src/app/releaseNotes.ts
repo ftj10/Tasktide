@@ -14,27 +14,77 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-04-28-mobile-week-cross-day-range-fix",
+    version: "v1.13.1",
+    releasedAt: "2026-04-28",
+    title: {
+      en: "Cross-day week range creation fix",
+      zh: "跨天周视图范围创建修复"
+    },
+    summary: {
+      en: "Mobile Week drag-to-create now preserves the end date when a selected time range crosses into the next day.",
+      zh: "移动端 Week 拖拽创建任务时，如果选区跨到下一天，现在会正确保留结束日期。"
+    },
+    changes: {
+      en: [
+        "Keep the selected end date when a mobile Week time-grid range crosses midnight.",
+        "Create cross-day tasks from mobile Week with the correct begin date, end date, and times.",
+        "Cleaned up older public ICS release wording so current multi-day support is no longer contradicted."
+      ],
+      zh: [
+        "当移动端 Week 时间网格选区跨过午夜时，保留所选结束日期。",
+        "让移动端 Week 创建跨天任务时使用正确的开始日期、结束日期与时间。",
+        "清理较早版本中的公开 ICS 说明，避免与当前的跨天支持能力相矛盾。"
+      ]
+    }
+  },
+  {
+    id: "2026-04-28-multi-day-events",
+    version: "v1.13.0",
+    releasedAt: "2026-04-28",
+    title: {
+      en: "Multi-day planner events",
+      zh: "跨天计划事件"
+    },
+    summary: {
+      en: "One-time tasks can now span multiple days across Today, Week, Month, and ICS imports.",
+      zh: "一次性任务现在可以在 Today、Week、Month 与 ICS 导入中跨越多天显示。"
+    },
+    changes: {
+      en: [
+        "Added an end-date flow for one-time tasks so one task can cover multiple days.",
+        "Show multi-day tasks across Today, Week, and Month instead of limiting them to the first day only.",
+        "Import multi-day all-day ICS calendar events into planner tasks instead of skipping them."
+      ],
+      zh: [
+        "为一次性任务新增结束日期流程，让同一个任务可以覆盖多天。",
+        "让跨天任务能在 Today、Week 与 Month 中持续显示，而不再只落在第一天。",
+        "将跨天的全天 ICS 日历事件导入为计划任务，而不再跳过。"
+      ]
+    }
+  },
+  {
     id: "2026-04-28-ics-import-multi-day-skip-clarity",
     version: "v1.12.1",
     releasedAt: "2026-04-28",
     title: {
-      en: "Clearer unsupported ICS import handling",
-      zh: "更清晰的 ICS 不支持导入提示"
+      en: "Clearer ICS import feedback",
+      zh: "更清晰的 ICS 导入反馈"
     },
     summary: {
-      en: "Unsupported multi-day all-day ICS events are now skipped cleanly instead of looking like a generic import failure.",
-      zh: "暂不支持的跨天全天 ICS 事件现在会被清晰跳过，不再看起来像普通导入失败。"
+      en: "Early ICS import feedback became clearer so skipped unsupported entries were easier to understand.",
+      zh: "早期的 ICS 导入反馈变得更清晰，让被跳过的暂不支持条目更容易理解。"
     },
     changes: {
       en: [
-        "Detect multi-day all-day calendar spans during ICS import.",
-        "Skip unsupported spans cleanly instead of surfacing a generic import failure.",
-        "Clarified public docs so current ICS import limits are easier to understand."
+        "Improved the import result message when unsupported calendar entries were skipped.",
+        "Reduced generic failure wording during early ICS import flows.",
+        "Clarified public docs around early ICS import behavior."
       ],
       zh: [
-        "在 ICS 导入期间识别跨天的全天日历事件。",
-        "对暂不支持的跨天事件进行清晰跳过，不再显示成普通导入失败。",
-        "补充公开文档说明，让当前 ICS 导入限制更容易理解。"
+        "当导入跳过暂不支持的日历条目时，改进结果提示信息。",
+        "减少早期 ICS 导入流程中的泛化失败文案。",
+        "补充公开文档说明，让早期 ICS 导入行为更容易理解。"
       ]
     }
   },

@@ -138,7 +138,9 @@ export function toCalendarEventsForRange(
     if (!occurrence?.beginDate) continue;
 
     const d = dayjs(occurrence.beginDate);
-    if (d.isBefore(rangeStart, "day")) continue;
+    const endDate = occurrence.endDate ?? occurrence.beginDate;
+    const endDay = dayjs(endDate);
+    if (endDay.isBefore(rangeStart, "day")) continue;
     if (d.isAfter(rangeEnd.subtract(1, "day"), "day")) continue;
 
     const level = occurrence.emergency ?? 5;
@@ -148,6 +150,10 @@ export function toCalendarEventsForRange(
       id: task.id,
       title: occurrence.title,
       start: occurrence.beginDate,
+      end:
+        occurrence.startTime || endDate === occurrence.beginDate
+          ? undefined
+          : endDay.add(1, "day").format("YYYY-MM-DD"),
       allDay: true,
       extendedProps: { taskId: task.id },
       backgroundColor: col.bg,

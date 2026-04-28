@@ -55,6 +55,25 @@ vi.mock("@fullcalendar/react", () => ({
             select-range
           </button>
         ) : null}
+        {props.selectable ? (
+          <button
+            type="button"
+            onClick={() =>
+              props.select?.({
+                startStr: "2026-04-24T23:30:00",
+                endStr: "2026-04-25T01:00:00",
+                allDay: false,
+                view: {
+                  calendar: {
+                    unselect: () => {},
+                  },
+                },
+              })
+            }
+          >
+            select-range-cross-day
+          </button>
+        ) : null}
         {props.events.map((event: any) => (
           <button
             key={event.id}
@@ -189,6 +208,35 @@ describe("WeekPage behavior", () => {
     expect(latestMobileCalendars[0].initialView).toBe("mobileTimeGrid");
   });
 
+  it("renders one-time multi-day all-day tasks across the whole date range in week view", () => {
+    renderWithProviders(
+      <WeekPage
+        tasks={[
+          {
+            id: "range-1",
+            title: "Conference",
+            type: "ONCE",
+            beginDate: "2026-04-28",
+            endDate: "2026-04-30",
+            date: "2026-04-28",
+            createdAt: "2026-04-28T00:00:00.000Z",
+            updatedAt: "2026-04-28T00:00:00.000Z",
+          },
+        ]}
+        setTasks={vi.fn()}
+      />
+    );
+
+    const latestDesktopCalendar = calendarRenderProps.at(-1);
+    const renderedEvent = latestDesktopCalendar.events.find((event: any) => event.id === "range-1");
+
+    expect(renderedEvent).toMatchObject({
+      start: "2026-04-28",
+      end: "2026-05-01",
+      allDay: true,
+    });
+  });
+
   it("rolls mobile week view from a 3-day page into the next week's 4-day page", () => {
     setScreenWidth(390);
 
@@ -259,8 +307,38 @@ describe("WeekPage behavior", () => {
 
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(screen.getByLabelText("Begin date")).toHaveValue("2026-04-24");
+    expect(screen.getByLabelText("End date")).toHaveValue("2026-04-24");
     expect(screen.getByLabelText("Start Time (Optional)")).toHaveValue("09:30");
     expect(screen.getByLabelText("End Time (Optional)")).toHaveValue("11:00");
+  });
+
+  it("prefills and saves the end date when a mobile week selection crosses into the next day", async () => {
+    setScreenWidth(390);
+    const user = userEvent.setup();
+    const setTasks = vi.fn();
+
+    renderWithProviders(<WeekPage tasks={[]} setTasks={setTasks} />);
+
+    await user.click(screen.getByRole("button", { name: "Time Grid" }));
+    await user.click(screen.getAllByRole("button", { name: "select-range-cross-day" })[0]);
+
+    expect(screen.getByLabelText("Begin date")).toHaveValue("2026-04-24");
+    expect(screen.getByLabelText("End date")).toHaveValue("2026-04-25");
+    expect(screen.getByLabelText("Start Time (Optional)")).toHaveValue("23:30");
+    expect(screen.getByLabelText("End Time (Optional)")).toHaveValue("01:00");
+
+    await user.type(screen.getByLabelText("Task name"), "Overnight work");
+    await user.click(screen.getByRole("button", { name: "Add" }));
+
+    expect(setTasks).toHaveBeenCalledTimes(1);
+    const savedTasks = setTasks.mock.calls[0][0] as Task[];
+    expect(savedTasks[0]).toMatchObject({
+      title: "Overnight work",
+      beginDate: "2026-04-24",
+      endDate: "2026-04-25",
+      startTime: "23:30",
+      endTime: "01:00",
+    });
   });
 
   it("uses the occurrence override time for recurring events in the calendar", () => {

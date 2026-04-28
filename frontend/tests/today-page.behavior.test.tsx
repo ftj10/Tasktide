@@ -172,13 +172,11 @@ END:VCALENDAR`,
     expect(await screen.findByText("Imported 1 tasks from planner.ics.")).toBeInTheDocument();
   });
 
-  it("reports unsupported multi-day all-day ICS events without a generic failure", async () => {
+  it("imports a multi-day all-day ICS event as one ranged task", async () => {
     const user = userEvent.setup();
+    const setTasks = vi.fn();
 
-    renderWithProviders(
-      <TodayPage tasks={[]} setTasks={vi.fn()} />,
-      "/?date=2026-05-01"
-    );
+    renderWithProviders(<TodayPage tasks={[]} setTasks={setTasks} />, "/?date=2026-05-01");
 
     const importFile = new File(
       [
@@ -201,11 +199,13 @@ END:VCALENDAR`,
 
     await user.upload(screen.getByLabelText("Import ICS file"), importFile);
 
-    expect(
-      await screen.findByText(
-        "No importable events were found in three-day.ics. Multi-day all-day calendar events are not supported yet."
-      )
-    ).toBeInTheDocument();
-    expect(screen.queryByText("We couldn't import three-day.ics.")).not.toBeInTheDocument();
+    expect(setTasks).toHaveBeenCalledTimes(1);
+    const nextTasks = setTasks.mock.calls[0][0] as Task[];
+    expect(nextTasks[0]).toMatchObject({
+      title: "My 3-Day Event",
+      beginDate: "2026-05-01",
+      endDate: "2026-05-03",
+    });
+    expect(await screen.findByText("Imported 1 tasks from three-day.ics.")).toBeInTheDocument();
   });
 });

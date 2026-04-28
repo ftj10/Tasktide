@@ -278,6 +278,10 @@ export default function App() {
           return;
         }
 
+        if (task.recurrence?.frequency === "NONE" && task.beginDate !== todayYmd) {
+          return;
+        }
+
         const [startHour, startMinute] = task.startTime.split(":").map(Number);
         const reminderTime = dayjs(now)
           .hour(startHour)
