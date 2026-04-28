@@ -7,6 +7,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, beforeEach, expect, it, vi } from "vitest";
 
 import i18n from "../src/i18n";
+import { tasksForDate } from "../src/app/taskLogic";
 import { weekdayISO, weekStartMonday } from "../src/app/date";
 import type { Task } from "../src/types";
 import { WeekPage } from "../src/pages/WeekPage";
@@ -109,6 +110,43 @@ describe("WeekPage behavior", () => {
     await user.click(within(confirmDialog).getByRole("button", { name: "Delete" }));
 
     expect(setTasks).toHaveBeenCalledWith([]);
+  });
+
+  it("lets recurring task deletion target only one week occurrence", async () => {
+    const user = userEvent.setup();
+    const recurringTask: Task = {
+      id: "repeat-week-delete",
+      title: "Weekly review",
+      type: "RECURRING",
+      beginDate: "2026-04-20",
+      emergency: 3,
+      createdAt: "2026-04-20T00:00:00.000Z",
+      updatedAt: "2026-04-20T00:00:00.000Z",
+      recurrence: {
+        frequency: "WEEKLY",
+        interval: 1,
+        weekdays: [3],
+        until: null,
+      },
+    };
+    const setTasks = vi.fn();
+
+    renderWithProviders(<WeekPage tasks={[recurringTask]} setTasks={setTasks} />);
+
+    await user.click(screen.getByRole("button", { name: "Weekly review" }));
+    await user.click(screen.getByRole("button", { name: "Delete" }));
+    await user.click(screen.getByRole("button", { name: "This day only" }));
+
+    const confirmDialog = screen.getByRole("dialog", { name: "Confirm" });
+    await user.click(within(confirmDialog).getByRole("button", { name: "Delete" }));
+
+    expect(setTasks).toHaveBeenCalledTimes(1);
+    const nextTasks = setTasks.mock.calls[0][0] as Task[];
+    const deletedDate = Object.keys(nextTasks[0].occurrenceOverrides ?? {})[0];
+    expect(deletedDate).toBeTruthy();
+    expect(tasksForDate(nextTasks, deletedDate)).toEqual([]);
+    expect(tasksForDate(nextTasks, dayjs(deletedDate).add(7, "day").format("YYYY-MM-DD"))).toHaveLength(1);
+    expect(nextTasks[0].occurrenceOverrides?.[deletedDate]?.deleted).toBe(true);
   });
 
   it("jumps to Today when a week date header is clicked", async () => {

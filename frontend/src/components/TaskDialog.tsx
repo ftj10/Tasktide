@@ -46,7 +46,7 @@ export function TaskDialog(props: {
   occurrenceDateYmd?: string;
   onClose: () => void;
   onSave: (task: Task, scope?: TaskSaveScope) => void;
-  onDelete?: (id: string) => void;
+  onDelete?: (id: string, scope?: TaskSaveScope) => void;
   onMoveOccurrenceToToday?: (task: Task, fromDateYmd: string) => void;
 }) {
   const { t } = useTranslation();
@@ -93,6 +93,7 @@ export function TaskDialog(props: {
   const [mapProvider, setMapProvider] = useState(base.mapProvider || "google");
   const [repeatDialogOpen, setRepeatDialogOpen] = useState(false);
   const [scopeDialogOpen, setScopeDialogOpen] = useState(false);
+  const [deleteScopeDialogOpen, setDeleteScopeDialogOpen] = useState(false);
   const [repeatFrequency, setRepeatFrequency] = useState<RepeatFrequency>(getRepeatFrequency(base));
   const [repeatInterval, setRepeatInterval] = useState<number>(base.recurrence?.interval ?? 1);
   const [repeatWeekdays, setRepeatWeekdays] = useState<number[]>(base.recurrence?.weekdays ?? [weekdayISO(dayjs(base.beginDate))]);
@@ -138,6 +139,7 @@ export function TaskDialog(props: {
     setRepeatUntilDate(normalized.recurrence?.until ?? "");
     setRepeatDialogOpen(false);
     setScopeDialogOpen(false);
+    setDeleteScopeDialogOpen(false);
   }, [base, props.defaultDateYmd, props.open]);
 
   useEffect(() => {
@@ -228,6 +230,22 @@ export function TaskDialog(props: {
   function saveWithScope(scope: TaskSaveScope) {
     props.onSave(buildTask(), scope);
     setScopeDialogOpen(false);
+    props.onClose();
+  }
+
+  function remove() {
+    if (!props.onDelete) return;
+    if (isRecurringEdit) {
+      setDeleteScopeDialogOpen(true);
+      return;
+    }
+    props.onDelete(base.id, "series");
+    props.onClose();
+  }
+
+  function removeWithScope(scope: TaskSaveScope) {
+    props.onDelete?.(base.id, scope);
+    setDeleteScopeDialogOpen(false);
     props.onClose();
   }
 
@@ -378,7 +396,7 @@ export function TaskDialog(props: {
 
           <DialogActions sx={{ px: { xs: 2, sm: 3 }, pb: { xs: 2, sm: 3 } }}>
             {props.mode === "edit" && props.onDelete ? (
-              <Button color="error" onClick={() => props.onDelete?.(base.id)}>
+              <Button color="error" onClick={remove}>
                 {t("common.delete")}
               </Button>
             ) : null}
@@ -391,7 +409,7 @@ export function TaskDialog(props: {
             <Box sx={{ flexGrow: 1 }} />
             <Button onClick={props.onClose}>{t("common.cancel")}</Button>
             <Button type="submit" variant="contained" disabled={!canSave}>
-              {props.mode === "create" ? t("common.add") : t("common.done")}
+              {props.mode === "create" ? t("common.add") : t("common.save")}
             </Button>
           </DialogActions>
         </Box>
@@ -535,6 +553,27 @@ export function TaskDialog(props: {
           <Button onClick={() => setScopeDialogOpen(false)}>{t("common.cancel")}</Button>
           <Button onClick={() => saveWithScope("single")}>{t("dialog.thisDayOnly")}</Button>
           <Button variant="contained" onClick={() => saveWithScope("series")}>{t("dialog.entireSeries")}</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={deleteScopeDialogOpen} onClose={() => setDeleteScopeDialogOpen(false)} fullWidth maxWidth="xs">
+        <DialogTitle>{t("dialog.deleteSeriesTitle")}</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ pt: 1 }}>
+            <Typography>{t("dialog.deleteSeriesMessage")}</Typography>
+            <Typography variant="body2" color="text.secondary">
+              {t("dialog.deleteSeriesHint")}
+            </Typography>
+            <FormControlLabel
+              control={<Checkbox checked disabled />}
+              label={props.occurrenceDateYmd ? t("dialog.editingOccurrence", { date: props.occurrenceDateYmd }) : t("dialog.editEntireSeries")}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteScopeDialogOpen(false)}>{t("common.cancel")}</Button>
+          <Button color="error" onClick={() => removeWithScope("single")}>{t("dialog.thisDayOnly")}</Button>
+          <Button color="error" variant="contained" onClick={() => removeWithScope("series")}>{t("dialog.entireSeries")}</Button>
         </DialogActions>
       </Dialog>
     </>

@@ -14,6 +14,31 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-04-27-task-completion-and-recurring-delete-alignment",
+    version: "v1.11.2",
+    releasedAt: "2026-04-27",
+    title: {
+      en: "Task completion and recurring delete alignment",
+      zh: "任务完成与重复删除逻辑对齐"
+    },
+    summary: {
+      en: "One-time task completion now leaves active views more reliably, and recurring task deletion now uses the same day-only versus full-series flow in Today and Week.",
+      zh: "一次性任务完成后会更稳定地从活跃视图中移除，同时重复任务删除现在会在 Today 与 Week 中统一提供“仅这一天”与“整个系列”的流程。"
+    },
+    changes: {
+      en: [
+        "Fixed one-time task completion handling so completed tasks leave active planner views consistently.",
+        "Added a repeating-task delete choice so you can remove only one occurrence or the full series from the shared task editor.",
+        "Changed the task editor edit action wording from Done to Save to keep completion and editing separate."
+      ],
+      zh: [
+        "修复了一次性任务完成后的处理逻辑，让已完成任务能稳定地从活跃视图中消失。",
+        "为重复任务新增删除范围选择，可在共享任务编辑器中删除单次出现或整个系列。",
+        "将任务编辑器中的编辑提交文案从“完成”改为“保存”，让完成任务与编辑任务的含义分开。"
+      ]
+    }
+  },
+  {
     id: "2026-04-27-recurring-task-edit-build-stability",
     version: "v1.11.1",
     releasedAt: "2026-04-27",

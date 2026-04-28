@@ -22,6 +22,7 @@ export type TaskOccurrenceOverride = {
   endTime?: string;
   description?: string;
   completedAt?: string | null;
+  deleted?: boolean;
 };
 
 export type Task = {

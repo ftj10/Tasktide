@@ -17,6 +17,7 @@ import {
   completeTaskInCollection,
   listRecurringOccurrenceDatesForNormalizedTask,
   normalizeTask,
+  removeTaskFromCollection,
   reopenTaskInCollection,
   saveTaskCollection,
 } from "../src/app/tasks";
@@ -144,6 +145,54 @@ describe("task logic behavior", () => {
 
     expect(tasksForDate(nextTasks, "2026-04-22")[0].title).toBe("Only this Wednesday");
     expect(tasksForDate(nextTasks, "2026-04-29")[0].title).toBe("Series title");
+  });
+
+  it("removes only one recurring occurrence through the collection helper", () => {
+    const sourceTask = normalizeTask({
+      id: "weekly-collection-delete",
+      title: "Series title",
+      type: "RECURRING",
+      beginDate: "2026-04-20",
+      createdAt: "2026-04-20T00:00:00.000Z",
+      updatedAt: "2026-04-20T00:00:00.000Z",
+      recurrence: {
+        frequency: "WEEKLY",
+        interval: 1,
+        weekdays: [3],
+        until: null,
+      },
+    });
+
+    const nextTasks = removeTaskFromCollection([sourceTask], sourceTask.id, {
+      editingSourceTask: sourceTask,
+      scope: "single",
+      occurrenceDateYmd: "2026-04-22",
+      updatedAt: "2026-04-22T10:00:00.000Z",
+    });
+
+    expect(tasksForDate(nextTasks, "2026-04-22")).toEqual([]);
+    expect(tasksForDate(nextTasks, "2026-04-29")[0].title).toBe("Series title");
+    expect(nextTasks[0].occurrenceOverrides?.["2026-04-22"]?.deleted).toBe(true);
+  });
+
+  it("marks a one-time task complete so it disappears from active views", () => {
+    const task: Task = {
+      id: "once-complete",
+      title: "One-time task",
+      type: "ONCE",
+      beginDate: "2026-04-22",
+      date: "2026-04-22",
+      createdAt: "2026-04-22T08:00:00.000Z",
+      updatedAt: "2026-04-22T08:00:00.000Z",
+    };
+
+    const completedTasks = completeTaskInCollection([task], task.id, {
+      completedAt: "2026-04-22T10:00:00.000Z",
+      updatedAt: "2026-04-22T10:00:00.000Z",
+    });
+
+    expect(tasksForDate(completedTasks, "2026-04-22")).toEqual([]);
+    expect(completedTasks[0].completedAt).toBe("2026-04-22T10:00:00.000Z");
   });
 
   it("lists recurring weekly occurrences only inside the requested visible range", () => {

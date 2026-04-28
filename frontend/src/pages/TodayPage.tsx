@@ -126,7 +126,12 @@ export function TodayPage(props: {
   const [editing, setEditing] = useState<Task | undefined>();
   const [editingSourceTask, setEditingSourceTask] = useState<Task | undefined>();
   const [markDoneTask, setMarkDoneTask] = useState<Task | undefined>();
-  const [deleteTask, setDeleteTask] = useState<Task | undefined>();
+  const [deleteTask, setDeleteTask] = useState<{
+    task: Task;
+    scope: TaskSaveScope;
+    sourceTask?: Task;
+    occurrenceDateYmd?: string;
+  } | undefined>();
   const [allDoneOpen, setAllDoneOpen] = useState(false);
   const [statsExpanded, setStatsExpanded] = useState(false);
 
@@ -154,8 +159,15 @@ export function TodayPage(props: {
     closeTaskEditor();
   }
 
-  function remove(id: string) {
-    props.setTasks(removeTaskFromCollection(props.tasks, id));
+  function remove(taskId: string, scope: TaskSaveScope = "series", sourceTask?: Task, occurrenceDateYmd?: string) {
+    props.setTasks(
+      removeTaskFromCollection(props.tasks, taskId, {
+        editingSourceTask: sourceTask,
+        scope,
+        occurrenceDateYmd,
+        updatedAt: new Date().toISOString(),
+      })
+    );
     setDeleteTask(undefined);
     closeTaskEditor();
   }
@@ -900,9 +912,15 @@ export function TodayPage(props: {
           closeTaskEditor();
         }}
         onSave={upsert}
-        onDelete={(id) => {
-          const t = props.tasks.find((x) => x.id === id);
-          if (t) setDeleteTask(t);
+        onDelete={(id, scope = "series") => {
+          const task = props.tasks.find((item) => item.id === id);
+          if (!task) return;
+          setDeleteTask({
+            task,
+            scope: isRecurringTask(task) ? scope : "series",
+            sourceTask: editingSourceTask,
+            occurrenceDateYmd: selectedDay,
+          });
         }}
       />
 
@@ -916,10 +934,17 @@ export function TodayPage(props: {
       />
       <ConfirmDeleteDialog
         open={!!deleteTask}
-        title={deleteTask?.title || ""}
+        title={deleteTask?.task.title || ""}
         onCancel={() => setDeleteTask(undefined)}
         onConfirm={() => {
-          if (deleteTask) remove(deleteTask.id);
+          if (deleteTask) {
+            remove(
+              deleteTask.task.id,
+              deleteTask.scope,
+              deleteTask.sourceTask,
+              deleteTask.occurrenceDateYmd
+            );
+          }
         }}
       />
       <ConfirmAllDoneDialog

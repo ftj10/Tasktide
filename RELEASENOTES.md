@@ -1,5 +1,11 @@
 # Release Notes
 
+## v1.11.2 - 2026-04-27
+
+- Fixed one-time task completion handling so completed tasks leave active planner views consistently.
+- Added a recurring-task delete choice so Today and Week can remove only one occurrence or the full series from the same task editor flow.
+- Clarified the task editor action wording so edit saves use `Save` instead of looking like task completion.
+
 ## v1.11.1 - 2026-04-27
 
 - Improved recurring task edit stability for single-day changes in the planner.

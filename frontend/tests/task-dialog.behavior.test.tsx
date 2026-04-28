@@ -123,10 +123,47 @@ describe("TaskDialog behavior", () => {
 
     await user.clear(screen.getByLabelText("Task name"));
     await user.type(screen.getByLabelText("Task name"), "Updated weekly review");
-    await user.click(screen.getByRole("button", { name: "Done" }));
+    await user.click(screen.getByRole("button", { name: "Save" }));
     await user.click(screen.getByRole("button", { name: "This day only" }));
 
     expect(onSave).toHaveBeenCalledTimes(1);
     expect(onSave.mock.calls[0][1]).toBe("single");
+  });
+
+  it("asks whether to delete one day or the entire series when deleting a repeating task edit", async () => {
+    const user = userEvent.setup();
+    const onDelete = vi.fn();
+
+    renderWithProviders(
+      <TaskDialog
+        open
+        mode="edit"
+        defaultDateYmd="2026-04-22"
+        occurrenceDateYmd="2026-04-22"
+        task={{
+          id: "repeat-delete-1",
+          title: "Weekly review",
+          type: "RECURRING",
+          beginDate: "2026-04-20",
+          createdAt: "2026-04-20T00:00:00.000Z",
+          updatedAt: "2026-04-20T00:00:00.000Z",
+          recurrence: {
+            frequency: "WEEKLY",
+            interval: 1,
+            weekdays: [3],
+            until: null,
+          },
+        }}
+        onClose={vi.fn()}
+        onSave={vi.fn()}
+        onDelete={onDelete}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: "Delete" }));
+    await user.click(screen.getByRole("button", { name: "This day only" }));
+
+    expect(onDelete).toHaveBeenCalledTimes(1);
+    expect(onDelete).toHaveBeenCalledWith("repeat-delete-1", "single");
   });
 });

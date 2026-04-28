@@ -25,6 +25,7 @@ function normalizeOccurrenceOverrides(overrides?: Record<string, TaskOccurrenceO
       {
         ...override,
         completedAt: override?.completedAt ?? null,
+        deleted: override?.deleted ? true : undefined,
       },
     ])
   );
@@ -86,6 +87,10 @@ export function getTaskOccurrenceCompletedAt(task: Task, dateYmd: string) {
     return normalized.beginDate === dateYmd ? normalized.completedAt ?? null : null;
   }
 
+  if (normalized.occurrenceOverrides?.[dateYmd]?.deleted) {
+    return null;
+  }
+
   return normalized.occurrenceOverrides?.[dateYmd]?.completedAt ?? null;
 }
 
@@ -101,6 +106,7 @@ export function getTaskOccurrenceSnapshotFromNormalizedTask(task: Task, dateYmd:
   if (!matchesRecurrence(task, dateYmd)) return null;
 
   const override = task.occurrenceOverrides?.[dateYmd];
+  if (override?.deleted) return null;
   return override ? { ...task, ...override } : task;
 }
 
@@ -215,7 +221,35 @@ export function saveTaskCollection(
   return [...allTasks.filter((item) => item.id !== sourceId), nextTask];
 }
 
-export function removeTaskFromCollection(allTasks: Task[], taskId: string) {
+export function removeTaskFromCollection(
+  allTasks: Task[],
+  taskId: string,
+  options: {
+    editingSourceTask?: Task;
+    scope?: TaskSaveScope;
+    occurrenceDateYmd?: string;
+    updatedAt?: string;
+  } = {}
+) {
+  const editingSourceTaskId = options.editingSourceTask?.id;
+  const occurrenceDateYmd = options.occurrenceDateYmd;
+
+  if (
+    options.editingSourceTask &&
+    editingSourceTaskId &&
+    isRecurringTask(options.editingSourceTask) &&
+    options.scope === "single" &&
+    occurrenceDateYmd
+  ) {
+    const updatedAt = options.updatedAt ?? new Date().toISOString();
+
+    return allTasks.map((task) =>
+      task.id === editingSourceTaskId
+        ? removeSingleOccurrenceFromSeries(task, occurrenceDateYmd, updatedAt)
+        : task
+    );
+  }
+
   return allTasks.filter((task) => task.id !== taskId);
 }
 
@@ -451,7 +485,8 @@ function areOccurrenceOverrideFieldsEqual(source?: TaskOccurrenceOverride, targe
     (source?.startTime ?? "") === (target?.startTime ?? "") &&
     (source?.endTime ?? "") === (target?.endTime ?? "") &&
     (source?.description ?? "") === (target?.description ?? "") &&
-    (source?.completedAt ?? null) === (target?.completedAt ?? null)
+    (source?.completedAt ?? null) === (target?.completedAt ?? null) &&
+    Boolean(source?.deleted) === Boolean(target?.deleted)
   );
 }
 
@@ -628,7 +663,34 @@ function pickOccurrenceOverrideFields(task: Task): TaskOccurrenceOverride {
 }
 
 function stripEmptyOverride(override: TaskOccurrenceOverride) {
-  const nextEntries = Object.entries(override).filter(([, value]) => value !== undefined && value !== null);
+  const nextEntries = Object.entries(override).filter(([key, value]) => {
+    if (value === undefined || value === null) return false;
+    if (key === "deleted" && value !== true) return false;
+    return true;
+  });
   if (nextEntries.length === 0) return undefined;
   return Object.fromEntries(nextEntries) as TaskOccurrenceOverride;
+}
+
+function removeSingleOccurrenceFromSeries(sourceTask: Task, dateYmd: string, updatedAt: string): Task {
+  const source = normalizeTask(sourceTask);
+  const currentOverride = {
+    ...(source.occurrenceOverrides?.[dateYmd] ?? {}),
+  };
+
+  delete currentOverride.completedAt;
+
+  const nextOverride = stripEmptyOverride({
+    ...currentOverride,
+    deleted: true,
+  });
+
+  return {
+    ...source,
+    occurrenceOverrides: {
+      ...(source.occurrenceOverrides ?? {}),
+      ...(nextOverride ? { [dateYmd]: nextOverride } : {}),
+    },
+    updatedAt,
+  };
 }

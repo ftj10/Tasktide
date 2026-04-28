@@ -210,7 +210,7 @@ const resources = {
           },
           q9: {
             question: "What happens when I edit one repeating task occurrence?",
-            answer: "After you save changes to a repeating task, the app asks whether to update only that day or the entire series. Single-day edits are stored as occurrence overrides so the original series stays intact."
+            answer: "After you save or delete one repeating task occurrence, the app asks whether the action should affect only that day or the entire series. Single-day changes are stored as occurrence overrides so the original series stays intact."
           },
           q10: {
             question: "Do browser reminder notifications keep growing in storage?",
@@ -254,6 +254,9 @@ const resources = {
         editSeriesTitle: "Update repeating task",
         editSeriesMessage: "Choose whether these changes should affect only this day or the entire repeating series.",
         editSeriesHint: "Repeat and begin-date changes apply when you update the entire series.",
+        deleteSeriesTitle: "Delete repeating task",
+        deleteSeriesMessage: "Choose whether to delete only this day or the entire repeating series.",
+        deleteSeriesHint: "Deleting only this day hides that one occurrence and keeps the rest of the series available.",
         editingOccurrence: "Editing occurrence on {{date}}",
         editEntireSeries: "Editing repeating task",
         thisDayOnly: "This day only",
@@ -494,7 +497,7 @@ const resources = {
           },
           q9: {
             question: "修改重复任务的一天时会发生什么？",
-            answer: "保存重复任务时，应用会让你选择只修改这一天，还是修改整个系列。只修改这一天时会记录为单次覆盖，不会破坏原来的系列。"
+            answer: "当你保存或删除重复任务中的某一天时，应用会让你选择只影响这一天，还是影响整个系列。只针对一天的变更会记录为单次覆盖，不会破坏原来的系列。"
           },
           q10: {
             question: "浏览器提醒通知会一直占用越来越多的存储吗？",
@@ -538,6 +541,9 @@ const resources = {
         editSeriesTitle: "更新重复任务",
         editSeriesMessage: "请选择这些修改是只影响这一天，还是影响整个重复系列。",
         editSeriesHint: "重复方式和开始日期的修改会在你选择整个系列时生效。",
+        deleteSeriesTitle: "删除重复任务",
+        deleteSeriesMessage: "请选择只删除这一天，还是删除整个重复系列。",
+        deleteSeriesHint: "如果只删除这一天，系统会隐藏这一次出现，其他重复日期会保留。",
         editingOccurrence: "正在编辑 {{date}} 这一天",
         editEntireSeries: "正在编辑重复任务",
         thisDayOnly: "只改这一天",

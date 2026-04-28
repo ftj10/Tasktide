@@ -28,6 +28,7 @@ const taskSchema = new mongoose.Schema({
       endTime: { type: String },
       description: { type: String },
       completedAt: { type: Date, default: null },
+      deleted: { type: Boolean, default: undefined },
     }, { _id: false }),
     default: {},
   },

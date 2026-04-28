@@ -1,6 +1,6 @@
 # Weekly To-Do Application
 
-Current version: `v1.11.1`
+Current version: `v1.11.2`
 
 Weekly To-Do is a full-stack planner for daily tasks, weekly routines, reminders, shared help questions, and calendar-based scheduling.
 
@@ -14,7 +14,9 @@ Deployed Web: [website](https://todo-cfun.onrender.com/)
 - Task completion now uses retained `completedAt` timestamps: completed tasks disappear from active planner views immediately, stay retained for 30 days, and continue feeding shared completion analytics and cleanup rules.
 - Today now opens with a compact productivity pitch and expands into selected-day, 7-day, and 30-day completion statistics plus a 7-day bar chart when you choose `View Stats and Visualization`.
 - Single-day edits for repeating tasks now save through the shared planner collection flow more reliably.
+- Repeating tasks now use the same shared delete logic in Today and Week, including a `This day only` versus `Entire series` choice from the shared task editor.
 - Task forms now use a `Begin date` field plus a repeat-options window that supports once, daily, weekly, monthly, and yearly schedules.
+- The shared task editor now uses `Save` for edit submission so task completion stays distinct from task editing.
 - The repeat-options window now matches the main task editor size on desktop and opens full-screen on mobile.
 - The repeat-options selector now sits slightly lower in its dialog so the `Repeat` label stays fully visible below the header.
 - Repeating task edits can target either one occurrence or the full series without destroying older task data.
