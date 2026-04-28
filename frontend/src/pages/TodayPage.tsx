@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
+  Alert,
   Box,
   Button,
   Card,
@@ -26,6 +27,7 @@ import EventIcon from "@mui/icons-material/Event";
 import MapIcon from "@mui/icons-material/Map";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import UploadFileRoundedIcon from "@mui/icons-material/UploadFileRounded";
 import TodayRoundedIcon from "@mui/icons-material/TodayRounded";
 import DoneAllRoundedIcon from "@mui/icons-material/DoneAllRounded";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
@@ -55,6 +57,7 @@ import {
   type TaskSaveScope,
 } from "../app/tasks";
 import { getPriorityAccent } from "../app/priorities";
+import { parseIcsTasks } from "../app/ics";
 
 export function TodayPage(props: {
   tasks: Task[];
@@ -134,6 +137,10 @@ export function TodayPage(props: {
   } | undefined>();
   const [allDoneOpen, setAllDoneOpen] = useState(false);
   const [statsExpanded, setStatsExpanded] = useState(false);
+  const [importStatus, setImportStatus] = useState<{
+    severity: "success" | "error";
+    message: string;
+  } | null>(null);
 
   useEffect(() => {
     props.onTaskDialogVisibilityChange?.(dialogOpen);
@@ -284,6 +291,50 @@ export function TodayPage(props: {
     setEditingSourceTask(sourceTask);
     setEditing(getTaskOccurrence(sourceTask, selectedDay) ?? normalizeTask(sourceTask));
     setDialogOpen(true);
+  }
+
+  function mergeImportedTasks(importedTasks: Task[]) {
+    const importedById = new Map(importedTasks.map((task) => [task.id, task]));
+    return [
+      ...props.tasks.filter((task) => !importedById.has(task.id)),
+      ...importedTasks,
+    ];
+  }
+
+  async function importIcsFile(file: File | null) {
+    if (!file) return;
+
+    try {
+      const { tasks: importedTasks, skippedCount } = parseIcsTasks(await file.text());
+      if (importedTasks.length === 0) {
+        setImportStatus({
+          severity: "error",
+          message: t("today.importEmpty", { name: file.name }),
+        });
+        return;
+      }
+
+      props.setTasks(mergeImportedTasks(importedTasks));
+      setImportStatus({
+        severity: "success",
+        message:
+          skippedCount > 0
+            ? t("today.importSuccessWithSkipped", {
+                count: importedTasks.length,
+                skipped: skippedCount,
+                name: file.name,
+              })
+            : t("today.importSuccess", {
+                count: importedTasks.length,
+                name: file.name,
+              }),
+      });
+    } catch {
+      setImportStatus({
+        severity: "error",
+        message: t("today.importError", { name: file.name }),
+      });
+    }
   }
 
   const renderTaskCard = (task: Task) => {
@@ -552,6 +603,24 @@ export function TodayPage(props: {
               {t("today.goToToday")}
             </Button>
             <Button
+              component="label"
+              variant="outlined"
+              startIcon={<UploadFileRoundedIcon />}
+              sx={{ borderRadius: 2.5 }}
+            >
+              {t("today.importIcs")}
+              <input
+                hidden
+                type="file"
+                accept=".ics,text/calendar"
+                aria-label={t("today.importIcsInput")}
+                onChange={(event) => {
+                  void importIcsFile(event.currentTarget.files?.[0] ?? null);
+                  event.currentTarget.value = "";
+                }}
+              />
+            </Button>
+            <Button
               variant="contained"
               startIcon={<AddRoundedIcon />}
               onClick={() => {
@@ -566,6 +635,12 @@ export function TodayPage(props: {
           </Stack>
         </Stack>
       </Paper>
+
+      {importStatus ? (
+        <Alert severity={importStatus.severity} sx={{ mb: 2.5 }}>
+          {importStatus.message}
+        </Alert>
+      ) : null}
 
       <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mb: 2 }}>
         <Chip label={t("today.activeCount", { count: totalTasks })} sx={{ fontWeight: 700 }} />

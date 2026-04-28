@@ -120,4 +120,92 @@ describe("TodayPage behavior", () => {
     expect(screen.getByText("1/1")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Hide Stats and Visualization" })).toBeInTheDocument();
   });
+
+  it("imports tasks from an ICS file and reports the imported count", async () => {
+    const user = userEvent.setup();
+    const setTasks = vi.fn();
+
+    renderWithProviders(
+      <TodayPage
+        tasks={[
+          {
+            id: "existing-1",
+            title: "Existing task",
+            type: "ONCE",
+            beginDate: "2026-04-22",
+            date: "2026-04-22",
+            createdAt: "2026-04-22T08:00:00.000Z",
+            updatedAt: "2026-04-22T08:00:00.000Z",
+          },
+        ]}
+        setTasks={setTasks}
+      />,
+      "/?date=2026-04-22"
+    );
+
+    const importFile = new File(
+      [
+        `BEGIN:VCALENDAR
+BEGIN:VEVENT
+UID:import-1@example.com
+DTSTART:20260422T130000
+DTEND:20260422T140000
+SUMMARY:Imported planning block
+END:VEVENT
+END:VCALENDAR`,
+      ],
+      "planner.ics",
+      { type: "text/calendar" }
+    );
+
+    await user.upload(screen.getByLabelText("Import ICS file"), importFile);
+
+    expect(setTasks).toHaveBeenCalledTimes(1);
+    const nextTasks = setTasks.mock.calls[0][0] as Task[];
+    expect(nextTasks).toHaveLength(2);
+    expect(nextTasks.find((task) => task.id === "ics-import-1-example-com")).toMatchObject({
+      title: "Imported planning block",
+      beginDate: "2026-04-22",
+      startTime: "13:00",
+      endTime: "14:00",
+    });
+    expect(await screen.findByText("Imported 1 tasks from planner.ics.")).toBeInTheDocument();
+  });
+
+  it("reports unsupported multi-day all-day ICS events without a generic failure", async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(
+      <TodayPage tasks={[]} setTasks={vi.fn()} />,
+      "/?date=2026-05-01"
+    );
+
+    const importFile = new File(
+      [
+        `BEGIN:VCALENDAR
+VERSION:2.0
+CALSCALE:GREGORIAN
+BEGIN:VEVENT
+UID:123456@example.com
+DTSTAMP:20260428T160000Z
+DTSTART;VALUE=DATE:20260501
+DTEND;VALUE=DATE:20260504
+SUMMARY:My 3-Day Event
+DESCRIPTION:Example event description
+END:VEVENT
+END:VCALENDAR`,
+      ],
+      "three-day.ics",
+      { type: "text/calendar" }
+    );
+
+    await user.upload(screen.getByLabelText("Import ICS file"), importFile);
+
+    expect(
+      await screen.findByText(
+        "No importable events were found in three-day.ics. Multi-day all-day calendar events are not supported yet."
+      )
+    ).toBeInTheDocument();
+    expect(screen.queryByText("We couldn't import three-day.ics.")).not.toBeInTheDocument();
+  });
 });

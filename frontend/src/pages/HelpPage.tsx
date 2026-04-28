@@ -53,6 +53,7 @@ export function HelpPage() {
       t("help.guides.step4"),
       t("help.guides.step5"),
       t("help.guides.step6"),
+      t("help.guides.step7"),
     ],
     [t]
   );
@@ -69,6 +70,7 @@ export function HelpPage() {
       { question: t("help.faq.q8.question"), answer: t("help.faq.q8.answer") },
       { question: t("help.faq.q9.question"), answer: t("help.faq.q9.answer") },
       { question: t("help.faq.q10.question"), answer: t("help.faq.q10.answer") },
+      { question: t("help.faq.q11.question"), answer: t("help.faq.q11.answer") },
     ],
     [t]
   );

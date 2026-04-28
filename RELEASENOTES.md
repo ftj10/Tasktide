@@ -1,5 +1,16 @@
 # Release Notes
 
+## v1.12.1 - 2026-04-28
+
+- Clarified ICS import handling for unsupported multi-day all-day calendar events.
+- Unsupported calendar spans are now skipped cleanly instead of surfacing as a generic import failure.
+
+## v1.12.0 - 2026-04-28
+
+- Added `.ics` calendar import on Today so exported events can become planner tasks in one step.
+- Imported calendar tasks now keep titles, notes, locations, all-day dates, same-day times, and supported daily, weekly, monthly, or yearly repeat rules.
+- Import results now report when unsupported calendar entries were skipped.
+
 ## v1.11.2 - 2026-04-27
 
 - Fixed one-time task completion handling so completed tasks leave active planner views consistently.

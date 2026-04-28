@@ -14,6 +14,56 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-04-28-ics-import-multi-day-skip-clarity",
+    version: "v1.12.1",
+    releasedAt: "2026-04-28",
+    title: {
+      en: "Clearer unsupported ICS import handling",
+      zh: "更清晰的 ICS 不支持导入提示"
+    },
+    summary: {
+      en: "Unsupported multi-day all-day ICS events are now skipped cleanly instead of looking like a generic import failure.",
+      zh: "暂不支持的跨天全天 ICS 事件现在会被清晰跳过，不再看起来像普通导入失败。"
+    },
+    changes: {
+      en: [
+        "Detect multi-day all-day calendar spans during ICS import.",
+        "Skip unsupported spans cleanly instead of surfacing a generic import failure.",
+        "Clarified public docs so current ICS import limits are easier to understand."
+      ],
+      zh: [
+        "在 ICS 导入期间识别跨天的全天日历事件。",
+        "对暂不支持的跨天事件进行清晰跳过，不再显示成普通导入失败。",
+        "补充公开文档说明，让当前 ICS 导入限制更容易理解。"
+      ]
+    }
+  },
+  {
+    id: "2026-04-28-ics-import",
+    version: "v1.12.0",
+    releasedAt: "2026-04-28",
+    title: {
+      en: "ICS calendar import",
+      zh: "ICS 日历导入"
+    },
+    summary: {
+      en: "Today can now import supported `.ics` calendar files into planner tasks, including recurring schedules and skipped-entry reporting.",
+      zh: "Today 现在可以把受支持的 `.ics` 日历文件导入为计划任务，并支持重复规则转换与跳过条目提示。"
+    },
+    changes: {
+      en: [
+        "Added an Import ICS action to Today so calendar exports can become planner tasks in one step.",
+        "Kept imported titles, notes, locations, all-day dates, same-day times, and supported daily, weekly, monthly, or yearly repeat rules.",
+        "Show import feedback after each file, including when unsupported entries were skipped."
+      ],
+      zh: [
+        "在 Today 页面新增 Import ICS 操作，让日历导出文件可以一步转换成计划任务。",
+        "导入时会保留标题、备注、地点、全天日期、同日时间，以及受支持的每天、每周、每月、每年重复规则。",
+        "每次导入后都会显示反馈，并在有条目被跳过时给出提示。"
+      ]
+    }
+  },
+  {
     id: "2026-04-27-task-completion-and-recurring-delete-alignment",
     version: "v1.11.2",
     releasedAt: "2026-04-27",
