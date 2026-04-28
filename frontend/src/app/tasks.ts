@@ -190,15 +190,19 @@ export function saveTaskCollection(
     occurrenceDateYmd?: string;
   } = {}
 ) {
+  const editingSourceTaskId = options.editingSourceTask?.id;
+  const occurrenceDateYmd = options.occurrenceDateYmd;
+
   if (
     options.editingSourceTask &&
+    editingSourceTaskId &&
     isRecurringTask(options.editingSourceTask) &&
     options.scope === "single" &&
-    options.occurrenceDateYmd
+    occurrenceDateYmd
   ) {
     return allTasks.map((item) =>
-      item.id === options.editingSourceTask?.id
-        ? applySingleOccurrenceEdit(item, options.occurrenceDateYmd, savedTask)
+      item.id === editingSourceTaskId
+        ? applySingleOccurrenceEdit(item, occurrenceDateYmd, savedTask)
         : item
     );
   }

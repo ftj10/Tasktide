@@ -1,5 +1,10 @@
 # Release Notes
 
+## v1.11.1 - 2026-04-27
+
+- Improved recurring task edit stability for single-day changes in the planner.
+- Cleaned up the Week calendar event renderer for a more reliable production build.
+
 ## v1.11.0 - 2026-04-27
 
 - Folded the Today productivity section by default so the page stays lighter until you choose to open the full stats and chart view.

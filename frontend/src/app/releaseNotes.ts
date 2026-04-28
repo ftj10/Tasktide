@@ -14,6 +14,29 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-04-27-recurring-task-edit-build-stability",
+    version: "v1.11.1",
+    releasedAt: "2026-04-27",
+    title: {
+      en: "Recurring edit stability update",
+      zh: "重复任务编辑稳定性更新"
+    },
+    summary: {
+      en: "Single-day edits for repeating tasks now save more reliably, and the Week page ships with a cleaner production build path.",
+      zh: "重复任务的单日编辑现在保存得更稳定，同时 Week 页面也使用了更干净的生产构建路径。"
+    },
+    changes: {
+      en: [
+        "Improved single-day save handling for repeating tasks in the shared planner collection flow.",
+        "Cleaned up the Week event renderer so production builds stay stable."
+      ],
+      zh: [
+        "改进了重复任务在共享任务集合流程中的单日保存处理。",
+        "清理了 Week 事件渲染逻辑，让生产构建保持稳定。"
+      ]
+    }
+  },
+  {
     id: "2026-04-27-collapsed-today-stats-panel",
     version: "v1.11.0",
     releasedAt: "2026-04-27",

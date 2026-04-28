@@ -364,7 +364,6 @@ export function WeekPage(props: {
         eventMinHeight={28}
         expandRows={true}
         eventContent={(eventInfo) => {
-          const task = eventInfo.event.extendedProps.task as Task;
           const isTimed = !eventInfo.event.allDay;
           const timeText = eventInfo.timeText;
 

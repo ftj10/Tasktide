@@ -18,6 +18,7 @@ import {
   listRecurringOccurrenceDatesForNormalizedTask,
   normalizeTask,
   reopenTaskInCollection,
+  saveTaskCollection,
 } from "../src/app/tasks";
 
 describe("task logic behavior", () => {
@@ -111,6 +112,38 @@ describe("task logic behavior", () => {
 
     expect(tasksForDate([updatedSeries], "2026-04-22")[0].title).toBe("Only this Wednesday");
     expect(tasksForDate([updatedSeries], "2026-04-29")[0].title).toBe("Series title");
+  });
+
+  it("saves a recurring single-day edit through the collection helper", () => {
+    const sourceTask = normalizeTask({
+      id: "weekly-collection-override",
+      title: "Series title",
+      type: "RECURRING",
+      beginDate: "2026-04-20",
+      createdAt: "2026-04-20T00:00:00.000Z",
+      updatedAt: "2026-04-20T00:00:00.000Z",
+      recurrence: {
+        frequency: "WEEKLY",
+        interval: 1,
+        weekdays: [3],
+        until: null,
+      },
+    });
+
+    const savedTask = {
+      ...sourceTask,
+      title: "Only this Wednesday",
+      updatedAt: "2026-04-22T10:00:00.000Z",
+    };
+
+    const nextTasks = saveTaskCollection([sourceTask], savedTask, {
+      editingSourceTask: sourceTask,
+      scope: "single",
+      occurrenceDateYmd: "2026-04-22",
+    });
+
+    expect(tasksForDate(nextTasks, "2026-04-22")[0].title).toBe("Only this Wednesday");
+    expect(tasksForDate(nextTasks, "2026-04-29")[0].title).toBe("Series title");
   });
 
   it("lists recurring weekly occurrences only inside the requested visible range", () => {
