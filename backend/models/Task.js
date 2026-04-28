@@ -27,10 +27,12 @@ const taskSchema = new mongoose.Schema({
       startTime: { type: String },
       endTime: { type: String },
       description: { type: String },
+      completedAt: { type: Date, default: null },
     }, { _id: false }),
     default: {},
   },
-  done: { type: Boolean, default: false },
+  completedAt: { type: Date, default: null },
+  done: { type: Boolean, default: undefined },
   emergency: { type: Number, default: 5 },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 
@@ -42,5 +44,6 @@ const taskSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 taskSchema.index({ userId: 1, id: 1 }, { unique: true });
+taskSchema.index({ userId: 1, completedAt: 1 });
 
 module.exports = mongoose.model('Task', taskSchema);

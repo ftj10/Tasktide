@@ -1,112 +1,89 @@
 # Release Notes
 
+## v1.11.0 - 2026-04-27
+
+- Folded the Today productivity section by default so the page stays lighter until you choose to open the full stats and chart view.
+- Added a quick Today productivity pitch with a one-click `View Stats and Visualization` action.
+- Kept the selected-day, 7-day, 30-day, and 7-day chart insights available on demand.
+
+## v1.10.1 - 2026-04-27
+
+- Replaced the old completed-history block on Today with a clearer 7-day productivity chart.
+- Kept the selected-day, 7-day, and 30-day completion summaries while making progress easier to scan at a glance.
+- Removed extra Week header hint labels for a cleaner calendar header.
+- Simplified public update notes so the Updates center focuses on product changes instead of internal implementation details.
+
 ## v1.10.0 - 2026-04-27
 
-- Added persistent `USER` and `ADMIN` roles to accounts and included the session role in login responses.
-- Scoped help-question reads so standard users only see their own submissions while admins can review every question, including legacy rows that only have username ownership.
-- Added optional `ADMIN_USERNAMES` bootstrap config for admin privileges.
-- Added admin-only help-question deletion from the Help Center and backend API.
-- Backfilled missing user `role` fields on successful login so older accounts are written back to the dataset.
-- Updated the Help Center copy to describe the admin review flow, role-specific question lists, and the fact that `My Questions` is the standard non-admin view.
-- Reworked Week recurring event expansion so it only generates occurrences for the visible range and reuses cached occurrence windows.
-- Added backend and frontend regression coverage for admin-scoped help access, owner-only help reads, admin deletion, role-aware login persistence, and visible-range recurring occurrence generation.
+- Added admin review mode in the Help Center so admins can review and remove submitted questions while each standard user only sees their own questions.
+- Improved Week performance by generating repeating events only for the visible date range.
+- Completed tasks now leave active Today, Week, Month, and reminder flows immediately after completion.
+- Added Today productivity summaries for the selected day, the last 7 days, and the last 30 days.
+- Kept completed task data available for 30 days before automatic cleanup.
 
 ## v1.9.2 - 2026-04-27
 
-- Changed shared help-question posting to create new server-owned posts instead of overwriting older questions through public ids.
-- Kept the help-question draft visible and showed an error message when question posting fails.
-- Fixed Week calendar events so single-occurrence recurring-task overrides now use the correct title and time slot.
-- Replaced JSON-stringify task and reminder sync comparisons with explicit field comparisons and removed the shell-level task-dialog DOM observer.
-- Tightened reminder and help-question schema fields and added backend reminder CRUD coverage plus frontend regression coverage for help-question failures and recurring-event override timing.
+- Each Help Center question now saves as its own post instead of overwriting an older one.
+- Failed help-question submissions now keep the draft visible and show an error message.
+- Fixed Week calendar timing for one-day repeating-task overrides.
 
 ## v1.9.1 - 2026-04-27
 
 - Hid the mobile bottom navigation while add-task and edit-task dialogs are open.
 - Restored the mobile bottom navigation automatically after the task dialog closes.
-- Added frontend regression coverage for task-dialog-driven mobile navigation visibility.
-- Expanded README and in-app release notes to document the updated mobile task-dialog behavior.
 
 ## v1.9.0 - 2026-04-26
 
-- Changed Week to open in Time Grid by default on desktop and mobile.
-- Removed the global `Add Task` button from the mobile Week page.
-- Added press-hold time-range selection in the mobile Week time grid so task creation starts from the selected context.
-- Prefilled new Week mobile tasks with the selected date, start time, and end time from the pressed range.
-- Reduced Month view to the task grid only by removing its extra header controls while keeping vertical swipe navigation directly on the grid.
-- Added a `Jump to Current Month` button back to Month view without restoring the removed header shell.
-- Refreshed MonthPage UI with the new card-based calendar styling while keeping desktop arrows and mobile swipe behavior separate.
-- Kept Month day cells focused on task previews instead of extra task-count labels.
-- Raised the mobile bottom navigation above overlapping planner content so nav taps win over the Week grid underneath.
-- Expanded README and in-app Help content to document the simplified Month layout.
-- Added frontend regression coverage for the refreshed Month layout, split desktop/mobile month navigation, restored Month jump button, and stronger mobile bottom-navigation layering alongside the existing Week behavior changes.
+- Changed Week to open in Time Grid by default.
+- Removed the global `Add Task` button from the mobile Week page and replaced it with press-hold time-range task creation.
+- Simplified Month into a cleaner card-based task grid and restored `Jump to Current Month`.
+- Kept the mobile bottom navigation above overlapping planner content so taps stay reliable.
 
 ## v1.8.0 - 2026-04-26
 
-- Replaced per-notification `localStorage` keys with one retained `notification-history` record.
-- Changed daily and task reminder checks to use crossed-time windows so timer drift does not skip notifications at `10:00`, `21:00`, or the 15-minute task reminder mark.
-- Changed browser notification permission requests to wait for user interaction instead of firing automatically on load.
-- Added automatic cleanup for daily and task notification markers older than three days without rewriting storage on every history read.
-- Added frontend regression coverage for notification-history pruning, interaction-driven permission requests, and drift-tolerant reminder delivery.
+- Browser notifications now ask for permission only after user interaction.
+- Daily and task reminders now tolerate timer drift more reliably.
+- Old notification history now clears automatically after three days.
 
 ## v1.7.2 - 2026-04-25
 
-- Adjusted the repeat-options selector spacing so its `Repeat` label clears the dialog header and no longer clips.
-- Added frontend regression coverage for the repeat dialog label rendering.
+- Adjusted the repeat selector spacing so the `Repeat` label no longer clips below the dialog header.
 
 ## v1.7.1 - 2026-04-25
 
-- Changed the repeat-options window to use the same dialog width as the main task editor.
-- Changed the mobile repeat-options window to open full-screen like the main task editor.
-- Added frontend regression coverage for the mobile full-screen repeat dialog.
+- Matched the repeat-options dialog to the main task editor size.
+- Changed the repeat-options dialog to full-screen on phones.
 
 ## v1.7.0 - 2026-04-25
 
-- Replaced the task type selector with a recurrence flow built around a begin date and a dedicated repeat-options window.
-- Added daily, weekly, monthly, and yearly repeat rules with interval, day-selection, and end-date controls.
-- Added recurring-task edit scope choices so changes can apply to one occurrence or the entire series without overwriting old data.
-- Kept legacy task datasets renderable by normalizing older `TEMPORARY` and `PERMANENT` records at load time.
-- Added frontend and backend regression coverage for recurrence rendering, single-day overrides, and the new task payload shape.
+- Replaced the old task-type flow with a begin-date and repeat-options flow.
+- Added daily, weekly, monthly, and yearly repeat rules.
+- Added repeating-task edit choices for one occurrence or the full series.
+- Kept older task data compatible with the new recurrence system.
 
 ## v1.6.1 - 2026-04-25
 
-- Changed mobile Week swipe handling to wait for the gesture to settle before deciding the next page.
-- Prevented a single mobile swipe from skipping across multiple week pages.
-- Added frontend regression coverage for one-swipe single-step paging.
-- Expanded README and in-app release notes to document the stabilized mobile paging behavior.
+- Improved mobile Week swipe stability so one swipe only moves one page at a time.
 
 ## v1.6.0 - 2026-04-25
 
-- Changed mobile Week view from a single 7-day layout to a horizontal paged swipe flow.
-- Added a first page with 4 days and a second page with the remaining 3 days, then continued swiping into the next week.
-- Removed the manual previous and next week arrows around the mobile Today button.
-- Added an `EN` / `中文` language switch directly on the login and registration page.
-- Added translated login titles, field labels, actions, success states, and common authentication errors.
-- Added frontend behavior coverage for the rolling mobile week sequence.
-- Added frontend behavior coverage for the login-page language toggle.
-- Expanded README and in-app Help content to document the mobile paging behavior and pre-login language switching.
+- Changed mobile Week into a horizontal paged layout that shows 4 days first and then the remaining 3 days.
+- Added an `EN` / `中文` language switch to the login and registration screen.
 
 ## v1.5.1 - 2026-04-24
 
-- Changed task, reminder, and help-question create routes to idempotent saves so repeated submissions do not create duplicate records.
-- Changed task and reminder sync recovery so the app reloads server data after a failed save instead of leaving unsaved local-only state on screen.
-- Added tests covering failed task-save recovery and duplicate-safe task creation.
-- Expanded README and in-app Help content with data-safety behavior notes.
+- Repeated task, reminder, and help-question submissions no longer create duplicates.
+- Failed task and reminder saves now reload stored data instead of leaving unsynced local state on screen.
 
 ## v1.5.0 - 2026-04-22
 
-- Added a responsive application shell that scales from mobile width up to a 1200px desktop maximum.
-- Added desktop sidebar navigation and mobile bottom navigation.
-- Changed Task and Reminder dialogs to open full-screen on mobile and as centered modals on larger screens.
-- Reduced mobile typography sizes across the main planner pages to avoid horizontal scrolling.
-- Expanded README and in-app Help content to document the responsive behavior.
+- Added a responsive app shell with a desktop sidebar and mobile bottom navigation.
+- Changed Task and Reminder dialogs to full-screen on phones and centered modals on larger screens.
 
 ## v1.4.0 - 2026-04-20
 
-- Added the Help page with step-by-step planner instructions.
-- Added FAQ content for common workflow questions.
-- Added a shared question board backed by MongoDB for signed-in users.
-- Added week-view date jumps into the Today page.
-- Added blank-slot date prefilling for new tasks created from Week view.
+- Added the Help Center with usage steps, FAQ content, and a shared question board.
+- Added Week-to-Today date jumps and blank-slot date prefilling for new tasks.
 
 ## v1.3.1 - 2026-04-20
 
@@ -118,4 +95,4 @@
 - Prevented timed tasks without an end time from spilling into the next day.
 - Improved overlapping task layout in the week time grid.
 - Added end-time validation for task editing.
-- Added the frontend release notes popup and history drawer.
+- Added the in-app Updates popup and release history drawer.

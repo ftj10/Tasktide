@@ -4,7 +4,6 @@
 import {
   Box,
   Button,
-  Chip,
   Paper,
   Stack,
   ToggleButton,
@@ -29,7 +28,6 @@ import type { Task } from "../types";
 import { toCalendarEventsForRange } from "../app/taskLogic";
 import { TaskDialog } from "../components/TaskDialog";
 import { ConfirmDeleteDialog } from "../components/ConfirmDeleteDialog";
-import { COMPLETIONS_KEY, loadCompletions } from "../app/completions";
 import { weekStartMonday, ymd } from "../app/date";
 import {
   getTaskOccurrence,
@@ -64,7 +62,6 @@ export function WeekPage(props: {
     const start = dayjs(weekStartMonday(dayjs()));
     return { start, end: start.add(7, "day") };
   });
-  const [completionsRevision, setCompletionsRevision] = useState(0);
   const mobilePagerRef = useRef<HTMLDivElement | null>(null);
   const mobileTransitionLockRef = useRef(false);
   const mobileScrollSettleRef = useRef<number | null>(null);
@@ -77,18 +74,6 @@ export function WeekPage(props: {
   }, [dialogOpen, props.onTaskDialogVisibilityChange]);
 
   const taskById = useMemo(() => new Map(props.tasks.map((task) => [task.id, task])), [props.tasks]);
-  const completions = useMemo(() => loadCompletions(), [completionsRevision]);
-
-  useEffect(() => {
-    function onStorage(event: StorageEvent) {
-      if (event.key === COMPLETIONS_KEY) {
-        setCompletionsRevision((current) => current + 1);
-      }
-    }
-
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
-  }, []);
 
   function closeTaskEditor() {
     setDialogOpen(false);
@@ -101,7 +86,6 @@ export function WeekPage(props: {
   function buildEventsForRange(rangeStart: dayjs.Dayjs, rangeEnd: dayjs.Dayjs) {
     const baseEvents = toCalendarEventsForRange(
       props.tasks,
-      completions,
       rangeStart,
       rangeEnd
     );
@@ -155,7 +139,7 @@ export function WeekPage(props: {
 
   const desktopEvents = useMemo(
     () => buildEventsForRange(desktopVisibleRange.start, desktopVisibleRange.end),
-    [completions, desktopVisibleRange.end, desktopVisibleRange.start, props.tasks]
+    [desktopVisibleRange.end, desktopVisibleRange.start, props.tasks]
   );
 
   function upsert(task: Task, scope: TaskSaveScope = "series") {
@@ -242,7 +226,7 @@ export function WeekPage(props: {
         ...page,
         events: buildEventsForRange(page.start, page.end),
       })),
-    [completions, mobilePages, props.tasks]
+    [mobilePages, props.tasks]
   );
 
   function scrollToMobilePage(pageIndex: number, behavior: ScrollBehavior = "auto") {
@@ -415,7 +399,6 @@ export function WeekPage(props: {
                 sx={{
                   fontSize: 11,
                   fontWeight: isTimed ? 600 : 700,
-                  textDecoration: task?.done ? "line-through" : "none",
                   whiteSpace: isTimed ? "normal" : "nowrap",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
@@ -483,18 +466,10 @@ export function WeekPage(props: {
         }}
       >
         <Stack direction="row" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={1.5}>
-          <Stack spacing={0.75}>
+          <Stack spacing={0.25}>
             <Typography variant="h6" fontWeight={800} sx={{ fontSize: { xs: "1.05rem", sm: "1.4rem" } }}>
               {t("week.title")}
             </Typography>
-            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-              <Chip size="small" label={t("week.defaultView")} color="primary" variant="outlined" />
-              <Chip
-                size="small"
-                label={isMobile ? t("week.mobileSwipeHint") : t("week.desktopHint")}
-                variant="outlined"
-              />
-            </Stack>
           </Stack>
           {!isMobile ? (
             <Button

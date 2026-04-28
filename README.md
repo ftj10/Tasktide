@@ -1,6 +1,6 @@
 # Weekly To-Do Application
 
-Current version: `v1.10.0`
+Current version: `v1.11.0`
 
 Weekly To-Do is a full-stack planner for daily tasks, weekly routines, reminders, shared help questions, and calendar-based scheduling.
 
@@ -11,6 +11,8 @@ Deployed Web: [website](https://todo-cfun.onrender.com/)
 - Secure registration and login with JWT-backed sessions and persisted `USER` / `ADMIN` roles.
 - Login and registration screens support an `EN` / `中文` switch before authentication.
 - Today, Week, and Month planning views for one-time and recurring tasks.
+- Task completion now uses retained `completedAt` timestamps: completed tasks disappear from active planner views immediately, stay retained for 30 days, and continue feeding shared completion analytics and cleanup rules.
+- Today now opens with a compact productivity pitch and expands into selected-day, 7-day, and 30-day completion statistics plus a 7-day bar chart when you choose `View Stats and Visualization`.
 - Task forms now use a `Begin date` field plus a repeat-options window that supports once, daily, weekly, monthly, and yearly schedules.
 - The repeat-options window now matches the main task editor size on desktop and opens full-screen on mobile.
 - The repeat-options selector now sits slightly lower in its dialog so the `Repeat` label stays fully visible below the header.
@@ -84,6 +86,7 @@ npm test
 - `ADMIN_USERNAMES` lets you promote accounts to admin by username, including older accounts that still show `role: USER` in the dataset.
 - Older user records that do not yet have a `role` field are backfilled on the next successful login.
 - Older datasets that still use `TEMPORARY` and `PERMANENT` task records remain readable; the frontend normalizes them into the new recurrence model when it loads.
+- Completed one-time tasks and completed recurring occurrences stay in retained history for 30 days before the backend cleanup scheduler removes them.
 - On smaller screens, the app uses bottom navigation, a swipe-through Week view with single-step settled paging and default Time Grid focus, press-held time-range task creation in Week, a refreshed Month task grid with direct vertical swipe navigation plus a quick jump-to-current-month action, and full-screen editing dialogs to keep controls touch-friendly. When a task dialog opens, the mobile bottom navigation hides until that task window closes.
 - The login page language switch uses the same bilingual copy system as the signed-in app, so authentication flows can be changed before sign-in.
 - Keep backend running before opening the frontend locally.

@@ -269,7 +269,7 @@ describe("App behavior", () => {
         type: "ONCE",
         date: "2026-04-26",
         startTime: "14:15",
-        done: false,
+        completedAt: null,
         createdAt: "2026-04-26T08:00:00.000Z",
         updatedAt: "2026-04-26T08:00:00.000Z",
       },

@@ -21,6 +21,7 @@ export type TaskOccurrenceOverride = {
   startTime?: string;
   endTime?: string;
   description?: string;
+  completedAt?: string | null;
 };
 
 export type Task = {
@@ -34,7 +35,7 @@ export type Task = {
   recurrence?: TaskRecurrence;
   occurrenceOverrides?: Record<string, TaskOccurrenceOverride>;
   emergency?: number;
-  done?: boolean;
+  completedAt?: string | null;
 
   createdAt: string;
   updatedAt: string;

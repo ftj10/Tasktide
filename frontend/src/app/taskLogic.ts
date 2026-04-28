@@ -1,26 +1,35 @@
-// INPUT: task collections, date ranges, and recurring-task completion state
+// INPUT: task collections, date ranges, and persisted completion timestamps
 // OUTPUT: filtered task lists and calendar event records
 // EFFECT: Converts raw planner data into the day and week views used across the scheduling features
 import dayjs from "dayjs";
 import type { Task } from "../types";
-import type { CompletionMap } from "./completions";
-import { isDoneForDate } from "./completions";
 import {
+  getTaskOccurrenceCompletedAt,
   getTaskOccurrenceFromNormalizedTask,
+  getTaskOccurrenceSnapshotFromNormalizedTask,
   listRecurringOccurrenceDatesForNormalizedTask,
   normalizeTask,
 } from "./tasks";
 
-// INPUT: all tasks, selected date, and recurring-task completions
+export type ProductivityStats = {
+  completedCount: number;
+  totalCount: number;
+  completionRate: number;
+};
+
+export type DailyProductivityStats = ProductivityStats & {
+  dateYmd: string;
+};
+
+// INPUT: all tasks and selected date
 // OUTPUT: tasks visible on the selected day
 // EFFECT: Resolves which temporary and permanent tasks belong in the Today and Month views
-export function tasksForDate(all: Task[], dateYmd: string, completions: CompletionMap): Task[] {
+export function tasksForDate(all: Task[], dateYmd: string): Task[] {
   return all
     .map(normalizeTask)
     .flatMap((task) => {
       const occurrence = getTaskOccurrenceFromNormalizedTask(task, dateYmd);
       if (!occurrence) return [];
-      if (task.recurrence?.frequency !== "NONE" && isDoneForDate(completions, task.id, dateYmd)) return [];
       return [occurrence];
     })
     .sort((a, b) => {
@@ -31,12 +40,75 @@ export function tasksForDate(all: Task[], dateYmd: string, completions: Completi
     });
 }
 
-// INPUT: all tasks, recurring-task completions, and visible calendar range
+// INPUT: all tasks and selected date
+// OUTPUT: tasks completed on the selected day
+// EFFECT: Builds the retained completion history used for task undo and recent productivity review
+export function completedTasksForDate(all: Task[], dateYmd: string): Task[] {
+  return all
+    .map(normalizeTask)
+    .flatMap((task) => {
+      const occurrence = getTaskOccurrenceSnapshotFromNormalizedTask(task, dateYmd);
+      if (!occurrence) return [];
+      const completedAt = getTaskOccurrenceCompletedAt(task, dateYmd);
+      if (!completedAt) return [];
+      return [{ ...occurrence, completedAt }];
+    })
+    .sort((a, b) => String(b.completedAt ?? "").localeCompare(String(a.completedAt ?? "")));
+}
+
+// INPUT: all tasks and selected date
+// OUTPUT: task completion summary for that day
+// EFFECT: Produces one-day productivity statistics from the retained completion source of truth
+export function productivityStatsForDate(all: Task[], dateYmd: string): ProductivityStats {
+  const activeTasks = tasksForDate(all, dateYmd);
+  const completedTasks = completedTasksForDate(all, dateYmd);
+  const totalCount = activeTasks.length + completedTasks.length;
+
+  return buildProductivityStats(completedTasks.length, totalCount);
+}
+
+// INPUT: all tasks, selected date, and rolling day window
+// OUTPUT: aggregated task completion summary for that period
+// EFFECT: Lets planner surfaces show recent productivity trends backed by persisted completedAt timestamps
+export function productivityStatsForRollingWindow(all: Task[], dateYmd: string, windowDays: number): ProductivityStats {
+  const safeWindowDays = Math.max(1, windowDays);
+  let completedCount = 0;
+  let totalCount = 0;
+
+  for (let offset = 0; offset < safeWindowDays; offset += 1) {
+    const targetDate = dayjs(dateYmd).subtract(offset, "day").format("YYYY-MM-DD");
+    const dayStats = productivityStatsForDate(all, targetDate);
+    completedCount += dayStats.completedCount;
+    totalCount += dayStats.totalCount;
+  }
+
+  return buildProductivityStats(completedCount, totalCount);
+}
+
+// INPUT: all tasks, selected date, and rolling day window
+// OUTPUT: per-day productivity summaries ordered from oldest to newest
+// EFFECT: Feeds chart-style planner visualizations from the same retained completion history used by summary statistics
+export function productivityStatsSeries(all: Task[], dateYmd: string, windowDays: number): DailyProductivityStats[] {
+  const safeWindowDays = Math.max(1, windowDays);
+  const series: DailyProductivityStats[] = [];
+
+  for (let offset = safeWindowDays - 1; offset >= 0; offset -= 1) {
+    const targetDate = dayjs(dateYmd).subtract(offset, "day").format("YYYY-MM-DD");
+    const dayStats = productivityStatsForDate(all, targetDate);
+    series.push({
+      dateYmd: targetDate,
+      ...dayStats,
+    });
+  }
+
+  return series;
+}
+
+// INPUT: all tasks and visible calendar range
 // OUTPUT: calendar events for FullCalendar
 // EFFECT: Expands planner tasks into week-view event records for the scheduling feature
 export function toCalendarEventsForRange(
   all: Task[],
-  completions: CompletionMap,
   rangeStart: dayjs.Dayjs,
   rangeEnd: dayjs.Dayjs
 ) {
@@ -90,7 +162,6 @@ export function toCalendarEventsForRange(
     for (const dateStr of listRecurringOccurrenceDatesForNormalizedTask(task, rangeStart, rangeEnd)) {
       const occurrence = getTaskOccurrenceFromNormalizedTask(task, dateStr);
       if (!occurrence) continue;
-      if (isDoneForDate(completions, task.id, dateStr)) continue;
 
       const level = occurrence.emergency ?? 5;
       const col = permanentColorMap[level] ?? permanentColorMap[5];
@@ -109,4 +180,12 @@ export function toCalendarEventsForRange(
   }
 
   return events;
+}
+
+function buildProductivityStats(completedCount: number, totalCount: number): ProductivityStats {
+  return {
+    completedCount,
+    totalCount,
+    completionRate: totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0,
+  };
 }

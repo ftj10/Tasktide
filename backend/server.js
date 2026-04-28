@@ -13,6 +13,7 @@ const Task = require('./models/Task');
 const User = require('./models/User');
 const Reminder = require('./models/Reminder');
 const HelpQuestion = require('./models/HelpQuestion');
+const { getTaskRetentionCutoff, startTaskRetentionScheduler } = require('./taskRetention');
 
 const app = express();
 app.use(cors());
@@ -92,25 +93,45 @@ async function persistResolvedUserRole(user) {
 
 // INPUT: userId
 // OUTPUT: cleanup completion
-// EFFECT: Removes temporary tasks older than 30 days for the signed-in user
+// EFFECT: Removes completed task records older than 30 days for the signed-in user
 function cleanupTasksForUser(userId) {
-  const cutoffDate = new Date();
-  cutoffDate.setDate(cutoffDate.getDate() - 30);
-  const cutoffYmd = cutoffDate.toISOString().slice(0, 10);
+  const cutoffDate = getTaskRetentionCutoff();
 
   return Task.deleteMany({
     userId,
     $or: [
       {
-        type: 'TEMPORARY',
-        date: { $lt: cutoffYmd }
+        completedAt: { $lt: cutoffDate }
       },
       {
-        type: 'ONCE',
-        beginDate: { $lt: cutoffYmd }
+        done: true,
+        completedAt: null,
+        updatedAt: { $lt: cutoffDate }
       }
     ]
   });
+}
+
+// INPUT: raw task request payload plus authenticated user id
+// OUTPUT: normalized task persistence payload
+// EFFECT: Keeps task completion state anchored to completedAt instead of the legacy done flag
+function normalizeTaskWritePayload(taskPayload, userId) {
+  const { done, ...nextTaskPayload } = taskPayload ?? {};
+  const isRecurringTask =
+    nextTaskPayload?.recurrence?.frequency
+      ? nextTaskPayload.recurrence.frequency !== 'NONE'
+      : nextTaskPayload?.type === 'RECURRING' || nextTaskPayload?.type === 'PERMANENT';
+  const nextCompletedAt = isRecurringTask
+    ? null
+    : nextTaskPayload.completedAt === ''
+    ? null
+    : nextTaskPayload.completedAt ?? (done ? nextTaskPayload.updatedAt ?? nextTaskPayload.createdAt ?? new Date().toISOString() : null);
+
+  return {
+    ...nextTaskPayload,
+    userId,
+    completedAt: nextCompletedAt,
+  };
 }
 
 // INPUT: userId
@@ -211,13 +232,13 @@ app.get('/tasks', authenticateToken, async (req, res) => {
 app.post('/tasks', authenticateToken, async (req, res) => {
   try {
     await cleanupTasksForUser(req.user.userId);
-    const taskPayload = {
-      ...req.body,
-      userId: req.user.userId
-    };
+    const taskPayload = normalizeTaskWritePayload(req.body, req.user.userId);
     const result = await Task.updateOne(
       { id: taskPayload.id, userId: req.user.userId },
-      { $set: taskPayload },
+      {
+        $set: taskPayload,
+        $unset: { done: 1 },
+      },
       { upsert: true, runValidators: true, setDefaultsOnInsert: true }
     );
 
@@ -233,10 +254,11 @@ app.post('/tasks', authenticateToken, async (req, res) => {
 app.put('/tasks/:id', authenticateToken, async (req, res) => {
   try {
     await cleanupTasksForUser(req.user.userId);
+    const taskPayload = normalizeTaskWritePayload(req.body, req.user.userId);
     const updatedTask = await Task.findOneAndUpdate(
       { id: req.params.id, userId: req.user.userId },
-      { ...req.body, userId: req.user.userId },
-      { returnDocument: 'after', runValidators: true }
+      taskPayload,
+      { overwrite: true, returnDocument: 'after', runValidators: true }
     );
 
     if (!updatedTask) return res.status(404).json({ error: "Task not found" });
@@ -405,7 +427,10 @@ const PORT = process.env.PORT || 2676;
 // EFFECT: Connects the backend API to the configured MongoDB instance
 function connectDatabase() {
   return mongoose.connect(process.env.MONGODB_URI)
-    .then(() => console.log("Connected to MongoDB Atlas"))
+    .then(async () => {
+      await Task.init();
+      console.log("Connected to MongoDB Atlas");
+    })
     .catch(err => console.error("Database connection error:", err));
 }
 
@@ -420,8 +445,16 @@ function startServer() {
 
 if (require.main === module) {
   connectDatabase().then(() => {
+    startTaskRetentionScheduler();
     startServer();
   });
 }
 
-module.exports = { app, authenticateToken, connectDatabase, startServer, resolveUserRole };
+module.exports = {
+  app,
+  authenticateToken,
+  connectDatabase,
+  normalizeTaskWritePayload,
+  resolveUserRole,
+  startServer,
+};

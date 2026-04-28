@@ -17,6 +17,7 @@ const resources = {
         close: "Close",
         delete: "Delete",
         done: "Done",
+        undo: "Undo",
         save: "Save",
         add: "Add",
         edit: "Edit",
@@ -83,6 +84,20 @@ const resources = {
         addTask: "Add Task",
         goToToday: "Go to Today",
         markAllDone: "Mark All Done",
+        activeCount: "Active {{count}}",
+        completedCount: "Completed {{count}}",
+        productivityTitle: "Productivity Stats",
+        productivityPitch: "See your recent completion pattern at a glance. Last 7 days: {{completed}} / {{total}} completed ({{percent}}%).",
+        productivityToday: "Selected Day",
+        productivityLast7Days: "Last 7 Days",
+        productivityLast30Days: "Last 30 Days",
+        viewProductivityDetails: "View Stats and Visualization",
+        hideProductivityDetails: "Hide Stats and Visualization",
+        statsValue: "{{completed}} / {{total}} completed ({{percent}}%)",
+        productivityTrendTitle: "7-Day Completion Trend",
+        productivityTrendHint: "Bar height shows workload. Green shows completed tasks and gray shows what stayed open.",
+        productivityLegendCompleted: "Completed",
+        productivityLegendRemaining: "Remaining",
         taskMeta: "{{type}} • Priority {{priority}}",
         locationLabel: "Location: {{location}}",
         modify: "Modify",
@@ -104,10 +119,7 @@ const resources = {
         listView: "List View",
         timeGridView: "Time Grid",
         todayButton: "Today",
-        mobileCreateHint: "On phones, press-hold a time range in Time Grid to create a task there.",
-        defaultView: "Default: Time Grid",
-        mobileSwipeHint: "Swipe sideways through the week",
-        desktopHint: "Time placement first"
+        mobileCreateHint: "On phones, press-hold a time range in Time Grid to create a task there."
       },
       month: {
         jumpToCurrentMonth: "Jump to Current Month",
@@ -155,7 +167,7 @@ const resources = {
         guides: {
           title: "How To Use This Website",
           step0: "Use the EN / 中文 button on the login page whenever you want to switch the sign-in flow between English and Chinese before entering the app.",
-          step1: "Use Today to add, edit, complete, or move tasks for the current day. Task forms now start from a begin date and a repeat window.",
+          step1: "Use Today to add, edit, complete, or move tasks for the current day. Completed tasks leave the active list immediately, stay retained for 30 days, and contribute to the expandable productivity stats and trend chart shown on the page.",
           step2: "Use Week and Month to review your schedule and jump between dates quickly. Week now opens in Time Grid by default, and on phones you can press-hold a time range before creating a task while Month stays as a simplified task grid.",
           step3: "Use Reminders for ongoing notes that should stay visible until you mark them done.",
           step4: "On phones, use the bottom navigation to switch between planner sections, while larger screens keep the sidebar visible. When a task dialog opens, the mobile bottom navigation hides until the task window closes.",
@@ -166,7 +178,7 @@ const resources = {
           title: "Common Q&A",
           q1: {
             question: "How does repeat work for tasks?",
-            answer: "Each task starts with a begin date and a repeat setting. You can keep it as Once, or repeat it daily, weekly, monthly, or yearly with interval and end-date controls."
+            answer: "Each task starts with a begin date and a repeat setting. You can keep it as Once, or repeat it daily, weekly, monthly, or yearly with interval and end-date controls. Completing a task now stores a completion timestamp, hides it from active views, keeps retained analytics data for 30 days, and feeds the expandable productivity stats on Today."
           },
           q2: {
             question: "How do reminders differ from tasks?",
@@ -289,6 +301,7 @@ const resources = {
         close: "关闭",
         delete: "删除",
         done: "完成",
+        undo: "撤销",
         save: "保存",
         add: "添加",
         edit: "编辑",
@@ -355,6 +368,20 @@ const resources = {
         addTask: "添加任务",
         goToToday: "回到今天",
         markAllDone: "全部完成",
+        activeCount: "进行中 {{count}}",
+        completedCount: "已完成 {{count}}",
+        productivityTitle: "效率统计",
+        productivityPitch: "先快速看一下最近的完成节奏。最近 7 天完成 {{completed}} / {{total}}（{{percent}}%）。",
+        productivityToday: "所选日期",
+        productivityLast7Days: "最近 7 天",
+        productivityLast30Days: "最近 30 天",
+        viewProductivityDetails: "查看统计与图表",
+        hideProductivityDetails: "收起统计与图表",
+        statsValue: "完成 {{completed}} / {{total}}（{{percent}}%）",
+        productivityTrendTitle: "近 7 天完成趋势",
+        productivityTrendHint: "柱形高度表示当天任务量，绿色表示已完成，灰色表示仍未完成。",
+        productivityLegendCompleted: "已完成",
+        productivityLegendRemaining: "未完成",
         taskMeta: "{{type}} • 优先级 {{priority}}",
         locationLabel: "地点：{{location}}",
         modify: "修改",
@@ -376,10 +403,7 @@ const resources = {
         listView: "列表视图",
         timeGridView: "时间网格",
         todayButton: "今天",
-        mobileCreateHint: "在手机上可直接在时间网格中长按一段时间范围，在该时段创建任务。",
-        defaultView: "默认：时间网格",
-        mobileSwipeHint: "左右滑动浏览本周",
-        desktopHint: "优先按时间安排"
+        mobileCreateHint: "在手机上可直接在时间网格中长按一段时间范围，在该时段创建任务。"
       },
       month: {
         jumpToCurrentMonth: "跳到当前月份",
@@ -427,7 +451,7 @@ const resources = {
         guides: {
           title: "网站使用说明",
           step0: "如果你想在登录前切换语言，可以先使用登录页上的 EN / 中文 按钮，在英文和中文之间切换认证界面。",
-          step1: "在 Today 页面中添加、编辑、完成或移动当天任务。任务表单现在会先设置开始日期，再进入重复设置窗口。",
+          step1: "在 Today 页面中添加、编辑、完成或移动当天任务。任务完成后会立即从进行中列表隐藏，并保留 30 天的完成数据，同时这些记录也会计入页面上可展开的效率统计与趋势图。",
           step2: "在 Week 和 Month 页面快速查看整体安排并跳转日期。Week 现在默认进入时间网格；在手机上可直接长按时间范围创建任务，而 Month 则保持为简化后的任务网格。",
           step3: "使用 Reminders 记录持续存在、直到你手动完成的提醒事项。",
           step4: "在手机上可使用底部导航切换页面；在较大屏幕上会显示侧边栏导航。当任务弹窗打开时，移动端底部导航会先隐藏，直到任务窗口关闭。",
@@ -438,7 +462,7 @@ const resources = {
           title: "常见问答",
           q1: {
             question: "任务的重复设置怎么用？",
-            answer: "每个任务都会先设置开始日期，再选择重复方式。你可以保持为一次，也可以设置为每天、每周、每月或每年，并配置间隔和结束日期。"
+            answer: "每个任务都会先设置开始日期，再选择重复方式。你可以保持为一次，也可以设置为每天、每周、每月或每年，并配置间隔和结束日期。任务完成后会记录完成时间，从进行中视图隐藏，并保留 30 天的分析数据，同时会计入 Today 页面可展开的效率统计。"
           },
           q2: {
             question: "提醒和任务有什么不同？",

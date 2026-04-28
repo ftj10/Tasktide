@@ -68,7 +68,7 @@ export function TaskDialog(props: {
       type: "ONCE" as const,
       beginDate: d.format("YYYY-MM-DD"),
       date: d.format("YYYY-MM-DD"),
-      done: false,
+      completedAt: null,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       emergency: 5,
@@ -193,7 +193,7 @@ export function TaskDialog(props: {
           ? recurrence.weekdays[0]
           : undefined,
       emergency,
-      done: isRecurring ? undefined : (base.done ?? false),
+      completedAt: isRecurring ? null : (base.completedAt ?? null),
       location: location.trim(),
       description: description.trim(),
       startTime,
@@ -245,7 +245,7 @@ export function TaskDialog(props: {
       ...buildTask(),
       beginDate: dayjs().format("YYYY-MM-DD"),
       date: dayjs().format("YYYY-MM-DD"),
-      done: false,
+      completedAt: null,
     }, "series");
     props.onClose();
   }

@@ -2,7 +2,7 @@
 // OUTPUT: month grid page with per-day task previews
 // EFFECT: Supports monthly schedule scanning and day-level navigation into the Today feature
 import dayjs from "dayjs";
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useRef } from "react";
 import { Box, Button, IconButton, Paper, Stack, Typography, useMediaQuery, useTheme } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
@@ -14,33 +14,20 @@ import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import type { Task } from "../types";
 import { tasksForDate } from "../app/taskLogic";
 import { ymd } from "../app/date";
-import { COMPLETIONS_KEY, loadCompletions, type CompletionMap } from "../app/completions";
 
 // INPUT: task collection
 // OUTPUT: month calendar page
-// EFFECT: Builds the month overview feature from planner tasks and completion state
+// EFFECT: Builds the month overview feature from planner tasks and retained completion-aware filtering
 export function MonthPage(props: { tasks: Task[] }) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [currentMonth, setCurrentMonth] = useState(dayjs().startOf("month"));
-  const [completions, setCompletions] = useState<CompletionMap>(loadCompletions());
   const monthTouchStartXRef = useRef<number | null>(null);
   const monthTouchStartYRef = useRef<number | null>(null);
   const monthTouchCurrentXRef = useRef<number | null>(null);
   const monthTouchCurrentYRef = useRef<number | null>(null);
-
-  // INPUT: storage updates for completion records
-  // OUTPUT: refreshed completion state
-  // EFFECT: Keeps the month overview aligned with completion changes from other planner views
-  useEffect(() => {
-    function onStorage(e: StorageEvent) {
-      if (e.key === COMPLETIONS_KEY) setCompletions(loadCompletions());
-    }
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
-  }, []);
 
   const currentLanguage = i18n.resolvedLanguage?.startsWith("zh") ? "zh" : "en";
   const monthLabel = new Intl.DateTimeFormat(currentLanguage, {
@@ -70,11 +57,10 @@ export function MonthPage(props: { tasks: Task[] }) {
     t("month.weekdays.sat"),
   ];
 
-  // INPUT: task emergency and completion state
+  // INPUT: task emergency state
   // OUTPUT: month task-chip colors
   // EFFECT: Keeps Month task previews visually grouped by shared urgency styling
-  function taskChipColor(emergency: number | undefined, done: boolean) {
-    if (done) return { bg: alpha("#94a3b8", 0.2), color: "#64748b" };
+  function taskChipColor(emergency: number | undefined) {
     switch (emergency) {
       case 1:
         return { bg: alpha("#ef4444", 0.95), color: "#fff" };
@@ -249,7 +235,7 @@ export function MonthPage(props: { tasks: Task[] }) {
             const isToday = dateStr === ymd(dayjs());
             const isPastDay = d.endOf("day").isBefore(dayjs());
             const isWeekend = d.day() === 0 || d.day() === 6;
-            const dayTasks = tasksForDate(props.tasks, dateStr, completions);
+            const dayTasks = tasksForDate(props.tasks, dateStr);
 
             return (
               <Paper
@@ -297,7 +283,7 @@ export function MonthPage(props: { tasks: Task[] }) {
 
                 <Stack spacing={0.35} sx={{ mt: { xs: 0.4, sm: 0.7 } }}>
                   {dayTasks.slice(0, 3).map((task, idx) => {
-                    const { bg, color } = taskChipColor(task.emergency, !!task.done);
+                    const { bg, color } = taskChipColor(task.emergency);
                     return (
                       <Typography
                         key={task.id || idx}
@@ -312,7 +298,6 @@ export function MonthPage(props: { tasks: Task[] }) {
                           px: { xs: 0.5, sm: 0.75 },
                           py: 0.2,
                           borderRadius: 1.2,
-                          textDecoration: task.done ? "line-through" : "none",
                           fontSize: { xs: "0.55rem", sm: "0.72rem" },
                           fontWeight: 700,
                         }}

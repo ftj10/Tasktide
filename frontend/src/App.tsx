@@ -46,7 +46,6 @@ import {
   updateTask,
 } from "./app/storage";
 import { tasksForDate } from "./app/taskLogic";
-import { loadCompletions } from "./app/completions";
 import {
   hasNotificationFired,
   pruneStoredNotificationHistory,
@@ -272,11 +271,10 @@ export default function App() {
       });
 
       const todayYmd = dayjs(now).format("YYYY-MM-DD");
-      const currentCompletions = loadCompletions();
-      const todayTasks = tasksForDate(tasksRef.current, todayYmd, currentCompletions);
+      const todayTasks = tasksForDate(tasksRef.current, todayYmd);
 
       todayTasks.forEach((task) => {
-        if (!task.startTime || task.done) {
+        if (!task.startTime) {
           return;
         }
 

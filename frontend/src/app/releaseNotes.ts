@@ -14,37 +14,83 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
-    id: "2026-04-27-admin-help-access-and-windowed-week-events",
-    version: "v1.10.0",
+    id: "2026-04-27-collapsed-today-stats-panel",
+    version: "v1.11.0",
     releasedAt: "2026-04-27",
     title: {
-      en: "Admin help controls and windowed Week events",
-      zh: "管理员帮助控制与按窗口生成的 Week 事件"
+      en: "Expandable Today insights",
+      zh: "可展开的 Today 效率概览"
     },
     summary: {
-      en: "Accounts now carry USER or ADMIN roles, Help questions stay owner-only for non-admin users while admins can review and delete them, and Week only expands recurring events for the visible range while caching repeated occurrence windows.",
-      zh: "账号现在会携带 USER 或 ADMIN 角色，帮助问题会对普通用户保持仅限本人查看，而管理员可以审核和删除问题，Week 也只会为可见范围展开重复事件，并缓存重复使用的发生日期窗口。"
+      en: "Today now starts with a compact productivity pitch and opens the full statistics and chart view only when you ask for it.",
+      zh: "Today 现在会先显示一个精简的效率提示，并只在你主动查看时展开完整的统计与图表。"
     },
     changes: {
       en: [
-        "Added persistent USER and ADMIN roles to accounts and included the session role in login responses.",
-        "Scoped help-question reads so standard users only see their own submissions while admins can review every question, including legacy rows that only have username ownership.",
-        "Added optional ADMIN_USERNAMES bootstrap config for admin privileges.",
-        "Added admin-only help-question deletion from the Help Center and backend API.",
-        "Backfilled missing user role fields on successful login so older accounts are written back to the dataset.",
-        "Updated the Help Center copy to describe the admin review flow, role-specific question lists, and the fact that My Questions is the standard non-admin view.",
-        "Reworked Week recurring event expansion so it only generates occurrences for the visible range and reuses cached occurrence windows.",
-        "Added backend and frontend regression coverage for admin-scoped help access, owner-only help reads, admin deletion, role-aware login persistence, and visible-range recurring occurrence generation."
+        "Folded the Today productivity section by default so the page stays lighter until you open the full stats view.",
+        "Added a quick productivity pitch with a one-click View Stats and Visualization action.",
+        "Kept the selected-day, 7-day, 30-day, and 7-day chart insights available on demand."
       ],
       zh: [
-        "为账号新增持久化的 USER 与 ADMIN 角色，并在登录响应中返回当前会话角色。",
-        "将帮助问题读取改为按权限范围展示，普通用户只能看到自己的提交，管理员可以查看全部问题，同时兼容只保留了用户名归属的旧数据。",
-        "新增可选的 ADMIN_USERNAMES 配置，用于初始化管理员权限。",
-        "新增帮助中心和后端接口中的管理员专用帮助问题删除功能。",
-        "在成功登录时回填缺失的用户角色字段，让旧账号也会把角色写回数据集。",
-        "更新帮助中心文案，说明管理员审核流程、按角色区分的问题列表，以及“我的问题”是普通用户视图这一点。",
-        "重构 Week 的重复事件展开逻辑，只为当前可见范围生成发生项，并复用缓存的日期窗口。",
-        "新增管理员帮助访问、仅限本人帮助读取、管理员删除、登录角色持久化以及可见范围重复发生项生成的前后端回归测试。"
+        "默认将 Today 的效率区折叠起来，让页面在你展开完整统计前保持更轻量。",
+        "新增精简的效率提示，并提供一键查看统计与图表的入口。",
+        "所选日期、最近 7 天、最近 30 天以及 7 天图表的完整信息仍会在需要时展开。"
+      ]
+    }
+  },
+  {
+    id: "2026-04-27-today-chart-and-public-release-note-cleanup",
+    version: "v1.10.1",
+    releasedAt: "2026-04-27",
+    title: {
+      en: "Clearer Today insights",
+      zh: "更清晰的 Today 效率概览"
+    },
+    summary: {
+      en: "Today now shows a clearer 7-day productivity chart, the Week header is cleaner, and the Updates center uses more public-facing release wording.",
+      zh: "Today 现在会显示更清晰的 7 天效率图表，Week 页头也更简洁，同时更新中心改用了更适合公开展示的版本说明。"
+    },
+    changes: {
+      en: [
+        "Replaced the old completed-history block on Today with a clearer 7-day productivity chart.",
+        "Kept the selected-day, 7-day, and 30-day completion summaries while making progress easier to scan at a glance.",
+        "Removed extra Week header hint labels for a cleaner calendar header.",
+        "Simplified public update notes so the Updates center focuses on product changes instead of internal implementation details."
+      ],
+      zh: [
+        "将 Today 页面原来的已完成历史区替换为更清晰的 7 天效率图表。",
+        "保留所选日期、最近 7 天与最近 30 天的完成汇总，同时让进度更容易一眼看懂。",
+        "移除了 Week 页头中额外的提示标签，让日历页头更简洁。",
+        "简化公开版本说明，让更新中心聚焦于产品变化，而不是内部实现细节。"
+      ]
+    }
+  },
+  {
+    id: "2026-04-27-admin-help-review-and-task-insights",
+    version: "v1.10.0",
+    releasedAt: "2026-04-27",
+    title: {
+      en: "Admin help review and task insights",
+      zh: "管理员帮助审核与任务效率概览"
+    },
+    summary: {
+      en: "The Help Center now supports admin review, Week renders repeating events more efficiently, and Today handles completed tasks with clearer productivity tracking.",
+      zh: "帮助中心现已支持管理员审核，Week 对重复事件的渲染更高效，Today 也能以更清晰的方式追踪已完成任务与效率表现。"
+    },
+    changes: {
+      en: [
+        "Added admin review mode in the Help Center so admins can review and remove submitted questions while each standard user only sees their own questions.",
+        "Improved Week performance by generating repeating events only for the visible date range.",
+        "Completed tasks now leave active Today, Week, Month, and reminder flows immediately after completion.",
+        "Added Today productivity summaries for the selected day, the last 7 days, and the last 30 days.",
+        "Kept completed task data available for 30 days before automatic cleanup."
+      ],
+      zh: [
+        "帮助中心新增管理员审核模式，管理员可以查看并删除用户提交的问题，而普通用户仍只会看到自己的提问。",
+        "通过只生成当前可见日期范围内的重复事件，提升了 Week 页面性能。",
+        "任务完成后会立刻从 Today、Week、Month 与提醒相关的进行中视图中消失。",
+        "Today 页面新增所选日期、最近 7 天与最近 30 天的效率汇总。",
+        "已完成任务数据会保留 30 天，之后再自动清理。"
       ]
     }
   },
@@ -64,16 +110,12 @@ export const RELEASE_NOTES: ReleaseNote[] = [
       en: [
         "Changed shared help-question posting to create new server-owned posts instead of overwriting older questions through public ids.",
         "Kept the help-question draft visible and showed an error message when question posting fails.",
-        "Fixed Week calendar events so single-occurrence recurring-task overrides now use the correct title and time slot.",
-        "Replaced JSON-stringify task and reminder sync comparisons with explicit field comparisons and removed the shell-level task-dialog DOM observer.",
-        "Tightened reminder and help-question schema fields and added backend reminder CRUD coverage plus frontend regression coverage for help-question failures and recurring-event override timing."
+        "Fixed Week calendar events so single-occurrence recurring-task overrides now use the correct title and time slot."
       ],
       zh: [
         "将共享帮助问题的发布改为创建新的服务器端帖子，不再通过公开 id 覆盖旧问题。",
         "在帮助问题发布失败时保留草稿，并显示明确的错误提示。",
-        "修复 Week 日历事件，让重复任务的单次覆盖现在会使用正确的标题与时间段。",
-        "用显式字段比较替换任务和提醒同步时的 JSON-stringify 比较，并移除了应用外壳中用于任务弹窗的 DOM 观察器。",
-        "收紧提醒与帮助问题的数据模型字段，并新增提醒 CRUD 的后端覆盖，以及帮助问题失败流程与重复事件覆盖时间的前端回归测试。"
+        "修复 Week 日历事件，让重复任务的单次覆盖现在会使用正确的标题与时间段。"
       ]
     }
   },
@@ -93,14 +135,12 @@ export const RELEASE_NOTES: ReleaseNote[] = [
       en: [
         "Hide the mobile bottom navigation while the add-task dialog is open.",
         "Hide the mobile bottom navigation while the edit-task dialog is open.",
-        "Restore the mobile bottom navigation after the task dialog closes.",
-        "Added frontend regression coverage for task-dialog-driven mobile navigation visibility."
+        "Restore the mobile bottom navigation after the task dialog closes."
       ],
       zh: [
         "在新增任务弹窗打开时隐藏移动端底部导航。",
         "在编辑任务弹窗打开时隐藏移动端底部导航。",
-        "在任务弹窗关闭后恢复移动端底部导航。",
-        "新增由任务弹窗控制移动端导航显示状态的前端回归测试。"
+        "在任务弹窗关闭后恢复移动端底部导航。"
       ]
     }
   },
@@ -122,26 +162,22 @@ export const RELEASE_NOTES: ReleaseNote[] = [
         "Removed the global Add Task button from the mobile Week header.",
         "Added press-hold time-range selection in the mobile Week time grid before task creation opens.",
         "Prefilled the new task dialog with the selected date, start time, and end time from the chosen range.",
-        "Reduced Month view to the task grid only by removing its extra header controls while keeping vertical swipe navigation directly on the grid.",
-        "Added a Jump to Current Month button back to Month view without restoring the removed header shell.",
+        "Reduced Month view to a cleaner task grid layout with direct vertical swipe navigation.",
+        "Added a Jump to Current Month button back to Month view.",
         "Refreshed MonthPage UI with the new card-based calendar styling while keeping desktop arrows and mobile swipe behavior separate.",
         "Removed the per-day task-count label from Month cards so the cells stay focused on task previews.",
-        "Raised the mobile bottom navigation above overlapping planner content so nav taps win over the Week grid underneath.",
-        "Documented the simplified Month layout in README and in-app Help.",
-        "Added frontend regression coverage for default Week Time Grid behavior, the refreshed Month layout with split desktop/mobile navigation, the restored Month jump button, and stronger mobile bottom-navigation layering."
+        "Raised the mobile bottom navigation above overlapping planner content so nav taps stay reliable."
       ],
       zh: [
         "将 Week 改为在桌面端和移动端默认以时间网格打开。",
         "移除了移动端 Week 页头中的全局 Add Task 按钮。",
         "在移动端 Week 时间网格中新增长按时间范围后再打开创建任务流程。",
         "将新任务弹窗预填为所选时间范围对应的日期、开始时间与结束时间。",
-        "将 Month 简化为仅保留任务网格，移除了额外的页头控件，同时保留直接在网格中上下滑动切换月份。",
-        "在不恢复已移除页头外壳的前提下，为 Month 页面重新加入 Jump to Current Month 按钮。",
+        "将 Month 简化为更清晰的任务网格布局，并保留直接上下滑动切换月份的方式。",
+        "为 Month 页面重新加入 Jump to Current Month 按钮。",
         "为 MonthPage 换上新的卡片式日历视觉设计，同时继续区分桌面端箭头切换与移动端滑动切换。",
         "移除了 Month 日期卡片中的每日任务数量标签，让每个格子专注显示任务预览。",
-        "提高了移动端底部导航的层级，让它在与 Week 页面内容重叠时优先响应点击。",
-        "在 README 与应用内 Help 中补充 Month 简化布局的说明。",
-        "新增 Week 默认时间网格、更新后的 Month 布局与桌面端/移动端分离导航、Month 返回本月按钮，以及更强的移动端底部导航层级的前端回归测试。"
+        "提高了移动端底部导航的层级，让它在与 Week 页面内容重叠时仍能稳定响应点击。"
       ]
     }
   },
@@ -159,18 +195,14 @@ export const RELEASE_NOTES: ReleaseNote[] = [
     },
     changes: {
       en: [
-        "Replaced per-notification localStorage keys with one retained notification-history entry.",
         "Changed daily and task reminder checks to use crossed-time windows so delayed intervals do not skip 10:00, 21:00, or 15-minute reminder triggers.",
         "Moved browser notification permission requests to the first user interaction instead of automatic page load.",
-        "Pruned daily and task reminder notification markers after three days without rewriting storage on every history read.",
-        "Added frontend regression coverage for retained notification history, pruning, permission requests, and shell-level reminder writes."
+        "Pruned old reminder notification markers after three days."
       ],
       zh: [
-        "将每次通知单独的 localStorage key 改为统一的 notification-history 历史记录。",
         "将每日提醒和任务提醒改为跨时间窗口检查，避免 `10:00`、`21:00` 和提前 15 分钟提醒因定时器延迟而被跳过。",
         "将浏览器通知权限请求改为等待第一次用户交互，而不是在页面加载时自动触发。",
-        "为每日提醒和任务提醒增加三天保留期，并避免在每次读取历史时都重写存储。",
-        "新增通知历史保留、清理、权限请求，以及应用层提醒写入行为的前端回归测试。"
+        "为旧的提醒通知标记增加了三天后的自动清理。"
       ]
     }
   },
@@ -189,13 +221,11 @@ export const RELEASE_NOTES: ReleaseNote[] = [
     changes: {
       en: [
         "Added top spacing to the repeat selector in the repeat-options dialog.",
-        "Prevented the Repeat label from clipping against the dialog header.",
-        "Added a frontend regression test for the repeat dialog label rendering."
+        "Prevented the Repeat label from clipping against the dialog header."
       ],
       zh: [
         "为重复设置弹窗中的重复选择器增加顶部间距。",
-        "避免 Repeat 标签贴住弹窗标题而被裁切。",
-        "新增重复设置弹窗标签渲染的前端回归测试。"
+        "避免 Repeat 标签贴住弹窗标题而被裁切。"
       ]
     }
   },
@@ -214,13 +244,11 @@ export const RELEASE_NOTES: ReleaseNote[] = [
     changes: {
       en: [
         "Matched the repeat-options dialog width to the main task editor on larger screens.",
-        "Changed the repeat-options dialog to full-screen on mobile.",
-        "Added frontend regression coverage for the mobile repeat dialog layout."
+        "Changed the repeat-options dialog to full-screen on mobile."
       ],
       zh: [
         "让重复设置弹窗在大屏幕上与主任务编辑弹窗保持相同宽度。",
-        "将重复设置弹窗改为在移动端全屏打开。",
-        "新增移动端重复设置弹窗布局的前端回归测试。"
+        "将重复设置弹窗改为在移动端全屏打开。"
       ]
     }
   },
@@ -241,15 +269,13 @@ export const RELEASE_NOTES: ReleaseNote[] = [
         "Replaced the old one-time versus weekly type selector with a repeat options flow.",
         "Added daily, weekly, monthly, and yearly repeat rules with interval and end-date controls.",
         "Added single-day versus entire-series save choices for repeating task edits.",
-        "Kept older TEMPORARY and PERMANENT task datasets renderable through compatibility normalization.",
-        "Added regression tests for recurrence rendering, occurrence overrides, and the updated task API payloads."
+        "Kept older task data compatible with the new recurrence flow."
       ],
       zh: [
         "将旧的一次性 / 每周类型选择改为重复设置流程。",
         "新增每天、每周、每月、每年的重复规则，并支持间隔与结束日期设置。",
         "为重复任务编辑新增只改当天或修改整个系列的保存选择。",
-        "通过兼容性归一化继续支持旧的 TEMPORARY 与 PERMANENT 任务数据渲染。",
-        "新增重复渲染、单次覆盖与任务接口新载荷的回归测试。"
+        "继续兼容旧版任务数据。"
       ]
     }
   },
@@ -269,14 +295,12 @@ export const RELEASE_NOTES: ReleaseNote[] = [
       en: [
         "Changed mobile Week swipe handling to wait for the gesture to settle before selecting the next page.",
         "Prevented one swipe from cascading across multiple 4-day and 3-day week pages.",
-        "Kept the rolling week sequence, date jumps, task editing, and blank-slot prefilling intact.",
-        "Added frontend regression coverage for one-swipe single-step paging."
+        "Kept the rolling week sequence, date jumps, task editing, and blank-slot prefilling intact."
       ],
       zh: [
         "将移动端 Week 页面的滑动处理改为等待手势结束后再决定下一页。",
         "防止一次滑动连续跨过多个 4 天页与 3 天页。",
-        "继续保留跨周滚动顺序、日期跳转、任务编辑与空白区域默认日期带入功能。",
-        "新增单次滑动只前进一页的前端回归测试。"
+        "继续保留跨周滚动顺序、日期跳转、任务编辑与空白区域默认日期带入功能。"
       ]
     }
   },
@@ -299,9 +323,7 @@ export const RELEASE_NOTES: ReleaseNote[] = [
         "Removed the manual previous and next week arrow controls from the mobile Week header.",
         "Added an EN / 中文 language switch directly on the login and registration screen.",
         "Translated login titles, field labels, actions, success states, and common auth errors.",
-        "Kept week-view date jumps, blank-slot date prefilling, and task editing flows working across the rolling mobile pages.",
-        "Added frontend behavior coverage for the login-page language toggle.",
-        "Expanded README and in-app Help content to document the mobile paging behavior and pre-login language switching."
+        "Kept week-view date jumps, blank-slot date prefilling, and task editing flows working across the rolling mobile pages."
       ],
       zh: [
         "将移动端 Week 页面从单屏压缩 7 天改为横向分页体验。",
@@ -309,9 +331,7 @@ export const RELEASE_NOTES: ReleaseNote[] = [
         "移除了移动端 Week 页头中用于切换上一周和下一周的箭头按钮。",
         "在登录与注册页面直接新增 EN / 中文 语言切换按钮。",
         "为登录标题、字段标签、操作文案、成功状态与常见认证错误补充翻译。",
-        "在滚动分页中继续保留日期跳转、空白区域默认日期带入与任务编辑流程。",
-        "新增登录页语言切换的前端行为测试。",
-        "扩展 README 与应用内 Help 内容，记录新的移动端分页行为与登录前语言切换方式。"
+        "在滚动分页中继续保留日期跳转、空白区域默认日期带入与任务编辑流程。"
       ]
     }
   },
@@ -324,21 +344,17 @@ export const RELEASE_NOTES: ReleaseNote[] = [
       zh: "更安全的保存与同步恢复"
     },
     summary: {
-      en: "The planner now protects saved data more aggressively by making create requests idempotent and reloading server state after failed task or reminder syncs.",
-      zh: "应用现在通过让创建请求具备幂等性，并在任务或提醒同步失败后重新加载服务器状态，进一步保护已保存的数据。"
+      en: "The planner now protects saved data more aggressively by avoiding duplicate submissions and reloading stored data after failed task or reminder syncs.",
+      zh: "应用现在会通过避免重复提交，并在任务或提醒同步失败后重新加载已存储的数据，进一步保护你的内容。"
     },
     changes: {
       en: [
-        "Task, reminder, and help-question create routes now reuse the same record id instead of creating duplicates on repeated submissions.",
-        "Failed task and reminder sync attempts now trigger a reload from the backend so unsaved local changes do not replace stored data.",
-        "Added regression tests for duplicate-safe task saves and failed task-save recovery.",
-        "Expanded help and README documentation with the new data-safety behavior."
+        "Repeated task, reminder, and help-question submissions now avoid creating duplicates.",
+        "Failed task and reminder sync attempts now reload stored data so unsaved local changes do not replace it."
       ],
       zh: [
-        "Task、Reminder 与 Help Question 的创建接口现在会复用同一条记录 id，重复提交不会再产生重复数据。",
-        "当任务或提醒同步失败时，应用会重新从后端加载数据，避免未保存的本地变更替代已存储内容。",
-        "新增重复保存保护与失败保存恢复的回归测试。",
-        "扩展了 Help 与 README 中关于数据安全行为的说明。"
+        "Task、Reminder 与 Help Question 的重复提交现在不会再生成重复内容。",
+        "当任务或提醒同步失败时，应用会重新加载已存储的数据，避免未保存的本地变更替代它。"
       ]
     }
   },
@@ -359,15 +375,13 @@ export const RELEASE_NOTES: ReleaseNote[] = [
         "Updated the application shell to use a fluid layout that grows from mobile width up to a 1200px desktop maximum.",
         "Added a desktop sidebar and mobile bottom navigation for faster section switching.",
         "Changed Task and Reminder dialogs to open full-screen on mobile and as centered modals on larger screens.",
-        "Reduced heading and content typography on smaller screens to prevent horizontal overflow.",
-        "Expanded in-app help and release notes to document the new responsive behavior."
+        "Reduced heading and content typography on smaller screens to prevent horizontal overflow."
       ],
       zh: [
         "将应用外壳更新为流式布局，从移动端全宽扩展到桌面端最大 1200px。",
         "新增桌面侧边栏与移动端底部导航，便于快速切换页面。",
         "Task 与 Reminder 弹窗在手机上改为全屏，在较大屏幕上保持居中弹窗。",
-        "缩小小屏幕上的标题与内容字号，减少横向溢出。",
-        "扩展应用内帮助与更新说明，记录新的响应式行为。"
+        "缩小小屏幕上的标题与内容字号，减少横向溢出。"
       ]
     }
   },
@@ -387,14 +401,14 @@ export const RELEASE_NOTES: ReleaseNote[] = [
       en: [
         "Added a Help page with step-by-step instructions for using the planner.",
         "Added a FAQ section for common workflow questions.",
-        "Added a shared question form backed by MongoDB so every signed-in user can see submitted questions.",
+        "Added a shared question form so every signed-in user can see submitted questions.",
         "Week view now lets you click a date header to jump to that day in Today.",
         "Clicking a blank area in Week view now sets the default date for the next new task."
       ],
       zh: [
         "新增 Help 页面，提供逐步使用说明。",
         "新增 FAQ 常见问答区。",
-        "新增基于 MongoDB 的共享提问功能，所有已登录用户都能看到提交的问题。",
+        "新增共享提问功能，所有已登录用户都能看到提交的问题。",
         "Week 页面现在支持点击日期标题直接跳转到对应的 Today 页面。",
         "现在点击 Week 页面中的空白区域后，下一次新增任务会默认带入该日期。"
       ]
@@ -441,14 +455,14 @@ export const RELEASE_NOTES: ReleaseNote[] = [
         "Prevented timed tasks without an end time from spilling into the next day.",
         "Improved overlapping task layout in the week time grid.",
         "Added validation so end time cannot be earlier than start time.",
-        "Added a frontend-only release notes popup and history drawer."
+        "Added the in-app update popup and release history drawer."
       ],
       zh: [
         "已将翻译扩展到 Today、Week、Month 与 Reminder 流程。",
         "修复没有结束时间的定时任务跨到第二天的问题。",
         "优化周视图时间网格中重叠任务的布局。",
         "新增结束时间不能早于开始时间的校验。",
-        "新增仅前端实现的更新弹窗与历史抽屉。"
+        "新增应用内更新弹窗与历史抽屉。"
       ]
     }
   }

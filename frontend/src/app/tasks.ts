@@ -10,6 +10,25 @@ export type TaskSaveScope = "series" | "single";
 
 const OCCURRENCE_RANGE_CACHE_LIMIT = 500;
 const occurrenceRangeCache = new Map<string, string[]>();
+type LegacyTask = Task & { done?: boolean };
+
+function normalizeLegacyCompletedAt(task: Task) {
+  if (task.completedAt) return task.completedAt;
+  if ((task as LegacyTask).done) return task.updatedAt ?? task.createdAt ?? new Date().toISOString();
+  return null;
+}
+
+function normalizeOccurrenceOverrides(overrides?: Record<string, TaskOccurrenceOverride>) {
+  return Object.fromEntries(
+    Object.entries(overrides ?? {}).map(([dateYmd, override]) => [
+      dateYmd,
+      {
+        ...override,
+        completedAt: override?.completedAt ?? null,
+      },
+    ])
+  );
+}
 
 export function normalizeTask(task: Task): Task {
   const beginDate = task.beginDate ?? task.date ?? normalizeLegacyPermanentBeginDate(task);
@@ -26,8 +45,8 @@ export function normalizeTask(task: Task): Task {
       recurrence.frequency === "WEEKLY" && recurrence.weekdays && recurrence.weekdays.length === 1
         ? recurrence.weekdays[0]
         : undefined,
-    occurrenceOverrides: task.occurrenceOverrides ?? {},
-    done: type === "ONCE" ? Boolean(task.done) : undefined,
+    occurrenceOverrides: normalizeOccurrenceOverrides(task.occurrenceOverrides),
+    completedAt: type === "ONCE" ? normalizeLegacyCompletedAt(task) : null,
   };
 }
 
@@ -61,16 +80,35 @@ export function getTaskOccurrence(task: Task, dateYmd: string): Task | null {
   return getTaskOccurrenceFromNormalizedTask(normalized, dateYmd);
 }
 
-export function getTaskOccurrenceFromNormalizedTask(task: Task, dateYmd: string): Task | null {
+export function getTaskOccurrenceCompletedAt(task: Task, dateYmd: string) {
+  const normalized = normalizeTask(task);
+  if (normalized.recurrence?.frequency === "NONE") {
+    return normalized.beginDate === dateYmd ? normalized.completedAt ?? null : null;
+  }
+
+  return normalized.occurrenceOverrides?.[dateYmd]?.completedAt ?? null;
+}
+
+export function isTaskOccurrenceCompleted(task: Task, dateYmd: string) {
+  return Boolean(getTaskOccurrenceCompletedAt(task, dateYmd));
+}
+
+export function getTaskOccurrenceSnapshotFromNormalizedTask(task: Task, dateYmd: string): Task | null {
   if (task.recurrence?.frequency === "NONE") {
-    if (task.beginDate !== dateYmd || task.done) return null;
-    return task;
+    return task.beginDate === dateYmd ? task : null;
   }
 
   if (!matchesRecurrence(task, dateYmd)) return null;
 
   const override = task.occurrenceOverrides?.[dateYmd];
   return override ? { ...task, ...override } : task;
+}
+
+export function getTaskOccurrenceFromNormalizedTask(task: Task, dateYmd: string): Task | null {
+  const occurrence = getTaskOccurrenceSnapshotFromNormalizedTask(task, dateYmd);
+  if (!occurrence) return null;
+  if (isTaskOccurrenceCompleted(task, dateYmd)) return null;
+  return occurrence;
 }
 
 export function listRecurringOccurrenceDatesForNormalizedTask(
@@ -120,7 +158,7 @@ export function applySeriesEdit(sourceTask: Task, editedTask: Task): Task {
     recurrence: edited.recurrence,
     date: edited.date,
     weekday: edited.weekday,
-    done: edited.done,
+    completedAt: edited.completedAt ?? source.completedAt ?? null,
     updatedAt: edited.updatedAt,
   };
 }
@@ -177,6 +215,101 @@ export function removeTaskFromCollection(allTasks: Task[], taskId: string) {
   return allTasks.filter((task) => task.id !== taskId);
 }
 
+export function completeTaskInCollection(
+  allTasks: Task[],
+  taskId: string,
+  options: {
+    completedAt?: string;
+    occurrenceDateYmd?: string;
+    updatedAt?: string;
+  } = {}
+) {
+  const completionAt = options.completedAt ?? new Date().toISOString();
+  const updatedAt = options.updatedAt ?? completionAt;
+
+  return allTasks.map((task) => {
+    if (task.id !== taskId) return task;
+    const normalized = normalizeTask(task);
+
+    if (normalized.recurrence?.frequency === "NONE") {
+      return {
+        ...normalized,
+        completedAt: completionAt,
+        updatedAt,
+      };
+    }
+
+    if (!options.occurrenceDateYmd) {
+      return normalized;
+    }
+
+    const currentOverride = normalized.occurrenceOverrides?.[options.occurrenceDateYmd] ?? {};
+    const nextOverride = stripEmptyOverride({
+      ...currentOverride,
+      completedAt: completionAt,
+    });
+
+    return {
+      ...normalized,
+      occurrenceOverrides: {
+        ...(normalized.occurrenceOverrides ?? {}),
+        ...(nextOverride ? { [options.occurrenceDateYmd]: nextOverride } : {}),
+      },
+      updatedAt,
+    };
+  });
+}
+
+export function reopenTaskInCollection(
+  allTasks: Task[],
+  taskId: string,
+  options: {
+    occurrenceDateYmd?: string;
+    updatedAt?: string;
+  } = {}
+) {
+  const updatedAt = options.updatedAt ?? new Date().toISOString();
+
+  return allTasks.map((task) => {
+    if (task.id !== taskId) return task;
+    const normalized = normalizeTask(task);
+
+    if (normalized.recurrence?.frequency === "NONE") {
+      return {
+        ...normalized,
+        completedAt: null,
+        updatedAt,
+      };
+    }
+
+    if (!options.occurrenceDateYmd) {
+      return normalized;
+    }
+
+    const currentOverride = {
+      ...(normalized.occurrenceOverrides?.[options.occurrenceDateYmd] ?? {}),
+    };
+    delete currentOverride.completedAt;
+
+    const nextOccurrenceOverrides = {
+      ...(normalized.occurrenceOverrides ?? {}),
+    };
+    const nextOverride = stripEmptyOverride(currentOverride);
+
+    if (nextOverride) {
+      nextOccurrenceOverrides[options.occurrenceDateYmd] = nextOverride;
+    } else {
+      delete nextOccurrenceOverrides[options.occurrenceDateYmd];
+    }
+
+    return {
+      ...normalized,
+      occurrenceOverrides: nextOccurrenceOverrides,
+      updatedAt,
+    };
+  });
+}
+
 export function areTasksEqual(sourceTask: Task, targetTask: Task) {
   const source = normalizeTask(sourceTask);
   const target = normalizeTask(targetTask);
@@ -189,7 +322,7 @@ export function areTasksEqual(sourceTask: Task, targetTask: Task) {
     source.date === target.date &&
     source.beginDate === target.beginDate &&
     source.emergency === target.emergency &&
-    Boolean(source.done) === Boolean(target.done) &&
+    (source.completedAt ?? null) === (target.completedAt ?? null) &&
     source.createdAt === target.createdAt &&
     source.updatedAt === target.updatedAt &&
     (source.location ?? "") === (target.location ?? "") &&
@@ -313,7 +446,8 @@ function areOccurrenceOverrideFieldsEqual(source?: TaskOccurrenceOverride, targe
     (source?.mapProvider ?? "google") === (target?.mapProvider ?? "google") &&
     (source?.startTime ?? "") === (target?.startTime ?? "") &&
     (source?.endTime ?? "") === (target?.endTime ?? "") &&
-    (source?.description ?? "") === (target?.description ?? "")
+    (source?.description ?? "") === (target?.description ?? "") &&
+    (source?.completedAt ?? null) === (target?.completedAt ?? null)
   );
 }
 
@@ -490,7 +624,7 @@ function pickOccurrenceOverrideFields(task: Task): TaskOccurrenceOverride {
 }
 
 function stripEmptyOverride(override: TaskOccurrenceOverride) {
-  const nextEntries = Object.entries(override).filter(([, value]) => value !== undefined);
+  const nextEntries = Object.entries(override).filter(([, value]) => value !== undefined && value !== null);
   if (nextEntries.length === 0) return undefined;
   return Object.fromEntries(nextEntries) as TaskOccurrenceOverride;
 }

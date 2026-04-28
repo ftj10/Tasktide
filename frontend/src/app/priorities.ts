@@ -3,7 +3,7 @@
 // EFFECT: Keeps urgency-based styling aligned across task, reminder, and calendar surfaces
 type PriorityItem = {
   emergency?: number;
-  done?: boolean;
+  completedAt?: string | null;
 };
 
 export function getPriorityAccent(emergency = 5) {
@@ -23,7 +23,7 @@ export function getPriorityAccent(emergency = 5) {
 }
 
 export function getPriorityColors(item?: PriorityItem) {
-  if (item?.done) {
+  if (item?.completedAt) {
     return { bg: "#e5e7eb", border: "#cbd5e1", text: "#6b7280" };
   }
 

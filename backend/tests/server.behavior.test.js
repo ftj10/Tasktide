@@ -11,7 +11,7 @@ const Task = require('../models/Task');
 const User = require('../models/User');
 const Reminder = require('../models/Reminder');
 const HelpQuestion = require('../models/HelpQuestion');
-const { app } = require('../server');
+const { app, normalizeTaskWritePayload } = require('../server');
 const { invokeApp } = require('./helpers/http');
 
 const originals = {
@@ -378,12 +378,12 @@ test('behavior: authenticated task fetch returns the current user tasks', async 
     userId: 'user-1',
     $or: [
       {
-        type: 'TEMPORARY',
-        date: { $lt: cleanupFilter.$or[0].date.$lt },
+        completedAt: { $lt: cleanupFilter.$or[0].completedAt.$lt },
       },
       {
-        type: 'ONCE',
-        beginDate: { $lt: cleanupFilter.$or[1].beginDate.$lt },
+        done: true,
+        completedAt: null,
+        updatedAt: { $lt: cleanupFilter.$or[1].updatedAt.$lt },
       },
     ],
   });
@@ -434,7 +434,9 @@ test('behavior: task create stores one task for the authenticated user', async (
       beginDate: '2026-04-22',
       date: '2026-04-22',
       userId: 'user-1',
+      completedAt: null,
     },
+    $unset: { done: 1 },
   });
   assert.deepEqual(updateOptions, { upsert: true, runValidators: true, setDefaultsOnInsert: true });
 });
@@ -506,8 +508,30 @@ test('behavior: task update rewrites one task for the authenticated user', async
       until: null,
     },
     userId: 'user-1',
+    completedAt: null,
   });
-  assert.deepEqual(updateOptions, { returnDocument: 'after', runValidators: true });
+  assert.deepEqual(updateOptions, { overwrite: true, returnDocument: 'after', runValidators: true });
+});
+
+test('behavior: normalizeTaskWritePayload maps legacy done state to completedAt for one-time tasks', () => {
+  const taskPayload = normalizeTaskWritePayload({
+    id: 'task-legacy',
+    title: 'Legacy completed task',
+    type: 'ONCE',
+    done: true,
+    createdAt: '2026-04-20T09:00:00.000Z',
+    updatedAt: '2026-04-22T10:00:00.000Z',
+  }, 'user-1');
+
+  assert.deepEqual(taskPayload, {
+    id: 'task-legacy',
+    title: 'Legacy completed task',
+    type: 'ONCE',
+    createdAt: '2026-04-20T09:00:00.000Z',
+    updatedAt: '2026-04-22T10:00:00.000Z',
+    userId: 'user-1',
+    completedAt: '2026-04-22T10:00:00.000Z',
+  });
 });
 
 test('behavior: task delete removes one task for the authenticated user', async () => {
