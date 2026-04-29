@@ -1,9 +1,9 @@
 // INPUT: today page task fixtures and completion actions
 // OUTPUT: behavior coverage for retained task completion statistics
 // EFFECT: Verifies Today hides completed tasks from active lists, stores recurring completion in task data, and visualizes recent productivity
-import { screen, within } from "@testing-library/react";
+import { fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import i18n from "../src/i18n";
 import type { Task } from "../src/types";
@@ -13,6 +13,10 @@ import { renderWithProviders } from "./test-utils";
 describe("TodayPage behavior", () => {
   beforeEach(async () => {
     await i18n.changeLanguage("en");
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("stores recurring-task completion inside the persisted task record", async () => {
@@ -207,5 +211,41 @@ END:VCALENDAR`,
       endDate: "2026-05-03",
     });
     expect(await screen.findByText("Imported 1 tasks from three-day.ics.")).toBeInTheDocument();
+  });
+
+  it("moves a one-time task to the next selected day instead of the next real day", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-29T09:00:00.000Z"));
+    const setTasks = vi.fn();
+
+    renderWithProviders(
+      <TodayPage
+        tasks={[
+          {
+            id: "future-1",
+            title: "Future task",
+            type: "ONCE",
+            beginDate: "2026-05-01",
+            endDate: "2026-05-01",
+            date: "2026-05-01",
+            createdAt: "2026-04-29T08:00:00.000Z",
+            updatedAt: "2026-04-29T08:00:00.000Z",
+          },
+        ]}
+        setTasks={setTasks}
+      />,
+      "/?date=2026-05-01"
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "To Tomorrow" }));
+
+    expect(setTasks).toHaveBeenCalledTimes(1);
+    const nextTasks = setTasks.mock.calls[0][0] as Task[];
+    expect(nextTasks[0]).toMatchObject({
+      beginDate: "2026-05-02",
+      endDate: "2026-05-02",
+      date: "2026-05-02",
+      completedAt: null,
+    });
   });
 });

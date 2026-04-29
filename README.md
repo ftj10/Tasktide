@@ -1,6 +1,6 @@
 # Weekly To-Do Application
 
-Current version: `v1.14.0`
+Current version: `v1.14.1`
 
 Weekly To-Do is a full-stack planner for daily tasks, weekly routines, reminders, shared help questions, and calendar-based scheduling.
 
@@ -11,6 +11,7 @@ Deployed Web: [website](https://todo-cfun.onrender.com/)
 - Secure registration and login with JWT-backed sessions and persisted `USER` / `ADMIN` roles.
 - Login and registration screens support an `EN` / `中文` switch before authentication.
 - Today, Week, and Month planning views for one-time and recurring tasks.
+- Today reschedule shortcuts now follow the selected day in the header, so moving a one-time task to `Today` or `Tomorrow` works correctly even while you are browsing future dates.
 - Today can now import `.ics` calendar files into planner tasks, including multi-day all-day events, timed events, and supported daily, weekly, monthly, and yearly repeats.
 - Task completion now uses retained `completedAt` timestamps: completed tasks disappear from active planner views immediately, stay retained for 30 days, and continue feeding shared completion analytics and cleanup rules.
 - Today now opens with a compact productivity pitch and expands into selected-day, 7-day, and 30-day completion statistics plus a 7-day bar chart when you choose `View Stats and Visualization`.

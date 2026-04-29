@@ -1,5 +1,10 @@
 # Release Notes
 
+## v1.14.1 - 2026-04-29
+
+- Fixed Today so moving a one-time task to tomorrow from a viewed future date no longer skips an extra day.
+- Kept one-time task date ranges aligned when rescheduling from the Today page.
+
 ## v1.14.0 - 2026-04-28
 
 - Added background push notifications for daily prompts and upcoming timed tasks on supported desktop browsers.

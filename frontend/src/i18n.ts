@@ -174,7 +174,7 @@ const resources = {
         guides: {
           title: "How To Use This Website",
           step0: "Use the EN / 中文 button on the login page whenever you want to switch the sign-in flow between English and Chinese before entering the app.",
-          step1: "Use Today to add, edit, complete, or move tasks for the current day. Completed tasks leave the active list immediately, stay retained for 30 days, and contribute to the expandable productivity stats and trend chart shown on the page.",
+          step1: "Use Today to add, edit, complete, or move tasks for the current or selected day. The To Today and To Tomorrow actions follow the date you are viewing. Completed tasks leave the active list immediately, stay retained for 30 days, and contribute to the expandable productivity stats and trend chart shown on the page.",
           step2: "Use the Import ICS action on Today when you want to turn calendar events from a `.ics` file into planner tasks. The importer keeps multi-day all-day ranges, timed events, and supported daily, weekly, monthly, or yearly repeat rules.",
           step3: "Use Week and Month to review your schedule and jump between dates quickly. Week now opens in Time Grid by default, and on phones you can press-hold a time range before creating a task while Month stays as a simplified task grid.",
           step4: "Use Reminders for ongoing notes that should stay visible until you mark them done.",
@@ -186,7 +186,7 @@ const resources = {
           title: "Common Q&A",
           q1: {
             question: "How does repeat work for tasks?",
-            answer: "Each task starts with a begin date and a repeat setting. You can keep it as Once, or repeat it daily, weekly, monthly, or yearly with interval and end-date controls. Completing a task now stores a completion timestamp, hides it from active views, keeps retained analytics data for 30 days, and feeds the expandable productivity stats on Today."
+            answer: "Each task starts with a begin date and a repeat setting. You can keep it as Once, or repeat it daily, weekly, monthly, or yearly with interval and end-date controls. On Today, one-time tasks can also be moved to Today or Tomorrow based on the date you are viewing. Completing a task now stores a completion timestamp, hides it from active views, keeps retained analytics data for 30 days, and feeds the expandable productivity stats on Today."
           },
           q2: {
             question: "How do reminders differ from tasks?",
@@ -478,7 +478,7 @@ const resources = {
         guides: {
           title: "网站使用说明",
           step0: "如果你想在登录前切换语言，可以先使用登录页上的 EN / 中文 按钮，在英文和中文之间切换认证界面。",
-          step1: "在 Today 页面中添加、编辑、完成或移动当天任务。任务完成后会立即从进行中列表隐藏，并保留 30 天的完成数据，同时这些记录也会计入页面上可展开的效率统计与趋势图。",
+          step1: "在 Today 页面中添加、编辑、完成或移动当前查看日期的任务。`移到今天` 与 `移到明天` 会跟随你正在查看的日期。任务完成后会立即从进行中列表隐藏，并保留 30 天的完成数据，同时这些记录也会计入页面上可展开的效率统计与趋势图。",
           step2: "如果你有日历导出的 `.ics` 文件，可以在 Today 页面使用导入按钮把事件直接转换成任务。导入会保留跨天全天范围、定时事件，以及受支持的每天、每周、每月、每年重复规则。",
           step3: "在 Week 和 Month 页面快速查看整体安排并跳转日期。Week 现在默认进入时间网格；在手机上可直接长按时间范围创建任务，而 Month 则保持为简化后的任务网格。",
           step4: "使用 Reminders 记录持续存在、直到你手动完成的提醒事项。",
@@ -490,7 +490,7 @@ const resources = {
           title: "常见问答",
           q1: {
             question: "任务的重复设置怎么用？",
-            answer: "每个任务都会先设置开始日期，再选择重复方式。你可以保持为一次，也可以设置为每天、每周、每月或每年，并配置间隔和结束日期。任务完成后会记录完成时间，从进行中视图隐藏，并保留 30 天的分析数据，同时会计入 Today 页面可展开的效率统计。"
+            answer: "每个任务都会先设置开始日期，再选择重复方式。你可以保持为一次，也可以设置为每天、每周、每月或每年，并配置间隔和结束日期。在 Today 页面里，一次性任务还可以根据你当前查看的日期移到今天或明天。任务完成后会记录完成时间，从进行中视图隐藏，并保留 30 天的分析数据，同时会计入 Today 页面可展开的效率统计。"
           },
           q2: {
             question: "提醒和任务有什么不同？",

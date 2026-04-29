@@ -14,6 +14,31 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-04-29-today-move-tomorrow-date-fix",
+    version: "v1.14.1",
+    releasedAt: "2026-04-29",
+    title: {
+      en: "Today date-move fix",
+      zh: "Today 日期移动修复"
+    },
+    summary: {
+      en: "Moving a one-time task to Tomorrow from a future Today date now follows the day you are viewing instead of jumping an extra day.",
+      zh: "在 Today 的未来日期里把一次性任务移到 Tomorrow 时，现在会按照你正在查看的日期移动，而不会多跳一天。"
+    },
+    changes: {
+      en: [
+        "Fixed Today so the To Tomorrow action uses the selected day in the header instead of the machine's current day.",
+        "Kept one-time task ranges aligned when they are moved forward from a viewed future day.",
+        "Updated help and release copy so the reschedule behavior is clearer in the app."
+      ],
+      zh: [
+        "修复 Today 中的 To Tomorrow 操作，让它基于页头当前查看的日期，而不是设备当前日期。",
+        "让一次性任务从未来查看日向后移动时，仍能保持原有日期范围对齐。",
+        "更新帮助与版本说明文案，让任务移动行为在应用内更清晰。"
+      ]
+    }
+  },
+  {
     id: "2026-04-28-background-push-notifications",
     version: "v1.14.0",
     releasedAt: "2026-04-28",

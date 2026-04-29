@@ -224,7 +224,7 @@ export function TodayPage(props: {
 
   function moveTemporaryToTomorrow(task: Task) {
     if (!isOneTimeTask(task)) return;
-    const tomorrowYmd = ymd(dayjs().add(1, "day"));
+    const tomorrowYmd = ymd(dayjs(selectedDay).add(1, "day"));
     const durationDays = dayjs(task.endDate ?? task.beginDate ?? tomorrowYmd).diff(dayjs(task.beginDate ?? tomorrowYmd), "day");
     upsert({
       ...task,
