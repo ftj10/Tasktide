@@ -1,6 +1,6 @@
 # Weekly To-Do Application
 
-Current version: `v1.15.0`
+Current version: `v1.15.1`
 
 Weekly To-Do is a full-stack planner for daily tasks, weekly routines, reminders, shared help questions, and calendar-based scheduling.
 
@@ -94,7 +94,7 @@ npm test
 - Review [RELEASENOTES.md](RELEASENOTES.md) for repository-level changes.
 - Local development can skip manual VAPID setup because the backend generates `backend/.push-vapid.json` on first use. Production should provide `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `WEB_PUSH_SUBJECT`.
 - Use `Import ICS` on the Today page when you want to bring calendar events into the planner from a `.ics` export. The importer keeps titles, notes, locations, multi-day all-day ranges, timed events, and supported daily, weekly, monthly, and yearly recurrence rules.
-- The in-app Updates center mirrors the latest shipped release metadata from `frontend/src/app/releaseNotes.ts`.
+- The in-app Updates center mirrors the latest shipped release metadata from `frontend/src/app/releaseNotes.ts` and groups each release under `New Features`, `Improvements`, and `Bug Fixes`.
 - Shared help questions are stored as new posts on the server, so another signed-in user cannot overwrite an older question by reusing its client-side id.
 - Standard users can only read their own submitted help questions, while `ADMIN` accounts can review all questions.
 - The `My Questions` section is the normal non-admin view; it means the account is a `USER`, not an `ADMIN`.

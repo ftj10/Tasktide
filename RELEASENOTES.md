@@ -1,147 +1,244 @@
 # Release Notes
 
-## v1.15.0 - 2026-04-29
+## Version 1.15.1
+Update Date: 2026-04-29
 
-- Added a Help Center notification-recovery pitch for VAPID key changes and stale push subscriptions.
-- Clarified the in-app recovery steps for deleting old subscriptions and re-enabling notifications on each device.
+### Improvements
+- Updated all release notes to use a consistent product-announcement structure with categorized sections.
+- Improved the in-app Updates center so each release now appears under clear `New Features`, `Improvements`, and `Bug Fixes` headings.
+- Updated repository documentation so the public release history and in-app release notes stay aligned.
 
-## v1.14.1 - 2026-04-29
+## Version 1.15.0
+Update Date: 2026-04-29
 
-- Fixed Today so moving a one-time task to tomorrow from a viewed future date no longer skips an extra day.
-- Kept one-time task date ranges aligned when rescheduling from the Today page.
+### New Features
+- Added a Help Center recovery message for notification failures caused by VAPID key changes or stale subscriptions.
 
-## v1.14.0 - 2026-04-28
+### Improvements
+- Updated the recovery guidance so users know to clear old subscriptions before resubscribing.
+- Updated the instructions so each browser and installed mobile web app is re-enabled with a fresh notification subscription.
 
-- Added background push notifications for daily prompts and upcoming timed tasks on supported desktop browsers.
-- Added installable mobile web-app notification support through a service worker and Web Push subscription flow.
-- Kept an in-page notification fallback for browsers that still do not support background Web Push.
+## Version 1.14.1
+Update Date: 2026-04-29
 
-## v1.13.1 - 2026-04-28
+### Improvements
+- Updated Today reschedule messaging so the selected-day behavior is easier to understand in the app.
 
-- Fixed mobile Week drag-to-create so cross-day selections now preserve the task end date.
-- Updated public ICS release notes so older history no longer implies that multi-day support is still unavailable.
+### Bug Fixes
+- Fixed Today so moving a one-time task to `Tomorrow` from a viewed future date no longer skips an extra day.
+- Fixed one-time task date ranges so they stay aligned when rescheduled from the Today page.
 
-## v1.13.0 - 2026-04-28
+## Version 1.14.0
+Update Date: 2026-04-28
 
+### New Features
+- Added background Web Push notifications for daily prompts and upcoming timed tasks on supported desktop browsers.
+- Added installable mobile web-app notification support through the service worker subscription flow.
+
+### Improvements
+- Improved notification coverage by keeping an in-page fallback for browsers without background Web Push support.
+
+## Version 1.13.1
+Update Date: 2026-04-28
+
+### Improvements
+- Updated older public ICS release wording so it no longer conflicts with current multi-day support.
+
+### Bug Fixes
+- Fixed mobile Week drag-to-create so cross-day selections now preserve the selected task end date.
+
+## Version 1.13.0
+Update Date: 2026-04-28
+
+### New Features
 - Added multi-day task support across Today, Week, Month, and ICS import flows.
-- One-time tasks can now keep an end date so a single task spans multiple days in the planner.
-- ICS import now converts multi-day all-day calendar events into planner tasks instead of skipping them.
+- Added one-time task end-date support so a single task can span multiple planner days.
+- Added ICS import handling for multi-day all-day events instead of skipping them.
 
-## v1.12.1 - 2026-04-28
+## Version 1.12.1
+Update Date: 2026-04-28
 
+### Improvements
 - Improved ICS import feedback so skipped unsupported calendar entries are reported more clearly.
-- Clarified public release messaging around early ICS import behavior.
+- Updated public release messaging around early ICS import behavior.
 
-## v1.12.0 - 2026-04-28
+## Version 1.12.0
+Update Date: 2026-04-28
 
-- Added `.ics` calendar import on Today so exported events can become planner tasks in one step.
-- Imported calendar tasks now keep titles, notes, locations, all-day dates, same-day times, and supported daily, weekly, monthly, or yearly repeat rules.
-- Import results now report when unsupported calendar entries were skipped.
+### New Features
+- Added `.ics` calendar import to Today so exported events can become planner tasks in one step.
 
-## v1.11.2 - 2026-04-27
+### Improvements
+- Improved imported task fidelity by keeping titles, notes, locations, all-day dates, same-day times, and supported repeat rules.
+- Updated import results so skipped unsupported entries are reported after each file.
 
+## Version 1.11.2
+Update Date: 2026-04-27
+
+### New Features
+- Added a recurring-task delete choice so Today and Week can remove one occurrence or an entire series from the shared task editor.
+
+### Improvements
+- Updated task editor wording so edit submissions use `Save` instead of looking like task completion.
+
+### Bug Fixes
 - Fixed one-time task completion handling so completed tasks leave active planner views consistently.
-- Added a recurring-task delete choice so Today and Week can remove only one occurrence or the full series from the same task editor flow.
-- Clarified the task editor action wording so edit saves use `Save` instead of looking like task completion.
 
-## v1.11.1 - 2026-04-27
+## Version 1.11.1
+Update Date: 2026-04-27
 
-- Improved recurring task edit stability for single-day changes in the planner.
-- Cleaned up the Week calendar event renderer for a more reliable production build.
+### Improvements
+- Improved recurring-task edit stability for single-day changes in the planner.
+- Improved the Week calendar event renderer for a more reliable production build.
 
-## v1.11.0 - 2026-04-27
+## Version 1.11.0
+Update Date: 2026-04-27
 
-- Folded the Today productivity section by default so the page stays lighter until you choose to open the full stats and chart view.
-- Added a quick Today productivity pitch with a one-click `View Stats and Visualization` action.
-- Kept the selected-day, 7-day, 30-day, and 7-day chart insights available on demand.
+### New Features
+- Added a compact Today productivity summary with a one-click `View Stats and Visualization` action.
 
-## v1.10.1 - 2026-04-27
+### Improvements
+- Improved Today page focus by folding the full productivity section by default.
+- Updated insights access so selected-day, 7-day, 30-day, and 7-day chart views remain available on demand.
 
-- Replaced the old completed-history block on Today with a clearer 7-day productivity chart.
-- Kept the selected-day, 7-day, and 30-day completion summaries while making progress easier to scan at a glance.
-- Removed extra Week header hint labels for a cleaner calendar header.
-- Simplified public update notes so the Updates center focuses on product changes instead of internal implementation details.
+## Version 1.10.1
+Update Date: 2026-04-27
 
-## v1.10.0 - 2026-04-27
+### Improvements
+- Improved Today analytics by replacing the old completed-history block with a clearer 7-day productivity chart.
+- Improved scanability while keeping selected-day, 7-day, and 30-day completion summaries visible.
+- Updated the Week header to remove extra hint labels for a cleaner calendar view.
+- Updated the Updates center so release notes focus on product changes instead of internal implementation details.
 
-- Added admin review mode in the Help Center so admins can review and remove submitted questions while each standard user only sees their own questions.
-- Improved Week performance by generating repeating events only for the visible date range.
-- Completed tasks now leave active Today, Week, Month, and reminder flows immediately after completion.
+## Version 1.10.0
+Update Date: 2026-04-27
+
+### New Features
+- Added admin review mode in the Help Center so admins can review and remove submitted questions.
 - Added Today productivity summaries for the selected day, the last 7 days, and the last 30 days.
-- Kept completed task data available for 30 days before automatic cleanup.
 
-## v1.9.2 - 2026-04-27
+### Improvements
+- Improved Week performance by generating repeating events only for the visible date range.
+- Updated completion retention so finished task data stays available for 30 days before automatic cleanup.
 
-- Each Help Center question now saves as its own post instead of overwriting an older one.
-- Failed help-question submissions now keep the draft visible and show an error message.
+### Bug Fixes
+- Fixed completed-task handling so finished tasks leave active Today, Week, Month, and reminder flows immediately.
+
+## Version 1.9.2
+Update Date: 2026-04-27
+
+### Improvements
+- Improved help-question persistence so each submission saves as its own post instead of overwriting older content.
+
+### Bug Fixes
+- Fixed failed help-question submissions so the draft remains visible and an error message is shown.
 - Fixed Week calendar timing for one-day repeating-task overrides.
 
-## v1.9.1 - 2026-04-27
+## Version 1.9.1
+Update Date: 2026-04-27
 
-- Hid the mobile bottom navigation while add-task and edit-task dialogs are open.
-- Restored the mobile bottom navigation automatically after the task dialog closes.
+### Improvements
+- Improved mobile task editing focus by hiding the bottom navigation while add-task and edit-task dialogs are open.
+- Updated dialog-close behavior so mobile navigation returns automatically after the task window closes.
 
-## v1.9.0 - 2026-04-26
+## Version 1.9.0
+Update Date: 2026-04-26
 
-- Changed Week to open in Time Grid by default.
-- Removed the global `Add Task` button from the mobile Week page and replaced it with press-hold time-range task creation.
-- Simplified Month into a cleaner card-based task grid and restored `Jump to Current Month`.
-- Kept the mobile bottom navigation above overlapping planner content so taps stay reliable.
+### New Features
+- Added press-hold time-range task creation to the mobile Week page.
+- Added a refreshed Month card grid with `Jump to Current Month`.
 
-## v1.8.0 - 2026-04-26
+### Improvements
+- Updated Week to open in Time Grid by default.
+- Updated the mobile Week layout by replacing the global `Add Task` button with direct calendar range creation.
+- Improved mobile navigation layering so bottom-nav taps stay reliable above planner content.
 
-- Browser notifications now ask for permission only after user interaction.
-- Daily and task reminders now tolerate timer drift more reliably.
-- Old notification history now clears automatically after three days.
+## Version 1.8.0
+Update Date: 2026-04-26
 
-## v1.7.2 - 2026-04-25
+### Improvements
+- Improved browser notification permissions so prompts appear only after user interaction.
+- Improved reminder scheduling reliability by tolerating timer drift more consistently.
+- Updated notification retention so older history clears automatically after three days.
 
-- Adjusted the repeat selector spacing so the `Repeat` label no longer clips below the dialog header.
+## Version 1.7.2
+Update Date: 2026-04-25
 
-## v1.7.1 - 2026-04-25
+### Bug Fixes
+- Fixed repeat selector spacing so the `Repeat` label no longer clips below the dialog header.
 
-- Matched the repeat-options dialog to the main task editor size.
-- Changed the repeat-options dialog to full-screen on phones.
+## Version 1.7.1
+Update Date: 2026-04-25
 
-## v1.7.0 - 2026-04-25
+### Improvements
+- Improved the repeat-options dialog size so it matches the main task editor on desktop.
+- Updated the repeat-options dialog to open full-screen on phones.
 
-- Replaced the old task-type flow with a begin-date and repeat-options flow.
+## Version 1.7.0
+Update Date: 2026-04-25
+
+### New Features
 - Added daily, weekly, monthly, and yearly repeat rules.
 - Added repeating-task edit choices for one occurrence or the full series.
-- Kept older task data compatible with the new recurrence system.
 
-## v1.6.1 - 2026-04-25
+### Improvements
+- Updated the task creation flow to use a begin-date and repeat-options model.
+- Improved backward compatibility so older task data continues to work with the new recurrence system.
 
-- Improved mobile Week swipe stability so one swipe only moves one page at a time.
+## Version 1.6.1
+Update Date: 2026-04-25
 
-## v1.6.0 - 2026-04-25
+### Bug Fixes
+- Fixed mobile Week swipe handling so a single swipe moves only one page at a time.
 
-- Changed mobile Week into a horizontal paged layout that shows 4 days first and then the remaining 3 days.
+## Version 1.6.0
+Update Date: 2026-04-25
+
+### New Features
+- Added a horizontal mobile Week layout that shows four days first and then the remaining three days.
 - Added an `EN` / `中文` language switch to the login and registration screen.
 
-## v1.5.1 - 2026-04-24
+## Version 1.5.1
+Update Date: 2026-04-24
 
-- Repeated task, reminder, and help-question submissions no longer create duplicates.
-- Failed task and reminder saves now reload stored data instead of leaving unsynced local state on screen.
+### Improvements
+- Improved save idempotency so repeated task, reminder, and help-question submissions no longer create duplicates.
 
-## v1.5.0 - 2026-04-22
+### Bug Fixes
+- Fixed failed task and reminder saves so persisted data reloads instead of leaving unsynced local state on screen.
 
+## Version 1.5.0
+Update Date: 2026-04-22
+
+### New Features
 - Added a responsive app shell with a desktop sidebar and mobile bottom navigation.
-- Changed Task and Reminder dialogs to full-screen on phones and centered modals on larger screens.
 
-## v1.4.0 - 2026-04-20
+### Improvements
+- Updated task and reminder dialogs to open full-screen on phones and as centered modals on larger screens.
 
+## Version 1.4.0
+Update Date: 2026-04-20
+
+### New Features
 - Added the Help Center with usage steps, FAQ content, and a shared question board.
 - Added Week-to-Today date jumps and blank-slot date prefilling for new tasks.
 
-## v1.3.1 - 2026-04-20
+## Version 1.3.1
+Update Date: 2026-04-20
 
-- Changed the month-view past-day marker to a red check mark.
+### Improvements
+- Updated the Month view past-day marker to use a red check mark.
 
-## v1.3.0 - 2026-04-20
+## Version 1.3.0
+Update Date: 2026-04-20
 
-- Expanded translations across Today, Week, Month, and Reminder flows.
-- Prevented timed tasks without an end time from spilling into the next day.
-- Improved overlapping task layout in the week time grid.
+### New Features
 - Added end-time validation for task editing.
 - Added the in-app Updates popup and release history drawer.
+
+### Improvements
+- Improved translations across Today, Week, Month, and Reminder flows.
+- Improved overlapping task layout in the Week time grid.
+
+### Bug Fixes
+- Fixed timed tasks without an end time so they no longer spill into the next day.

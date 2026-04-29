@@ -8,6 +8,36 @@ type Props = {
   username: string;
 };
 
+type ReleaseSectionKey = "features" | "improvements" | "fixes";
+
+const RELEASE_SECTION_ORDER: ReleaseSectionKey[] = ["features", "improvements", "fixes"];
+
+function classifyReleaseChange(item: string): ReleaseSectionKey {
+  if (/^(Added|Expanded)\b/.test(item)) {
+    return "features";
+  }
+
+  if (/^(Fixed|Prevented)\b/.test(item)) {
+    return "fixes";
+  }
+
+  return "improvements";
+}
+
+function groupReleaseChanges(items: string[]) {
+  const grouped: Record<ReleaseSectionKey, string[]> = {
+    features: [],
+    improvements: [],
+    fixes: [],
+  };
+
+  items.forEach((item) => {
+    grouped[classifyReleaseChange(item)].push(item);
+  });
+
+  return RELEASE_SECTION_ORDER.map((key) => ({ key, items: grouped[key] })).filter((section) => section.items.length > 0);
+}
+
 export function ReleaseNotesCenter(props: Props) {
   const { t, i18n } = useTranslation();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -15,6 +45,12 @@ export function ReleaseNotesCenter(props: Props) {
   const currentLanguage = i18n.resolvedLanguage?.startsWith("zh") ? "zh" : "en";
   const latestRelease = RELEASE_NOTES[0];
   const seenKey = useMemo(() => getReleaseNotesSeenKey(props.username), [props.username]);
+  const groupedLatestChanges = latestRelease ? groupReleaseChanges(latestRelease.changes[currentLanguage]) : [];
+  const sectionLabels: Record<ReleaseSectionKey, string> = {
+    features: t("release.sections.features"),
+    improvements: t("release.sections.improvements"),
+    fixes: t("release.sections.fixes"),
+  };
 
   // 1. Extract the check into a reusable function
   const checkSeenState = () => {
@@ -82,11 +118,18 @@ export function ReleaseNotesCenter(props: Props) {
 
               <Typography variant="body1">{latestRelease.summary[currentLanguage]}</Typography>
 
-              <Stack spacing={1}>
-                {latestRelease.changes[currentLanguage].map((item) => (
-                  <Typography key={item} variant="body2">
-                    • {item}
-                  </Typography>
+              <Stack spacing={1.5}>
+                {groupedLatestChanges.map((section) => (
+                  <Stack key={section.key} spacing={0.75}>
+                    <Typography variant="subtitle2" fontWeight="bold">
+                      {sectionLabels[section.key]}
+                    </Typography>
+                    {section.items.map((item) => (
+                      <Typography key={item} variant="body2">
+                        • {item}
+                      </Typography>
+                    ))}
+                  </Stack>
                 ))}
               </Stack>
             </Stack>
@@ -117,11 +160,18 @@ export function ReleaseNotesCenter(props: Props) {
                   {t("release.releasedOn", { date: formatDate(note.releasedAt) })}
                 </Typography>
                 <Typography variant="body2" sx={{ mb: 1.5 }}>{note.summary[currentLanguage]}</Typography>
-                <Stack spacing={0.75}>
-                  {note.changes[currentLanguage].map((item) => (
-                    <Typography key={item} variant="body2">
-                      • {item}
-                    </Typography>
+                <Stack spacing={1.25}>
+                  {groupReleaseChanges(note.changes[currentLanguage]).map((section) => (
+                    <Stack key={`${note.id}-${section.key}`} spacing={0.75}>
+                      <Typography variant="subtitle2" fontWeight="bold">
+                        {sectionLabels[section.key]}
+                      </Typography>
+                      {section.items.map((item) => (
+                        <Typography key={item} variant="body2">
+                          • {item}
+                        </Typography>
+                      ))}
+                    </Stack>
                   ))}
                 </Stack>
               </Box>

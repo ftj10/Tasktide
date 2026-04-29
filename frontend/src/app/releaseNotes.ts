@@ -14,6 +14,31 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-04-29-categorized-release-notes",
+    version: "v1.15.1",
+    releasedAt: "2026-04-29",
+    title: {
+      en: "Categorized release notes",
+      zh: "分类版本说明"
+    },
+    summary: {
+      en: "The release history now follows a clearer product-update format with grouped sections for new features, improvements, and bug fixes.",
+      zh: "版本历史现在采用更清晰的产品更新格式，并按新功能、改进与问题修复分组展示。"
+    },
+    changes: {
+      en: [
+        "Updated the release history so each entry uses a clearer product-announcement structure.",
+        "Improved the in-app Updates center so changes are grouped under category headings instead of one flat list.",
+        "Updated repository documentation so the public release notes and in-app release history stay aligned."
+      ],
+      zh: [
+        "更新版本历史，让每条记录都使用更清晰的产品公告结构。",
+        "改进应用内更新中心，让变更内容按分类标题分组展示，而不是平铺在一个列表中。",
+        "更新仓库文档，让公开版本说明与应用内版本历史保持一致。"
+      ]
+    }
+  },
+  {
     id: "2026-04-29-help-center-notification-recovery",
     version: "v1.15.0",
     releasedAt: "2026-04-29",

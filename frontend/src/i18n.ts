@@ -163,7 +163,12 @@ const resources = {
         historyTitle: "Release History",
         viewHistory: "View History",
         latestBadge: "Latest",
-        releasedOn: "Released {{date}}"
+        releasedOn: "Released {{date}}",
+        sections: {
+          features: "New Features",
+          improvements: "Improvements",
+          fixes: "Bug Fixes"
+        }
       },
       help: {
         title: "Help Center",
@@ -471,7 +476,12 @@ const resources = {
         historyTitle: "更新历史",
         viewHistory: "查看历史",
         latestBadge: "最新",
-        releasedOn: "发布时间 {{date}}"
+        releasedOn: "发布时间 {{date}}",
+        sections: {
+          features: "新功能",
+          improvements: "改进",
+          fixes: "问题修复"
+        }
       },
       help: {
         title: "帮助中心",
