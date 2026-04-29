@@ -1,5 +1,10 @@
 # Release Notes
 
+## v1.15.0 - 2026-04-29
+
+- Added a Help Center notification-recovery pitch for VAPID key changes and stale push subscriptions.
+- Clarified the in-app recovery steps for deleting old subscriptions and re-enabling notifications on each device.
+
 ## v1.14.1 - 2026-04-29
 
 - Fixed Today so moving a one-time task to tomorrow from a viewed future date no longer skips an extra day.

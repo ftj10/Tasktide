@@ -53,6 +53,10 @@ describe("HelpPage behavior", () => {
 
     renderWithProviders(<HelpPage />);
 
+    expect(screen.getByText("Notifications stopped after a key change?")).toBeInTheDocument();
+    expect(
+      screen.getByText(/delete the old stored push subscriptions/i)
+    ).toBeInTheDocument();
     expect(await screen.findByText("My Questions")).toBeInTheDocument();
     expect(await screen.findByText("How do I move a task?")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Delete" })).not.toBeInTheDocument();

@@ -14,6 +14,31 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-04-29-help-center-notification-recovery",
+    version: "v1.15.0",
+    releasedAt: "2026-04-29",
+    title: {
+      en: "Help Center notification recovery pitch",
+      zh: "帮助中心通知恢复提示"
+    },
+    summary: {
+      en: "The Help Center now explains how to recover push notifications after VAPID key changes or stale device subscriptions.",
+      zh: "帮助中心现在会说明在 VAPID 密钥变更或设备订阅失效后，如何恢复推送通知。"
+    },
+    changes: {
+      en: [
+        "Added a Help Center pitch that explains the recovery flow after push-key changes.",
+        "Explained that old stored subscriptions should be cleared before devices subscribe again.",
+        "Clarified that each browser or installed phone app must re-enable notifications to create a fresh subscription."
+      ],
+      zh: [
+        "在帮助中心新增推送密钥变更后的恢复说明提示。",
+        "说明设备重新订阅前，应先清除数据库中的旧订阅记录。",
+        "补充说明每个浏览器或已安装的手机网页应用都需要重新允许通知，才能创建新的订阅。"
+      ]
+    }
+  },
+  {
     id: "2026-04-29-today-move-tomorrow-date-fix",
     version: "v1.14.1",
     releasedAt: "2026-04-29",

@@ -24,6 +24,7 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import MenuBookRoundedIcon from "@mui/icons-material/MenuBookRounded";
 import QuestionAnswerRoundedIcon from "@mui/icons-material/QuestionAnswerRounded";
 import ForumRoundedIcon from "@mui/icons-material/ForumRounded";
+import NotificationsActiveOutlinedIcon from "@mui/icons-material/NotificationsActiveOutlined";
 import { useTranslation } from "react-i18next";
 
 import type { HelpQuestion } from "../types";
@@ -203,6 +204,18 @@ export function HelpPage() {
         <Card>
           <CardContent>
             {sectionHeader(<MenuBookRoundedIcon />, t("help.guides.title"), "#4f46e5")}
+            <Alert
+              severity="info"
+              sx={{ mb: 2, borderRadius: 2.5, alignItems: "flex-start" }}
+              icon={<NotificationsActiveOutlinedIcon fontSize="inherit" />}
+            >
+              <Typography fontWeight={700} sx={{ mb: 0.5 }}>
+                {t("help.notificationsPitch.title")}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {t("help.notificationsPitch.body")}
+              </Typography>
+            </Alert>
             <Stack spacing={1.25}>
               {guideSteps.map((step, index) => (
                 <Stack key={step} direction="row" spacing={1.5} alignItems="flex-start">

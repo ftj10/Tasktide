@@ -1,6 +1,6 @@
 # Weekly To-Do Application
 
-Current version: `v1.14.1`
+Current version: `v1.15.0`
 
 Weekly To-Do is a full-stack planner for daily tasks, weekly routines, reminders, shared help questions, and calendar-based scheduling.
 
@@ -29,6 +29,7 @@ Deployed Web: [website](https://todo-cfun.onrender.com/)
 - Month view now uses the refreshed card-based calendar UI, keeps desktop previous and next arrow controls, keeps mobile vertical swipe navigation between months, and includes a `Jump to Current Month` button.
 - Reminder tracking with priority ordering and completion flow.
 - Role-based help center with FAQ content, append-only user questions, admin-wide review access, and admin-only question deletion.
+- Help Center now includes a notification-recovery pitch that explains how to recover after VAPID key changes by clearing old subscriptions and re-enabling notifications on each device.
 - Help-question posting now keeps the draft visible if the request fails instead of showing a false success state.
 - Week view now respects one-day recurring-task time overrides when placing events on the calendar.
 - Week view now generates recurring events only for the visible range and reuses cached occurrence windows for repeated range renders.

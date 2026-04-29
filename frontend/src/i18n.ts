@@ -171,6 +171,10 @@ const resources = {
         subtitleAdmin: "Learn how to use the planner, check common answers, and review every submitted help question.",
         submitSuccess: "Your question has been saved.",
         submitError: "We couldn't post your question. Your draft is still here.",
+        notificationsPitch: {
+          title: "Notifications stopped after a key change?",
+          body: "Keep one final VAPID keypair on the backend, delete the old stored push subscriptions, then open the app again on each device and allow notifications so each browser or installed phone app creates a fresh subscription with the current backend public key."
+        },
         guides: {
           title: "How To Use This Website",
           step0: "Use the EN / 中文 button on the login page whenever you want to switch the sign-in flow between English and Chinese before entering the app.",
@@ -475,6 +479,10 @@ const resources = {
         subtitleAdmin: "了解如何使用这个计划工具、查看常见问答，并查看所有用户提交的问题。",
         submitSuccess: "你的问题已保存。",
         submitError: "问题发布失败，草稿会保留在输入框中。",
+        notificationsPitch: {
+          title: "改了密钥后通知失效了？",
+          body: "先在后端固定使用最终版 VAPID 密钥对，再删除数据库里旧的推送订阅，然后分别在每台设备上重新打开应用并允许通知，让每个浏览器或已安装的手机网页应用都用当前后端公钥重新创建订阅。"
+        },
         guides: {
           title: "网站使用说明",
           step0: "如果你想在登录前切换语言，可以先使用登录页上的 EN / 中文 按钮，在英文和中文之间切换认证界面。",
