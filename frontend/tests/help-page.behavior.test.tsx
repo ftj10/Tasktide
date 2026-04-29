@@ -53,6 +53,7 @@ describe("HelpPage behavior", () => {
 
     renderWithProviders(<HelpPage />);
 
+    expect(screen.getByRole("button", { name: /How do I add a task\?/i })).toBeInTheDocument();
     expect(screen.getByText("Notifications stopped after a key change?")).toBeInTheDocument();
     expect(
       screen.getByText(/delete the old stored push subscriptions/i)
@@ -68,6 +69,23 @@ describe("HelpPage behavior", () => {
     });
     expect(screen.getByText("Can I sort tasks by time?")).toBeInTheDocument();
     expect(storageMocks.loadHelpQuestions).toHaveBeenCalledTimes(1);
+  });
+
+  it("opens a walkthrough modal when a help question is selected", async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(<HelpPage />);
+
+    await user.click(screen.getByRole("button", { name: /How does drag to add work\?/i }));
+
+    expect(await screen.findByRole("dialog", { name: "How does drag to add work?" })).toBeInTheDocument();
+    expect(screen.getByText("Start dragging")).toBeInTheDocument();
+    expect(screen.getByText("Press and hold a time slot in Week.")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Next" }));
+
+    expect(screen.getByText("Release to create")).toBeInTheDocument();
+    expect(screen.getByText("Let go to create the task.")).toBeInTheDocument();
   });
 
   it("keeps the draft when posting a question fails", async () => {

@@ -1,6 +1,25 @@
 # Release Notes
 
-## Version 1.15.1
+## Version 1.16.1
+Update Date: 2026-04-29
+
+### Improvements
+- Updated release-history numbering so the Help Center notification recovery pitch and categorized release notes remain in the `1.14.x` series.
+- Updated release-history numbering so onboarding and help walkthroughs now ship under `1.15.0`.
+- Updated repository and in-app release metadata so version labels stay aligned across the app and documentation.
+
+## Version 1.15.0
+Update Date: 2026-04-29
+
+### New Features
+- Added a first-run onboarding tooltip flow that highlights task creation, the Today task area, and the Week planner.
+- Added `Quick Walkthroughs` in the Help Center with short modal guides for adding tasks, finding saved tasks, opening Week, and using drag-to-add.
+
+### Improvements
+- Improved feature discovery with direct `Help Center` entry points from the Week page into the drag-to-add walkthrough.
+- Updated in-app help content and repository documentation so activation guidance now matches the shipped onboarding flow.
+
+## Version 1.14.3
 Update Date: 2026-04-29
 
 ### Improvements
@@ -8,7 +27,7 @@ Update Date: 2026-04-29
 - Improved the in-app Updates center so each release now appears under clear `New Features`, `Improvements`, and `Bug Fixes` headings.
 - Updated repository documentation so the public release history and in-app release notes stay aligned.
 
-## Version 1.15.0
+## Version 1.14.2
 Update Date: 2026-04-29
 
 ### New Features

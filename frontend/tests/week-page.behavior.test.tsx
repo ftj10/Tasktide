@@ -178,6 +178,16 @@ describe("WeekPage behavior", () => {
     expect(navigateMock).toHaveBeenCalledWith("/?date=2026-04-22");
   });
 
+  it("opens the help walkthrough from the week header", async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(<WeekPage tasks={[]} setTasks={vi.fn()} />);
+
+    await user.click(screen.getByRole("button", { name: "Help Center" }));
+
+    expect(navigateMock).toHaveBeenCalledWith("/help?topic=drag-to-add");
+  });
+
   it("uses the clicked blank week date as the default date for a new task", async () => {
     const user = userEvent.setup();
     const setTasks = vi.fn();

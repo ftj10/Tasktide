@@ -26,13 +26,17 @@ import QuestionAnswerRoundedIcon from "@mui/icons-material/QuestionAnswerRounded
 import ForumRoundedIcon from "@mui/icons-material/ForumRounded";
 import NotificationsActiveOutlinedIcon from "@mui/icons-material/NotificationsActiveOutlined";
 import { useTranslation } from "react-i18next";
+import { useSearchParams } from "react-router-dom";
 
 import type { HelpQuestion } from "../types";
 import { ConfirmDeleteDialog } from "../components/ConfirmDeleteDialog";
+import { HelpWalkthroughModal } from "../components/HelpWalkthroughModal";
+import { getHelpCenterData } from "../app/helpCenter";
 import { createHelpQuestion, deleteHelpQuestion, isAdminUser, loadHelpQuestions } from "../app/storage";
 
 export function HelpPage() {
   const { t, i18n } = useTranslation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [questions, setQuestions] = useState<HelpQuestion[]>([]);
   const [draftQuestion, setDraftQuestion] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -45,6 +49,11 @@ export function HelpPage() {
   const [deleteTarget, setDeleteTarget] = useState<HelpQuestion | undefined>();
   const currentLanguage = i18n.resolvedLanguage?.startsWith("zh") ? "zh" : "en";
   const isAdmin = isAdminUser();
+  const helpCenterData = useMemo(() => getHelpCenterData(t), [t]);
+  const [selectedWalkthroughId, setSelectedWalkthroughId] = useState<string | null>(
+    searchParams.get("topic")
+  );
+  const selectedWalkthrough = helpCenterData.find((item) => item.id === selectedWalkthroughId) ?? null;
 
   const guideSteps = useMemo(
     () => [
@@ -76,6 +85,17 @@ export function HelpPage() {
     ],
     [t]
   );
+
+  useEffect(() => {
+    const topic = searchParams.get("topic");
+    if (!topic) {
+      setSelectedWalkthroughId(null);
+      return;
+    }
+    if (helpCenterData.some((item) => item.id === topic)) {
+      setSelectedWalkthroughId(topic);
+    }
+  }, [helpCenterData, searchParams]);
 
   useEffect(() => {
     async function fetchQuestions() {
@@ -247,6 +267,38 @@ export function HelpPage() {
 
         <Card>
           <CardContent>
+            {sectionHeader(<QuestionAnswerRoundedIcon />, t("help.walkthroughs.title"), "#2563eb")}
+            <Stack spacing={1}>
+              {helpCenterData.map((item) => (
+                <Button
+                  key={item.id}
+                  variant="outlined"
+                  onClick={() => {
+                    setSelectedWalkthroughId(item.id);
+                    setSearchParams({ topic: item.id });
+                  }}
+                  sx={{
+                    justifyContent: "space-between",
+                    borderRadius: 2.5,
+                    px: 2,
+                    py: 1.5,
+                    textTransform: "none",
+                  }}
+                >
+                  <Typography fontWeight={700} textAlign="left">
+                    {item.question}
+                  </Typography>
+                  <Typography variant="caption" color="primary.main" fontWeight={800}>
+                    {t("help.walkthroughs.open")}
+                  </Typography>
+                </Button>
+              ))}
+            </Stack>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent>
             {sectionHeader(<QuestionAnswerRoundedIcon />, t("help.faq.title"), "#0ea5e9")}
             <Stack spacing={0.75}>
               {faqItems.map((item) => (
@@ -382,6 +434,14 @@ export function HelpPage() {
           if (!isDeleting) setDeleteTarget(undefined);
         }}
         onConfirm={() => void handleDeleteQuestion()}
+      />
+      <HelpWalkthroughModal
+        item={selectedWalkthrough}
+        open={!!selectedWalkthrough}
+        onClose={() => {
+          setSelectedWalkthroughId(null);
+          setSearchParams({});
+        }}
       />
     </Box>
   );

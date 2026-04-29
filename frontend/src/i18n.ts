@@ -17,6 +17,7 @@ const resources = {
         close: "Close",
         delete: "Delete",
         done: "Done",
+        next: "Next",
         undo: "Undo",
         save: "Save",
         add: "Add",
@@ -174,11 +175,39 @@ const resources = {
         title: "Help Center",
         subtitleUser: "Learn how to use the planner, check common answers, and send a question to the admin review board.",
         subtitleAdmin: "Learn how to use the planner, check common answers, and review every submitted help question.",
+        previous: "Back",
+        walkthroughStep: "Step {{current}} / {{total}}",
         submitSuccess: "Your question has been saved.",
         submitError: "We couldn't post your question. Your draft is still here.",
         notificationsPitch: {
           title: "Notifications stopped after a key change?",
           body: "Keep one final VAPID keypair on the backend, delete the old stored push subscriptions, then open the app again on each device and allow notifications so each browser or installed phone app creates a fresh subscription with the current backend public key."
+        },
+        walkthroughs: {
+          title: "Quick Walkthroughs",
+          open: "Open",
+          addTask: {
+            question: "How do I add a task?",
+            title: "Add a task",
+            text: "Tap Add Task and type your task."
+          },
+          dragToAdd: {
+            question: "How does drag to add work?",
+            step1Title: "Start dragging",
+            step1Text: "Press and hold a time slot in Week.",
+            step2Title: "Release to create",
+            step2Text: "Let go to create the task."
+          },
+          findTasks: {
+            question: "Where do my tasks appear?",
+            title: "Check your task list",
+            text: "Your saved tasks appear in the Today list."
+          },
+          openWeek: {
+            question: "How do I open Week view?",
+            title: "Open Week view",
+            text: "Tap Week to plan tasks by time."
+          }
         },
         guides: {
           title: "How To Use This Website",
@@ -316,6 +345,16 @@ const resources = {
           apple: "Apple Maps",
           baidu: "Baidu Maps"
         }
+      },
+      onboarding: {
+        title: "Quick tour",
+        skip: "Skip",
+        done: "Done",
+        steps: {
+          addTask: "Tap here to add a task.",
+          taskList: "Your tasks appear here after you save.",
+          weekView: "Open Week to plan tasks by time."
+        }
       }
     }
   },
@@ -330,6 +369,7 @@ const resources = {
         close: "关闭",
         delete: "删除",
         done: "完成",
+        next: "下一步",
         undo: "撤销",
         save: "保存",
         add: "添加",
@@ -487,11 +527,39 @@ const resources = {
         title: "帮助中心",
         subtitleUser: "了解如何使用这个计划工具、查看常见问答，并把问题提交到管理员审核列表。",
         subtitleAdmin: "了解如何使用这个计划工具、查看常见问答，并查看所有用户提交的问题。",
+        previous: "上一步",
+        walkthroughStep: "步骤 {{current}} / {{total}}",
         submitSuccess: "你的问题已保存。",
         submitError: "问题发布失败，草稿会保留在输入框中。",
         notificationsPitch: {
           title: "改了密钥后通知失效了？",
           body: "先在后端固定使用最终版 VAPID 密钥对，再删除数据库里旧的推送订阅，然后分别在每台设备上重新打开应用并允许通知，让每个浏览器或已安装的手机网页应用都用当前后端公钥重新创建订阅。"
+        },
+        walkthroughs: {
+          title: "快捷演示",
+          open: "打开",
+          addTask: {
+            question: "怎么添加任务？",
+            title: "添加任务",
+            text: "点击添加任务，然后输入内容。"
+          },
+          dragToAdd: {
+            question: "拖动创建任务怎么用？",
+            step1Title: "开始拖动",
+            step1Text: "在 Week 的时间格上长按并开始拖动。",
+            step2Title: "松开创建",
+            step2Text: "松开后就会创建任务。"
+          },
+          findTasks: {
+            question: "任务会显示在哪里？",
+            title: "查看任务列表",
+            text: "保存后的任务会显示在 Today 列表中。"
+          },
+          openWeek: {
+            question: "怎么打开周视图？",
+            title: "打开周视图",
+            text: "点击 Week 即可按时间安排任务。"
+          }
         },
         guides: {
           title: "网站使用说明",
@@ -628,6 +696,16 @@ const resources = {
           google: "谷歌地图",
           apple: "苹果地图",
           baidu: "百度地图"
+        }
+      },
+      onboarding: {
+        title: "快速引导",
+        skip: "跳过",
+        done: "完成",
+        steps: {
+          addTask: "点这里添加任务。",
+          taskList: "保存后，任务会显示在这里。",
+          weekView: "打开 Week 按时间安排任务。"
         }
       }
     }

@@ -33,8 +33,20 @@ describe("ReleaseNotesCenter behavior", () => {
   it("shows the latest shipped version in the update dialog", () => {
     renderWithProviders(<ReleaseNotesCenter username="tom" />);
 
-    expect(screen.getByText("v1.15.1")).toBeInTheDocument();
+    expect(screen.getByText("v1.16.1")).toBeInTheDocument();
     expect(screen.getByText("Improvements")).toBeInTheDocument();
+  });
+
+  it("keeps onboarding and help walkthroughs in the 1.15 release series", async () => {
+    const user = userEvent.setup();
+    localStorage.setItem("release-notes-seen:tom", LATEST_RELEASE_ID);
+
+    renderWithProviders(<ReleaseNotesCenter username="tom" />);
+
+    await user.click(screen.getByRole("button", { name: "Updates" }));
+
+    expect(screen.getByText("v1.15.0")).toBeInTheDocument();
+    expect(screen.getByText("Onboarding and help walkthroughs")).toBeInTheDocument();
   });
 
   it("opens the history drawer from the toolbar button", async () => {

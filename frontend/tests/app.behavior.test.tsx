@@ -81,6 +81,28 @@ describe("App behavior", () => {
     });
   });
 
+  it("shows onboarding once and stores completion after the user finishes it", async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(<App />);
+
+    expect(await screen.findByRole("dialog", { name: "Quick tour" })).toBeInTheDocument();
+    expect(screen.getByText("Tap here to add a task.")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Next" }));
+    expect(screen.getByText("Your tasks appear here after you save.")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Next" }));
+    expect(screen.getByText("Open Week to plan tasks by time.")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Done" }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog", { name: "Quick tour" })).not.toBeInTheDocument();
+    });
+    expect(localStorage.getItem("weekly-todo:onboarding:v1.16.0")).toBe("done");
+  });
+
   it("renders mobile bottom navigation on small screens", async () => {
     setScreenWidth(390);
 

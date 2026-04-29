@@ -66,6 +66,8 @@ import { ReminderPage } from "./pages/ReminderPage";
 import { MonthPage } from "./pages/MonthPage";
 import { ReleaseNotesCenter } from "./components/ReleaseNotesCenter";
 import { HelpPage } from "./pages/HelpPage";
+import { OnboardingTooltip } from "./components/OnboardingTooltip";
+import { getOnboardingSteps, ONBOARDING_STORAGE_KEY } from "./app/helpCenter";
 
 function areRemindersEqual(source: Reminder, target: Reminder) {
   return (
@@ -96,6 +98,7 @@ export default function App() {
   const currentLanguage = i18n.resolvedLanguage?.startsWith("zh") ? "zh" : "en";
   const mobileNavZIndex = 1700;
   const canUseBackgroundPush = supportsPushNotifications();
+  const onboardingSteps = getOnboardingSteps(t);
 
   async function reloadTasksFromServer() {
     const serverTasks = rolloverIfNeeded(await loadTasks());
@@ -525,6 +528,7 @@ export default function App() {
                   return (
                     <Button
                       key={item.to}
+                      id={item.to === "/week" ? "nav-week-desktop" : undefined}
                       component={Link}
                       to={item.to}
                       startIcon={item.icon}
@@ -662,6 +666,7 @@ export default function App() {
           {navigationItems.map((item) => (
             <BottomNavigationAction
               key={item.to}
+              id={item.to === "/week" ? "nav-week-mobile" : undefined}
               component={Link}
               to={item.to}
               value={item.to}
@@ -676,6 +681,7 @@ export default function App() {
           ))}
         </BottomNavigation>
       </Paper>
+      <OnboardingTooltip steps={onboardingSteps} storageKey={ONBOARDING_STORAGE_KEY} />
     </Box>
   );
 }

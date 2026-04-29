@@ -14,8 +14,58 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-04-29-release-numbering-correction",
+    version: "v1.16.1",
+    releasedAt: "2026-04-29",
+    title: {
+      en: "Release numbering correction",
+      zh: "版本编号修正"
+    },
+    summary: {
+      en: "The release history now places the notification-recovery and categorized-release entries in the 1.14 series, with onboarding and help walkthroughs in 1.15.0.",
+      zh: "版本历史现在已将通知恢复与分类版本说明调整到 1.14 系列，并将新手引导与帮助演示调整到 1.15.0。"
+    },
+    changes: {
+      en: [
+        "Updated release-history numbering so the Help Center notification recovery pitch remains in the 1.14.x series.",
+        "Updated release-history numbering so categorized release notes also remain in the 1.14.x series.",
+        "Updated release-history numbering so onboarding and help walkthroughs are labeled as v1.15.0 across the app and docs."
+      ],
+      zh: [
+        "更新版本历史编号，让帮助中心通知恢复提示保持在 1.14.x 系列中。",
+        "更新版本历史编号，让分类版本说明也保持在 1.14.x 系列中。",
+        "更新版本历史编号，让新手引导与帮助演示在应用与文档中统一标记为 v1.15.0。"
+      ]
+    }
+  },
+  {
+    id: "2026-04-29-onboarding-and-help-walkthroughs",
+    version: "v1.15.0",
+    releasedAt: "2026-04-29",
+    title: {
+      en: "Onboarding and help walkthroughs",
+      zh: "新手引导与帮助演示"
+    },
+    summary: {
+      en: "New users now get a short activation flow, and the Help Center now offers focused walkthroughs for key planner actions.",
+      zh: "新用户现在会看到简短的新手引导，同时帮助中心也新增了面向关键操作的快捷演示。"
+    },
+    changes: {
+      en: [
+        "Added a first-run onboarding tooltip flow for adding a task, locating the Today task area, and opening Week view.",
+        "Added question-driven Help Center walkthroughs with short modal steps for add-task, drag-to-add, task-list, and Week-view actions.",
+        "Updated the Week page so users can jump straight into the drag-to-add walkthrough from a contextual help action."
+      ],
+      zh: [
+        "新增首次使用引导提示，帮助用户完成添加任务、定位 Today 任务区以及打开 Week 视图。",
+        "帮助中心新增按问题触发的快捷演示，通过简短弹窗步骤说明添加任务、拖动创建任务、查看任务列表和打开 Week 视图。",
+        "更新 Week 页面，加入上下文帮助入口，让用户可以直接打开拖动创建任务的演示。"
+      ]
+    }
+  },
+  {
     id: "2026-04-29-categorized-release-notes",
-    version: "v1.15.1",
+    version: "v1.14.3",
     releasedAt: "2026-04-29",
     title: {
       en: "Categorized release notes",
@@ -40,7 +90,7 @@ export const RELEASE_NOTES: ReleaseNote[] = [
   },
   {
     id: "2026-04-29-help-center-notification-recovery",
-    version: "v1.15.0",
+    version: "v1.14.2",
     releasedAt: "2026-04-29",
     title: {
       en: "Help Center notification recovery pitch",

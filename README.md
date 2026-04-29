@@ -1,6 +1,6 @@
 # Weekly To-Do Application
 
-Current version: `v1.15.1`
+Current version: `v1.16.1`
 
 Weekly To-Do is a full-stack planner for daily tasks, weekly routines, reminders, shared help questions, and calendar-based scheduling.
 
@@ -15,6 +15,7 @@ Deployed Web: [website](https://todo-cfun.onrender.com/)
 - Today can now import `.ics` calendar files into planner tasks, including multi-day all-day events, timed events, and supported daily, weekly, monthly, and yearly repeats.
 - Task completion now uses retained `completedAt` timestamps: completed tasks disappear from active planner views immediately, stay retained for 30 days, and continue feeding shared completion analytics and cleanup rules.
 - Today now opens with a compact productivity pitch and expands into selected-day, 7-day, and 30-day completion statistics plus a 7-day bar chart when you choose `View Stats and Visualization`.
+- First-time users now get a three-step in-app onboarding tooltip flow that points to task creation, the Today task area, and the Week planner.
 - Single-day edits for repeating tasks now save through the shared planner collection flow more reliably.
 - Repeating tasks now use the same shared delete logic in Today and Week, including a `This day only` versus `Entire series` choice from the shared task editor.
 - Task forms now use a `Begin date` field plus a repeat-options window that supports once, daily, weekly, monthly, and yearly schedules.
@@ -29,6 +30,7 @@ Deployed Web: [website](https://todo-cfun.onrender.com/)
 - Month view now uses the refreshed card-based calendar UI, keeps desktop previous and next arrow controls, keeps mobile vertical swipe navigation between months, and includes a `Jump to Current Month` button.
 - Reminder tracking with priority ordering and completion flow.
 - Role-based help center with FAQ content, append-only user questions, admin-wide review access, and admin-only question deletion.
+- Help Center now includes `Quick Walkthroughs`: short question-driven modal guides with animated visuals for adding tasks, opening Week, finding saved tasks, and drag-to-add.
 - Help Center now includes a notification-recovery pitch that explains how to recover after VAPID key changes by clearing old subscriptions and re-enabling notifications on each device.
 - Help-question posting now keeps the draft visible if the request fails instead of showing a false success state.
 - Week view now respects one-day recurring-task time overrides when placing events on the calendar.
@@ -95,6 +97,7 @@ npm test
 - Local development can skip manual VAPID setup because the backend generates `backend/.push-vapid.json` on first use. Production should provide `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `WEB_PUSH_SUBJECT`.
 - Use `Import ICS` on the Today page when you want to bring calendar events into the planner from a `.ics` export. The importer keeps titles, notes, locations, multi-day all-day ranges, timed events, and supported daily, weekly, monthly, and yearly recurrence rules.
 - The in-app Updates center mirrors the latest shipped release metadata from `frontend/src/app/releaseNotes.ts` and groups each release under `New Features`, `Improvements`, and `Bug Fixes`.
+- First-run onboarding is stored per browser in local storage, so the tooltip guide disappears after completion or skip.
 - Shared help questions are stored as new posts on the server, so another signed-in user cannot overwrite an older question by reusing its client-side id.
 - Standard users can only read their own submitted help questions, while `ADMIN` accounts can review all questions.
 - The `My Questions` section is the normal non-admin view; it means the account is a `USER`, not an `ADMIN`.

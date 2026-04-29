@@ -625,6 +625,7 @@ export function TodayPage(props: {
               />
             </Button>
             <Button
+              id="today-add-task-button"
               variant="contained"
               startIcon={<AddRoundedIcon />}
               onClick={() => {
@@ -901,6 +902,7 @@ export function TodayPage(props: {
 
       {allDayTasks.length === 0 && timedTasks.length === 0 ? (
         <Paper
+          id="today-empty-state"
           elevation={0}
           sx={{
             mt: 4,
@@ -916,6 +918,7 @@ export function TodayPage(props: {
             {t("today.noTasks")}
           </Typography>
           <Button
+            id="today-empty-add-task-button"
             variant="contained"
             startIcon={<AddRoundedIcon />}
             onClick={() => {
@@ -929,7 +932,7 @@ export function TodayPage(props: {
           </Button>
         </Paper>
       ) : (
-        <Box>
+        <Box id="today-task-list">
           <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 1 }}>
             <Button
               size="small"

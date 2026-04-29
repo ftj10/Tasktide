@@ -21,6 +21,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
 
@@ -482,9 +483,21 @@ export function WeekPage(props: {
       >
         <Stack direction="row" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={1.5}>
           <Stack spacing={0.25}>
-            <Typography variant="h6" fontWeight={800} sx={{ fontSize: { xs: "1.05rem", sm: "1.4rem" } }}>
-              {t("week.title")}
-            </Typography>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Typography variant="h6" fontWeight={800} sx={{ fontSize: { xs: "1.05rem", sm: "1.4rem" } }}>
+                {t("week.title")}
+              </Typography>
+              <Button
+                id="week-help-button"
+                variant="text"
+                size="small"
+                startIcon={<HelpOutlineIcon />}
+                onClick={() => navigate("/help?topic=drag-to-add")}
+                sx={{ minWidth: "auto", borderRadius: 2 }}
+              >
+                {t("help.title")}
+              </Button>
+            </Stack>
           </Stack>
           {!isMobile ? (
             <Button
