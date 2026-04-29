@@ -31,13 +31,18 @@ describe("MonthPage behavior", () => {
   it("navigates to the selected day route when a calendar cell is clicked", async () => {
     const user = userEvent.setup();
     const todayDate = dayjs().format("YYYY-MM-DD");
-    const todayNumber = String(dayjs().date());
 
-    renderWithProviders(<MonthPage tasks={[]} />);
+    renderWithProviders(<MonthPage tasks={[]} />, `/?date=${todayDate}`);
 
-    await user.click(screen.getAllByText(todayNumber)[0]);
+    await user.click(screen.getByRole("button", { name: todayDate }));
 
     expect(navigateMock).toHaveBeenCalledWith(`/?date=${todayDate}`);
+  });
+
+  it("seeds the visible month from the selected route date", () => {
+    renderWithProviders(<MonthPage tasks={[]} />, "/?date=2026-03-29");
+
+    expect(screen.getByText("March 2026")).toBeInTheDocument();
   });
 
   it("renders only the month task grid without the extra header controls", () => {

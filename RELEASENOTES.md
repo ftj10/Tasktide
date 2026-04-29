@@ -1,12 +1,11 @@
 # Release Notes
 
-## Version 1.16.1
+## Version 1.15.1
 Update Date: 2026-04-29
 
-### Improvements
-- Updated release-history numbering so the Help Center notification recovery pitch and categorized release notes remain in the `1.14.x` series.
-- Updated release-history numbering so onboarding and help walkthroughs now ship under `1.15.0`.
-- Updated repository and in-app release metadata so version labels stay aligned across the app and documentation.
+### Bug Fixes
+- Fixed Month navigation so the page now opens on the month that matches the selected `?date=` route.
+- Fixed Month day-cell routing so clicking a visible day number no longer jumps to the same number from the previous month grid.
 
 ## Version 1.15.0
 Update Date: 2026-04-29

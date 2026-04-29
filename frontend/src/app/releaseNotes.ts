@@ -14,27 +14,25 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
-    id: "2026-04-29-release-numbering-correction",
-    version: "v1.16.1",
+    id: "2026-04-29-month-route-sync-fix",
+    version: "v1.15.1",
     releasedAt: "2026-04-29",
     title: {
-      en: "Release numbering correction",
-      zh: "版本编号修正"
+      en: "Month route synchronization fix",
+      zh: "Month 路由同步修复"
     },
     summary: {
-      en: "The release history now places the notification-recovery and categorized-release entries in the 1.14 series, with onboarding and help walkthroughs in 1.15.0.",
-      zh: "版本历史现在已将通知恢复与分类版本说明调整到 1.14 系列，并将新手引导与帮助演示调整到 1.15.0。"
+      en: "Month now opens on the month that matches the selected planner date so day-cell navigation stays aligned with the active route.",
+      zh: "Month 现在会打开与当前规划日期一致的月份，让日期格点击跳转始终与当前路由保持一致。"
     },
     changes: {
       en: [
-        "Updated release-history numbering so the Help Center notification recovery pitch remains in the 1.14.x series.",
-        "Updated release-history numbering so categorized release notes also remain in the 1.14.x series.",
-        "Updated release-history numbering so onboarding and help walkthroughs are labeled as v1.15.0 across the app and docs."
+        "Fixed Month so the visible calendar month now follows the selected `?date=` route.",
+        "Fixed day-cell navigation so clicking a visible day number no longer jumps to the same date number from the previous month grid."
       ],
       zh: [
-        "更新版本历史编号，让帮助中心通知恢复提示保持在 1.14.x 系列中。",
-        "更新版本历史编号，让分类版本说明也保持在 1.14.x 系列中。",
-        "更新版本历史编号，让新手引导与帮助演示在应用与文档中统一标记为 v1.15.0。"
+        "修复 Month 页面，使可见月份现在会跟随当前选中的 `?date=` 路由。",
+        "修复日期格跳转，点击可见日期数字时不再误跳到上个月网格中的同号日期。"
       ]
     }
   },

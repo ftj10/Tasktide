@@ -1,6 +1,6 @@
 # Weekly To-Do Application
 
-Current version: `v1.16.1`
+Current version: `v1.15.1`
 
 Weekly To-Do is a full-stack planner for daily tasks, weekly routines, reminders, shared help questions, and calendar-based scheduling.
 
@@ -28,6 +28,7 @@ Deployed Web: [website](https://todo-cfun.onrender.com/)
 - Repeating task edits can target either one occurrence or the full series without destroying older task data.
 - Mobile Week view opens in Time Grid by default, keeps a horizontal swipe flow that shows 4 days first and then the remaining 3 days, and creates tasks from a press-held time range instead of a global add button.
 - Month view now uses the refreshed card-based calendar UI, keeps desktop previous and next arrow controls, keeps mobile vertical swipe navigation between months, and includes a `Jump to Current Month` button.
+- Month view now opens on the month that matches the selected `?date=` route, so clicking a visible day always follows the active planner date context.
 - Reminder tracking with priority ordering and completion flow.
 - Role-based help center with FAQ content, append-only user questions, admin-wide review access, and admin-only question deletion.
 - Help Center now includes `Quick Walkthroughs`: short question-driven modal guides with animated visuals for adding tasks, opening Week, finding saved tasks, and drag-to-add.

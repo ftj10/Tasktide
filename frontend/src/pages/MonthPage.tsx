@@ -2,10 +2,10 @@
 // OUTPUT: month grid page with per-day task previews
 // EFFECT: Supports monthly schedule scanning and day-level navigation into the Today feature
 import dayjs from "dayjs";
-import { useState, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Box, Button, IconButton, Paper, Stack, Typography, useMediaQuery, useTheme } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import CheckIcon from "@mui/icons-material/Check";
 import ChevronLeftRoundedIcon from "@mui/icons-material/ChevronLeftRounded";
@@ -15,19 +15,33 @@ import type { Task } from "../types";
 import { tasksForDate } from "../app/taskLogic";
 import { ymd } from "../app/date";
 
+function resolveMonthSeed(routeDate: string | null) {
+  const parsedDate = routeDate ? dayjs(routeDate) : dayjs();
+  return parsedDate.isValid() ? parsedDate.startOf("month") : dayjs().startOf("month");
+}
+
 // INPUT: task collection
 // OUTPUT: month calendar page
 // EFFECT: Builds the month overview feature from planner tasks and retained completion-aware filtering
 export function MonthPage(props: { tasks: Task[] }) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const [currentMonth, setCurrentMonth] = useState(dayjs().startOf("month"));
+  const routeDate = searchParams.get("date");
+  const [currentMonth, setCurrentMonth] = useState(() => resolveMonthSeed(routeDate));
   const monthTouchStartXRef = useRef<number | null>(null);
   const monthTouchStartYRef = useRef<number | null>(null);
   const monthTouchCurrentXRef = useRef<number | null>(null);
   const monthTouchCurrentYRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!routeDate) return;
+    const selectedMonth = resolveMonthSeed(routeDate);
+    if (selectedMonth.isSame(currentMonth, "month")) return;
+    setCurrentMonth(selectedMonth);
+  }, [currentMonth, routeDate]);
 
   const currentLanguage = i18n.resolvedLanguage?.startsWith("zh") ? "zh" : "en";
   const monthLabel = new Intl.DateTimeFormat(currentLanguage, {
@@ -241,6 +255,9 @@ export function MonthPage(props: { tasks: Task[] }) {
               <Paper
                 key={dateStr}
                 variant="outlined"
+                aria-label={dateStr}
+                role="button"
+                tabIndex={0}
                 sx={{
                   minHeight: { xs: 78, sm: 120 },
                   p: { xs: 0.5, sm: 1 },
