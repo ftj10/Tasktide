@@ -1,6 +1,6 @@
 # Weekly To-Do Application
 
-Current version: `v1.13.1`
+Current version: `v1.14.0`
 
 Weekly To-Do is a full-stack planner for daily tasks, weekly routines, reminders, shared help questions, and calendar-based scheduling.
 
@@ -34,8 +34,10 @@ Deployed Web: [website](https://todo-cfun.onrender.com/)
 - Responsive application shell with a desktop sidebar, mobile bottom navigation, and full-screen mobile task and reminder forms.
 - The mobile bottom navigation hides automatically while add-task and edit-task dialogs are open, then returns after the task dialog closes.
 - Idempotent save routes and client-side recovery that reload persisted planner data after a failed task or reminder sync.
-- Map links for task locations and browser notifications for daily prompts and upcoming timed tasks.
-- Browser notifications now request permission only after a user interaction, tolerate timer drift for daily and task reminders, and keep one retained local record that clears reminder markers older than three days.
+- Map links for task locations plus background push notifications for daily prompts and upcoming timed tasks.
+- Desktop browsers can now receive background planner notifications through a service worker after permission is granted.
+- Supported mobile installs can now receive the same background planner notifications after you add the app to the home screen and allow notifications.
+- Browsers without Web Push support still fall back to in-page notification timers while the planner tab stays open.
 - Consistent `INPUT` / `OUTPUT` / `EFFECT` code comments across source and test files for faster feature scanning during maintenance.
 
 ## Stack
@@ -60,6 +62,9 @@ PORT=2676
 MONGODB_URI=your_mongodb_connection_string_here
 JWT_SECRET=your_secure_random_secret_string
 ADMIN_USERNAMES=comma_separated_admin_usernames
+WEB_PUSH_SUBJECT=mailto:you@example.com
+VAPID_PUBLIC_KEY=optional_existing_public_key
+VAPID_PRIVATE_KEY=optional_existing_private_key
 ```
 
 Frontend:
@@ -85,6 +90,7 @@ npm test
 ## Notes
 
 - Review [RELEASENOTES.md](RELEASENOTES.md) for repository-level changes.
+- Local development can skip manual VAPID setup because the backend generates `backend/.push-vapid.json` on first use. Production should provide `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `WEB_PUSH_SUBJECT`.
 - Use `Import ICS` on the Today page when you want to bring calendar events into the planner from a `.ics` export. The importer keeps titles, notes, locations, multi-day all-day ranges, timed events, and supported daily, weekly, monthly, and yearly recurrence rules.
 - The in-app Updates center mirrors the latest shipped release metadata from `frontend/src/app/releaseNotes.ts`.
 - Shared help questions are stored as new posts on the server, so another signed-in user cannot overwrite an older question by reusing its client-side id.
@@ -95,6 +101,8 @@ npm test
 - Older user records that do not yet have a `role` field are backfilled on the next successful login.
 - Older datasets that still use `TEMPORARY` and `PERMANENT` task records remain readable; the frontend normalizes them into the new recurrence model when it loads.
 - Completed one-time tasks and completed recurring occurrences stay in retained history for 30 days before the backend cleanup scheduler removes them.
+- Web Push requires `https` in production or `http://127.0.0.1` / `http://localhost` during local development.
+- On iPhone and iPad, background notifications require installing the web app to the home screen before allowing notifications.
 - On smaller screens, the app uses bottom navigation, a swipe-through Week view with single-step settled paging and default Time Grid focus, press-held time-range task creation in Week, a refreshed Month task grid with direct vertical swipe navigation plus a quick jump-to-current-month action, and full-screen editing dialogs to keep controls touch-friendly. When a task dialog opens, the mobile bottom navigation hides until that task window closes.
 - The login page language switch uses the same bilingual copy system as the signed-in app, so authentication flows can be changed before sign-in.
 - Keep backend running before opening the frontend locally.

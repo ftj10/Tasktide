@@ -1,0 +1,17 @@
+{
+  "name": "Weekly To-Do",
+  "short_name": "Weekly To-Do",
+  "description": "Planner with task scheduling, reminders, and background push notifications.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4f6fb",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "/todo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

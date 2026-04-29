@@ -25,3 +25,4 @@ dist-ssr
 .env
 backend/backups/
 backend/test files
+backend/.push-vapid.json

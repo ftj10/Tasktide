@@ -1,5 +1,11 @@
 # Release Notes
 
+## v1.14.0 - 2026-04-28
+
+- Added background push notifications for daily prompts and upcoming timed tasks on supported desktop browsers.
+- Added installable mobile web-app notification support through a service worker and Web Push subscription flow.
+- Kept an in-page notification fallback for browsers that still do not support background Web Push.
+
 ## v1.13.1 - 2026-04-28
 
 - Fixed mobile Week drag-to-create so cross-day selections now preserve the task end date.

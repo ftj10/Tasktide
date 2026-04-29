@@ -71,6 +71,7 @@ export function HelpPage() {
       { question: t("help.faq.q9.question"), answer: t("help.faq.q9.answer") },
       { question: t("help.faq.q10.question"), answer: t("help.faq.q10.answer") },
       { question: t("help.faq.q11.question"), answer: t("help.faq.q11.answer") },
+      { question: t("help.faq.q12.question"), answer: t("help.faq.q12.answer") },
     ],
     [t]
   );

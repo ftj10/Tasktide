@@ -180,7 +180,7 @@ const resources = {
           step4: "Use Reminders for ongoing notes that should stay visible until you mark them done.",
           step5: "On phones, use the bottom navigation to switch between planner sections, while larger screens keep the sidebar visible. When a task dialog opens, the mobile bottom navigation hides until the task window closes.",
           step6: "Task, Reminder, and repeat-option forms open full-screen on mobile for easier editing, and stay centered as dialogs on larger screens.",
-          step7: "Browser reminder notifications ask for permission after you interact with the app, tolerate timer drift around scheduled times, and clean old reminder markers after three days."
+          step7: "Planner notifications now use background Web Push on supported desktop browsers and installed mobile web apps. After you interact with the app and allow notifications, daily prompts and upcoming timed-task alerts can arrive even when the planner tab is closed. Browsers without Web Push support still fall back to in-page notifications while the planner stays open."
         },
         faq: {
           title: "Common Q&A",
@@ -222,7 +222,11 @@ const resources = {
           },
           q10: {
             question: "Do browser reminder notifications keep growing in storage?",
-            answer: "No. Reminder notification history is kept in one retained browser record, old entries are removed automatically after three days, and the scheduler checks crossed time windows so slight timer delays do not skip reminders."
+            answer: "No. The fallback in-page notification history still stays bounded to three days in one retained browser record, and the new background push scheduler also prunes per-device notification history so duplicate daily or task alerts do not keep growing."
+          },
+          q12: {
+            question: "How do I get notifications on phone and computer?",
+            answer: "Allow notifications after you interact with the app. On desktop, supported browsers can receive background alerts through Web Push. On iPhone or iPad, add the app to the home screen first and then allow notifications from the installed web app. Daily prompts and 15-minute task alerts are then delivered from the backend even if the planner page is not open."
           },
           q11: {
             question: "What does the ICS importer support?",
@@ -480,7 +484,7 @@ const resources = {
           step4: "使用 Reminders 记录持续存在、直到你手动完成的提醒事项。",
           step5: "在手机上可使用底部导航切换页面；在较大屏幕上会显示侧边栏导航。当任务弹窗打开时，移动端底部导航会先隐藏，直到任务窗口关闭。",
           step6: "Task、Reminder 和重复设置表单在手机上会全屏打开，较大屏幕上则保持居中弹窗。",
-          step7: "浏览器提醒通知会在你与应用交互后再请求权限，能容忍计划时间附近的定时器漂移，并会在三天后自动清理旧提醒标记。"
+          step7: "计划器通知现在会在受支持的桌面浏览器和已安装的移动端网页应用中使用后台 Web Push。你与应用交互并允许通知后，每日提醒和即将开始的定时任务提醒即使在计划器标签页关闭后也能送达。不支持 Web Push 的浏览器仍会在页面保持打开时使用页内通知作为兜底。"
         },
         faq: {
           title: "常见问答",
@@ -522,7 +526,11 @@ const resources = {
           },
           q10: {
             question: "浏览器提醒通知会一直占用越来越多的存储吗？",
-            answer: "不会。提醒通知历史会保存在一个统一的浏览器记录中，三天前的旧条目会自动删除，而且调度器会检查跨越的时间窗口，避免轻微定时延迟导致提醒被跳过。"
+            answer: "不会。页内通知兜底方案仍然只会把三天内的记录保存在一个浏览器键中，而新的后台推送调度器也会按设备清理通知历史，避免重复的每日提醒或任务提醒不断累积。"
+          },
+          q12: {
+            question: "怎样才能在手机和电脑上都收到通知？",
+            answer: "先在与应用交互后允许通知。桌面端可在受支持的浏览器中通过 Web Push 收到后台提醒；iPhone 和 iPad 需要先把应用加入主屏幕，再在安装后的网页应用中允许通知。之后，每日提醒和任务开始前 15 分钟提醒都会由后端发送，即使计划器页面没有打开。"
           },
           q11: {
             question: "ICS 导入功能支持什么？",

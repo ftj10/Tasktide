@@ -14,6 +14,31 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-04-28-background-push-notifications",
+    version: "v1.14.0",
+    releasedAt: "2026-04-28",
+    title: {
+      en: "Background push notifications",
+      zh: "后台推送通知"
+    },
+    summary: {
+      en: "The planner can now deliver daily and task-start alerts through background Web Push on supported desktop browsers and installed mobile web apps.",
+      zh: "计划器现在可以在受支持的桌面浏览器和已安装的移动端网页应用中，通过后台 Web Push 发送每日与任务开始提醒。"
+    },
+    changes: {
+      en: [
+        "Added a service-worker push flow so desktop browsers can receive notifications even when the planner tab is not open.",
+        "Added installable mobile web-app notification support for supported home-screen installs.",
+        "Kept an in-page notification fallback for browsers that still lack background Web Push support."
+      ],
+      zh: [
+        "新增基于 Service Worker 的推送流程，让桌面浏览器在计划器标签页未打开时也能收到通知。",
+        "为受支持的主屏幕安装版网页应用新增移动端通知支持。",
+        "为仍不支持后台 Web Push 的浏览器保留页内通知兜底方案。"
+      ]
+    }
+  },
+  {
     id: "2026-04-28-mobile-week-cross-day-range-fix",
     version: "v1.13.1",
     releasedAt: "2026-04-28",

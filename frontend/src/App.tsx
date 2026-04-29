@@ -51,6 +51,12 @@ import {
   pruneStoredNotificationHistory,
   recordNotificationFired,
 } from "./app/notificationHistory";
+import {
+  disablePushNotifications,
+  enablePushNotifications,
+  supportsPushNotifications,
+  syncPushSubscription,
+} from "./app/pushNotifications";
 import { areTasksEqual } from "./app/tasks";
 
 import { TodayPage } from "./pages/TodayPage";
@@ -89,6 +95,7 @@ export default function App() {
   const lastNotificationCheckRef = useRef<number | null>(null);
   const currentLanguage = i18n.resolvedLanguage?.startsWith("zh") ? "zh" : "en";
   const mobileNavZIndex = 1700;
+  const canUseBackgroundPush = supportsPushNotifications();
 
   async function reloadTasksFromServer() {
     const serverTasks = rolloverIfNeeded(await loadTasks());
@@ -206,12 +213,20 @@ export default function App() {
   }
 
   useEffect(() => {
-    if (!("Notification" in window) || Notification.permission !== "default") {
+    if (
+      !isAuthenticated ||
+      !("Notification" in window) ||
+      Notification.permission !== "default"
+    ) {
       return;
     }
 
     const requestPermission = () => {
-      void Notification.requestPermission();
+      if (canUseBackgroundPush) {
+        void enablePushNotifications(currentLanguage);
+      } else {
+        void Notification.requestPermission();
+      }
       window.removeEventListener("pointerdown", requestPermission);
       window.removeEventListener("keydown", requestPermission);
     };
@@ -223,9 +238,23 @@ export default function App() {
       window.removeEventListener("pointerdown", requestPermission);
       window.removeEventListener("keydown", requestPermission);
     };
-  }, []);
+  }, [canUseBackgroundPush, currentLanguage, isAuthenticated]);
 
   useEffect(() => {
+    if (!isAuthenticated || !canUseBackgroundPush || Notification.permission !== "granted") {
+      return;
+    }
+
+    void syncPushSubscription(currentLanguage).catch((error) => {
+      console.error(error);
+    });
+  }, [canUseBackgroundPush, currentLanguage, isAuthenticated]);
+
+  useEffect(() => {
+    if (canUseBackgroundPush) {
+      return;
+    }
+
     function maybeShowNotification(title: string, body: string, firedKey: string, now: Date) {
       if (
         !("Notification" in window) ||
@@ -312,9 +341,12 @@ export default function App() {
     const intervalId = setInterval(checkNotifications, 60000);
 
     return () => clearInterval(intervalId);
-  }, [currentLanguage, t]);
+  }, [canUseBackgroundPush, currentLanguage, t]);
 
   const handleLogout = () => {
+    void disablePushNotifications().catch((error) => {
+      console.error(error);
+    });
     logoutUser();
     setIsAuthenticated(false);
     setTasks([]);

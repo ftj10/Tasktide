@@ -17,6 +17,8 @@ const { invokeApp } = require('./helpers/http');
 const originals = {
   env: {
     adminUsernames: process.env.ADMIN_USERNAMES,
+    vapidPublicKey: process.env.VAPID_PUBLIC_KEY,
+    vapidPrivateKey: process.env.VAPID_PRIVATE_KEY,
   },
   bcrypt: {
     genSalt: bcrypt.genSalt,
@@ -61,6 +63,16 @@ function resetStubs() {
     process.env.ADMIN_USERNAMES = originals.env.adminUsernames;
   } else {
     delete process.env.ADMIN_USERNAMES;
+  }
+  if (typeof originals.env.vapidPublicKey === 'string') {
+    process.env.VAPID_PUBLIC_KEY = originals.env.vapidPublicKey;
+  } else {
+    delete process.env.VAPID_PUBLIC_KEY;
+  }
+  if (typeof originals.env.vapidPrivateKey === 'string') {
+    process.env.VAPID_PRIVATE_KEY = originals.env.vapidPrivateKey;
+  } else {
+    delete process.env.VAPID_PRIVATE_KEY;
   }
   bcrypt.genSalt = originals.bcrypt.genSalt;
   bcrypt.hash = originals.bcrypt.hash;
@@ -609,6 +621,147 @@ test('behavior: authenticated reminder fetch returns the current user reminders'
       done: false,
     },
   ]);
+});
+
+test('behavior: authenticated notification public-key fetch returns the configured VAPID public key', async () => {
+  process.env.VAPID_PUBLIC_KEY = 'public-test-key';
+  process.env.VAPID_PRIVATE_KEY = 'private-test-key';
+  jwt.verify = (token, secret, callback) =>
+    callback(null, { userId: 'user-1', username: 'tom', role: 'USER' });
+
+  const result = await invokeApp(app, '/notifications/public-key', {
+    headers: { Authorization: 'Bearer token' },
+  });
+
+  assert.equal(result.statusCode, 200);
+  assert.deepEqual(result.json, { publicKey: 'public-test-key' });
+});
+
+test('behavior: notification subscription save stores one browser endpoint for the authenticated user', async () => {
+  jwt.verify = (token, secret, callback) =>
+    callback(null, { userId: 'user-1', username: 'tom', role: 'USER' });
+  User.findOne = async () => ({ _id: 'user-1', pushSubscriptions: [] });
+
+  let updateFilter;
+  let updatePayload;
+  let updateOptions;
+  User.updateOne = async (filter, payload, options) => {
+    updateFilter = filter;
+    updatePayload = payload;
+    updateOptions = options;
+    return { matchedCount: 1 };
+  };
+
+  const result = await invokeApp(app, '/notifications/subscriptions', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer token' },
+    body: {
+      endpoint: 'https://push.example/sub-1',
+      expirationTime: null,
+      keys: {
+        p256dh: 'p256dh-key',
+        auth: 'auth-key',
+      },
+      timezone: 'America/Los_Angeles',
+      locale: 'en',
+      userAgent: 'Desktop Browser',
+    },
+  });
+
+  assert.equal(result.statusCode, 200);
+  assert.deepEqual(result.json, { message: 'Saved' });
+  assert.deepEqual(updateFilter, { _id: 'user-1' });
+  assert.equal(updatePayload.$set.pushSubscriptions.length, 1);
+  assert.deepEqual(updatePayload.$set.pushSubscriptions[0], {
+    endpoint: 'https://push.example/sub-1',
+    expirationTime: null,
+    keys: {
+      p256dh: 'p256dh-key',
+      auth: 'auth-key',
+    },
+    timezone: 'America/Los_Angeles',
+    locale: 'en',
+    userAgent: 'Desktop Browser',
+    createdAt: updatePayload.$set.pushSubscriptions[0].createdAt,
+    updatedAt: updatePayload.$set.pushSubscriptions[0].updatedAt,
+    notificationHistory: [],
+  });
+  assert.deepEqual(updateOptions, { runValidators: true });
+});
+
+test('behavior: notification subscription delete removes one browser endpoint for the authenticated user', async () => {
+  jwt.verify = (token, secret, callback) =>
+    callback(null, { userId: 'user-1', username: 'tom', role: 'USER' });
+  User.findOne = async () => ({
+    _id: 'user-1',
+    pushSubscriptions: [
+      {
+        endpoint: 'https://push.example/sub-1',
+        expirationTime: null,
+        keys: {
+          p256dh: 'p256dh-key',
+          auth: 'auth-key',
+        },
+        timezone: 'America/Los_Angeles',
+        locale: 'en',
+        userAgent: 'Desktop Browser',
+        createdAt: '2026-04-28T16:00:00.000Z',
+        updatedAt: '2026-04-28T16:00:00.000Z',
+        notificationHistory: [],
+      },
+      {
+        endpoint: 'https://push.example/sub-2',
+        expirationTime: null,
+        keys: {
+          p256dh: 'p256dh-key-2',
+          auth: 'auth-key-2',
+        },
+        timezone: 'America/Los_Angeles',
+        locale: 'en',
+        userAgent: 'Phone Browser',
+        createdAt: '2026-04-28T16:05:00.000Z',
+        updatedAt: '2026-04-28T16:05:00.000Z',
+        notificationHistory: [],
+      },
+    ],
+  });
+
+  let updatePayload;
+  User.updateOne = async (filter, payload) => {
+    updatePayload = payload;
+    return { matchedCount: 1 };
+  };
+
+  const result = await invokeApp(app, '/notifications/subscriptions', {
+    method: 'DELETE',
+    headers: { Authorization: 'Bearer token' },
+    body: {
+      endpoint: 'https://push.example/sub-1',
+    },
+  });
+
+  assert.equal(result.statusCode, 200);
+  assert.deepEqual(result.json, { message: 'Deleted' });
+  assert.deepEqual(updatePayload, {
+    $set: {
+      pushSubscriptions: [
+        {
+          endpoint: 'https://push.example/sub-2',
+          expirationTime: null,
+          keys: {
+            p256dh: 'p256dh-key-2',
+            auth: 'auth-key-2',
+          },
+          timezone: 'America/Los_Angeles',
+          locale: 'en',
+          userAgent: 'Phone Browser',
+          createdAt: '2026-04-28T16:05:00.000Z',
+          updatedAt: '2026-04-28T16:05:00.000Z',
+          notificationHistory: [],
+        },
+      ],
+    },
+  });
 });
 
 test('behavior: reminder create stores one reminder for the authenticated user', async () => {

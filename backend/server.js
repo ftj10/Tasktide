@@ -14,6 +14,8 @@ const User = require('./models/User');
 const Reminder = require('./models/Reminder');
 const HelpQuestion = require('./models/HelpQuestion');
 const { getTaskRetentionCutoff, startTaskRetentionScheduler } = require('./taskRetention');
+const { getPushPublicKey } = require('./pushNotifications');
+const { startNotificationScheduler } = require('./notificationScheduler');
 
 const app = express();
 app.use(cors());
@@ -89,6 +91,82 @@ async function persistResolvedUserRole(user) {
     { runValidators: true }
   );
   return resolvedRole;
+}
+
+// INPUT: raw push subscription payload
+// OUTPUT: validated subscription row or null
+// EFFECT: Normalizes browser subscription metadata before it is persisted for background push delivery
+function normalizePushSubscription(payload) {
+  const endpoint = String(payload?.endpoint ?? '').trim();
+  const p256dh = String(payload?.keys?.p256dh ?? '').trim();
+  const auth = String(payload?.keys?.auth ?? '').trim();
+  const timezone = String(payload?.timezone ?? 'UTC').trim() || 'UTC';
+  const locale = String(payload?.locale ?? 'en').toLowerCase().startsWith('zh') ? 'zh' : 'en';
+  const userAgent = String(payload?.userAgent ?? '').trim();
+  const expirationTime =
+    payload?.expirationTime === null || payload?.expirationTime === undefined || payload?.expirationTime === ''
+      ? null
+      : Number(payload.expirationTime);
+
+  if (!endpoint || !p256dh || !auth) {
+    return null;
+  }
+
+  return {
+    endpoint,
+    expirationTime: Number.isFinite(expirationTime) ? expirationTime : null,
+    keys: {
+      p256dh,
+      auth,
+    },
+    timezone,
+    locale,
+    userAgent,
+  };
+}
+
+// INPUT: existing subscription rows plus one new subscription
+// OUTPUT: updated subscription array
+// EFFECT: Replaces one endpoint in place or appends a new endpoint for the signed-in user
+function upsertPushSubscription(existingSubscriptions, nextSubscription, now = new Date()) {
+  const nextTimestamp = now.toISOString();
+  const previousSubscriptions = Array.isArray(existingSubscriptions) ? existingSubscriptions : [];
+  const existingIndex = previousSubscriptions.findIndex(
+    (subscription) => subscription.endpoint === nextSubscription.endpoint
+  );
+
+  if (existingIndex === -1) {
+    return [
+      ...previousSubscriptions,
+      {
+        ...nextSubscription,
+        createdAt: nextTimestamp,
+        updatedAt: nextTimestamp,
+        notificationHistory: [],
+      },
+    ];
+  }
+
+  return previousSubscriptions.map((subscription, index) =>
+    index === existingIndex
+      ? {
+          ...subscription,
+          ...nextSubscription,
+          createdAt: subscription.createdAt ?? nextTimestamp,
+          updatedAt: nextTimestamp,
+          notificationHistory: Array.isArray(subscription.notificationHistory)
+            ? subscription.notificationHistory
+            : [],
+        }
+      : subscription
+  );
+}
+
+// INPUT: existing subscription rows plus one endpoint
+// OUTPUT: filtered subscription array
+// EFFECT: Removes one browser endpoint so logged-out or revoked devices stop receiving pushes
+function removePushSubscription(existingSubscriptions, endpoint) {
+  return (existingSubscriptions ?? []).filter((subscription) => subscription.endpoint !== endpoint);
 }
 
 // INPUT: userId
@@ -350,6 +428,73 @@ app.delete('/reminders/:id', authenticateToken, async (req, res) => {
   }
 });
 
+// INPUT: authenticated push bootstrap request
+// OUTPUT: public VAPID key
+// EFFECT: Gives the signed-in frontend the application server key needed to create a PushManager subscription
+app.get('/notifications/public-key', authenticateToken, async (req, res) => {
+  try {
+    res.status(200).json({ publicKey: getPushPublicKey() });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to load notification settings" });
+  }
+});
+
+// INPUT: authenticated user id plus one browser push subscription
+// OUTPUT: save confirmation or validation error
+// EFFECT: Persists one desktop or mobile browser endpoint for background planner notifications
+app.post('/notifications/subscriptions', authenticateToken, async (req, res) => {
+  try {
+    const subscription = normalizePushSubscription(req.body);
+    if (!subscription) {
+      return res.status(400).json({ error: "Invalid push subscription" });
+    }
+
+    const user = await User.findOne({ _id: req.user.userId });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const nextSubscriptions = upsertPushSubscription(user.pushSubscriptions, subscription);
+    await User.updateOne(
+      { _id: req.user.userId },
+      { $set: { pushSubscriptions: nextSubscriptions } },
+      { runValidators: true }
+    );
+
+    res.status(200).json({ message: "Saved" });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to save notification subscription" });
+  }
+});
+
+// INPUT: authenticated user id plus one browser endpoint
+// OUTPUT: delete confirmation or validation error
+// EFFECT: Stops background pushes for one browser when the user logs out or disables notifications there
+app.delete('/notifications/subscriptions', authenticateToken, async (req, res) => {
+  try {
+    const endpoint = String(req.body?.endpoint ?? '').trim();
+    if (!endpoint) {
+      return res.status(400).json({ error: "Subscription endpoint is required" });
+    }
+
+    const user = await User.findOne({ _id: req.user.userId });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const nextSubscriptions = removePushSubscription(user.pushSubscriptions, endpoint);
+    await User.updateOne(
+      { _id: req.user.userId },
+      { $set: { pushSubscriptions: nextSubscriptions } },
+      { runValidators: true }
+    );
+
+    res.status(200).json({ message: "Deleted" });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to delete notification subscription" });
+  }
+});
+
 // INPUT: authenticated help-board request
 // OUTPUT: role-scoped help questions ordered by recency
 // EFFECT: Supplies admins with all help posts and standard users with only their own posts
@@ -446,6 +591,7 @@ function startServer() {
 if (require.main === module) {
   connectDatabase().then(() => {
     startTaskRetentionScheduler();
+    startNotificationScheduler();
     startServer();
   });
 }
@@ -455,6 +601,9 @@ module.exports = {
   authenticateToken,
   connectDatabase,
   normalizeTaskWritePayload,
+  normalizePushSubscription,
+  removePushSubscription,
   resolveUserRole,
   startServer,
+  upsertPushSubscription,
 };
