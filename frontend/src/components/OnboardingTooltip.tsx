@@ -27,13 +27,14 @@ export function OnboardingTooltip(props: {
     if (!step) return;
 
     const syncTarget = () => {
-      const target = step.targets
+      const matchingTargets = step.targets
         .map((selector) => document.querySelector(selector))
-        .find((node): node is HTMLElement => {
-          if (!(node instanceof HTMLElement)) return false;
-          const rect = node.getBoundingClientRect();
-          return rect.width > 0 && rect.height > 0;
-        });
+        .filter((node): node is HTMLElement => node instanceof HTMLElement);
+      const visibleTarget = matchingTargets.find((node) => {
+        const rect = node.getBoundingClientRect();
+        return rect.width > 0 && rect.height > 0;
+      });
+      const target = visibleTarget ?? matchingTargets[0];
 
       setTargetRect(target?.getBoundingClientRect() ?? null);
     };

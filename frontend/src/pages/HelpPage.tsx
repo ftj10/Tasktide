@@ -64,6 +64,7 @@ export function HelpPage() {
 
   const guideSteps = useMemo(
     () => [
+      t("help.guides.step0"),
       t("help.guides.step1"),
       t("help.guides.step2"),
       t("help.guides.step3"),
