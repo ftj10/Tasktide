@@ -13,6 +13,7 @@ import { renderWithProviders } from "./test-utils";
 import { setScreenWidth } from "./setup";
 
 const storageMocks = vi.hoisted(() => ({
+  loadSession: vi.fn(),
   loadTasks: vi.fn(),
   loadReminders: vi.fn(),
   createTask: vi.fn(),
@@ -28,8 +29,8 @@ vi.mock("../src/app/storage", async () => {
   const actual = await vi.importActual<typeof import("../src/app/storage")>("../src/app/storage");
   return {
     ...actual,
-    getToken: () => "token",
     getUsername: () => "tom",
+    loadSession: storageMocks.loadSession,
     loadTasks: storageMocks.loadTasks,
     loadReminders: storageMocks.loadReminders,
     createTask: storageMocks.createTask,
@@ -48,6 +49,7 @@ describe("App behavior", () => {
     localStorage.clear();
     localStorage.setItem("release-notes-seen:tom", LATEST_RELEASE_ID);
     setScreenWidth(1024);
+    storageMocks.loadSession.mockReset().mockResolvedValue({ username: "tom", role: "USER" });
     storageMocks.loadTasks.mockReset().mockResolvedValue([]);
     storageMocks.loadReminders.mockReset().mockResolvedValue([]);
     storageMocks.createTask.mockReset().mockResolvedValue(undefined);
@@ -235,6 +237,9 @@ describe("App behavior", () => {
     });
 
     renderWithProviders(<App />);
+    await waitFor(() => {
+      expect(screen.getAllByRole("link", { name: "Today" }).length).toBeGreaterThan(0);
+    });
 
     expect(requestPermission).not.toHaveBeenCalled();
 

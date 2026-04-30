@@ -21,7 +21,7 @@ import TaskAltRoundedIcon from "@mui/icons-material/TaskAltRounded";
 import { useTranslation } from "react-i18next";
 import { setAuth } from "../app/storage";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:2676";
+const API_URL = import.meta.env.VITE_API_URL || "/api";
 
 // INPUT: login success callback
 // OUTPUT: authentication form UI
@@ -65,6 +65,7 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
     try {
       const response = await fetch(`${API_URL}${endpoint}`, {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
@@ -84,7 +85,7 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
         setUsername("");
         setPassword("");
       } else {
-        setAuth(data.token, data.username, data.role);
+        setAuth(data.username, data.role);
         onLoginSuccess();
       }
     } catch (err: unknown) {

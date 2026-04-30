@@ -1,5 +1,5 @@
-// INPUT: localStorage credentials and frontend payloads
-// OUTPUT: auth helpers plus backend persistence functions for tasks, reminders, and help questions
+// INPUT: localStorage profile fields and frontend payloads
+// OUTPUT: session-profile helpers plus backend persistence functions for tasks, reminders, and help questions
 // EFFECT: Connects browser state to the authenticated planner API and keeps week rollover metadata current
 import type { AuthRole, HelpQuestion, Reminder, Task } from "../types";
 import dayjs from "dayjs";
@@ -7,26 +7,28 @@ import { weekStartMonday } from "./date";
 import { normalizeTasks } from "./tasks";
 
 const WEEK_KEY = "weekly_todo_lastWeekStart_v1";
-const TOKEN_KEY = "todo_jwt_token";
 const USERNAME_KEY = "todo_username";
 const ROLE_KEY = "todo_user_role";
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:2676';
+const API_URL = import.meta.env.VITE_API_URL || "/api";
+
+export type SessionProfile = {
+  username: string;
+  role: AuthRole;
+};
 
 async function authorizedRequest(path: string, options: RequestInit = {}): Promise<Response | null> {
-  const token = getToken();
-  if (!token) return null;
-
   const response = await fetch(`${API_URL}${path}`, {
     ...options,
+    credentials: "include",
     headers: {
       ...(options.headers ?? {}),
-      Authorization: `Bearer ${token}`,
     },
   });
 
   if (response.status === 401 || response.status === 403) {
-    logoutUser();
+    clearAuth();
+    void logoutUser();
     window.location.reload();
     return null;
   }
@@ -61,11 +63,6 @@ async function requestOk(path: string, options: RequestInit = {}, fallbackMessag
 }
 
 // INPUT: none
-// OUTPUT: saved JWT token
-// EFFECT: Supplies the auth feature with the current session token
-export function getToken() { return localStorage.getItem(TOKEN_KEY); }
-
-// INPUT: none
 // OUTPUT: saved username
 // EFFECT: Supplies the shell and release-notes features with the signed-in display name
 export function getUsername() { return localStorage.getItem(USERNAME_KEY); }
@@ -82,22 +79,64 @@ export function getUserRole(): AuthRole {
 // EFFECT: Lets frontend features switch between owner-only and admin-wide help views
 export function isAdminUser() { return getUserRole() === "ADMIN"; }
 
-// INPUT: backend login response fields
-// OUTPUT: persisted auth keys
-// EFFECT: Starts a signed-in browser session for the planner features
-export function setAuth(token: string, username: string, role: AuthRole = "USER") {
-  localStorage.setItem(TOKEN_KEY, token);
+// INPUT: session profile fields
+// OUTPUT: persisted session profile
+// EFFECT: Stores the signed-in browser profile alongside the server-managed session cookie
+export function setAuth(username: string, role: AuthRole = "USER") {
   localStorage.setItem(USERNAME_KEY, username);
   localStorage.setItem(ROLE_KEY, role);
 }
 
 // INPUT: none
 // OUTPUT: cleared auth keys
-// EFFECT: Ends the browser session used by protected API features
-export function logoutUser() {
-  localStorage.removeItem(TOKEN_KEY);
+// EFFECT: Removes the local browser profile used by protected API features
+export function clearAuth() {
   localStorage.removeItem(USERNAME_KEY);
   localStorage.removeItem(ROLE_KEY);
+}
+
+// INPUT: none
+// OUTPUT: current session profile or null
+// EFFECT: Restores the current browser session from the HttpOnly auth cookie
+export async function loadSession(): Promise<SessionProfile | null> {
+  try {
+    const response = await fetch(`${API_URL}/session`, {
+      credentials: "include",
+    });
+
+    if (response.status === 401 || response.status === 403) {
+      clearAuth();
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error("Failed to load session");
+    }
+
+    const session = (await response.json()) as SessionProfile;
+    setAuth(session.username, session.role);
+    return session;
+  } catch (error) {
+    clearAuth();
+    console.error("Failed to load session", error);
+    return null;
+  }
+}
+
+// INPUT: none
+// OUTPUT: cleared browser session
+// EFFECT: Ends the browser session on the server and clears the local profile used by protected API features
+export async function logoutUser() {
+  try {
+    await fetch(`${API_URL}/logout`, {
+      method: "POST",
+      credentials: "include",
+    });
+  } catch (error) {
+    console.error("Failed to log out", error);
+  } finally {
+    clearAuth();
+  }
 }
 
 // INPUT: none

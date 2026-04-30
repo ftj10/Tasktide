@@ -1,5 +1,21 @@
 # Release Notes
 
+## Version 1.16.0
+Version: 1.16.0
+Update Date: 2026-04-30
+
+### New Features
+- Added HttpOnly cookie-based login sessions so the browser now keeps the JWT out of JavaScript-managed local storage.
+- Added a session restore endpoint so returning users can reopen the planner in the same browser without re-reading auth state from frontend storage.
+
+### Improvements
+- Improved frontend authentication requests by switching protected API calls to browser credential mode.
+- Updated local development setup to use the Vite `/api` proxy so cookie-backed auth works during frontend development.
+- Updated Help Center and repository setup guidance so sign-in behavior and deployment requirements are easier to follow.
+
+### Bug Fixes
+- Fixed the auth bootstrap path so protected planner data no longer depends on a readable browser token.
+
 ## Version 1.15.1
 Update Date: 2026-04-29
 

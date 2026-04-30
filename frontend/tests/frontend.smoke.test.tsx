@@ -28,8 +28,8 @@ vi.mock("../src/app/storage", async () => {
   const actual = await vi.importActual<typeof import("../src/app/storage")>("../src/app/storage");
   return {
     ...actual,
-    getToken: () => "token",
     getUsername: () => "tom",
+    loadSession: vi.fn().mockResolvedValue({ username: "tom", role: "USER" }),
     loadTasks: vi.fn().mockResolvedValue([]),
     loadReminders: vi.fn().mockResolvedValue([]),
     createTask: vi.fn(),

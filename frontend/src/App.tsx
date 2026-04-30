@@ -36,8 +36,8 @@ import {
   createTask,
   deleteReminder,
   deleteTask,
-  getToken,
   getUsername,
+  loadSession,
   loadReminders,
   loadTasks,
   logoutUser,
@@ -85,7 +85,8 @@ export default function App() {
   const { t, i18n } = useTranslation();
   const location = useLocation();
   const username = getUsername() || "";
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!getToken());
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authResolved, setAuthResolved] = useState(false);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -100,6 +101,23 @@ export default function App() {
   const canUseBackgroundPush = supportsPushNotifications();
   const onboardingSteps = getOnboardingSteps(t);
   const shouldSuppressReleaseNotes = !localStorage.getItem(ONBOARDING_STORAGE_KEY);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function restoreSession() {
+      const session = await loadSession();
+      if (cancelled) return;
+      setIsAuthenticated(Boolean(session));
+      setAuthResolved(true);
+    }
+
+    void restoreSession();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function reloadTasksFromServer() {
     const serverTasks = rolloverIfNeeded(await loadTasks());
@@ -351,7 +369,7 @@ export default function App() {
     void disablePushNotifications().catch((error) => {
       console.error(error);
     });
-    logoutUser();
+    void logoutUser();
     setIsAuthenticated(false);
     setTasks([]);
     setReminders([]);
@@ -366,10 +384,42 @@ export default function App() {
     setTaskDialogOpen(open);
   }
 
+  if (!authResolved) {
+    return (
+      <Box
+        sx={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column",
+          gap: 2,
+        }}
+      >
+        <Avatar
+          sx={{
+            width: 56,
+            height: 56,
+            background: "linear-gradient(135deg, #4f46e5, #0ea5e9)",
+            boxShadow: "0 10px 30px rgba(79, 70, 229, 0.35)",
+          }}
+        >
+          <TaskAltRoundedIcon />
+        </Avatar>
+        <Typography variant="h6" color="text.secondary">
+          {t("app.loading")}
+        </Typography>
+      </Box>
+    );
+  }
+
   if (!isAuthenticated) {
     return (
       <Container maxWidth="sm">
-        <LoginPage onLoginSuccess={() => setIsAuthenticated(true)} />
+        <LoginPage onLoginSuccess={() => {
+          setIsAuthenticated(true);
+          setIsLoaded(false);
+        }} />
       </Container>
     );
   }

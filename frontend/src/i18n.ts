@@ -284,6 +284,10 @@ const resources = {
             question: "Do installed mobile web apps work the same on every browser?",
             answer: "No.\n\nIPhone and iPad:\n- Use Safari for the best install support.\n\nAndroid:\n- Chrome and Edge usually work best.\n- Other browsers can vary by device and version.\n\nIf install or notification options do not appear, try Safari on iPhone/iPad or Chrome/Edge on Android."
           },
+          q15: {
+            question: "How does sign-in stay active in this browser?",
+            answer: "The planner keeps your sign-in in a secure browser session cookie. You usually stay signed in until you log out or the session expires."
+          },
           q11: {
             question: "What does the ICS importer support?",
             answer: "Import ICS on Today to turn calendar events into tasks. It supports titles, notes, locations, timed events, multi-day events, and common repeat rules."
@@ -653,6 +657,10 @@ const resources = {
           q14: {
             question: "不同浏览器安装后的移动网页应用效果一样吗？",
             answer: "不完全一样。\n\nIPhone 和 iPad：\n- Safari 的支持最好。\n\nAndroid：\n- Chrome 和 Edge 通常最完整。\n- 其他浏览器会因设备和版本不同而有差异。\n\n如果没有看到安装或通知选项，iPhone/iPad 请优先试 Safari，Android 请优先试 Chrome 或 Edge。"
+          },
+          q15: {
+            question: "这个浏览器里的登录状态会怎样保持？",
+            answer: "计划器会用更安全的浏览器会话 Cookie 保持登录。一般情况下，除非你主动退出或会话过期，否则会继续保持登录。"
           },
           q11: {
             question: "ICS 导入功能支持什么？",

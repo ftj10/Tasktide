@@ -121,7 +121,7 @@ test('behavior: register hashes the password and saves the user', async () => {
   assert.deepEqual(savedUser, { username: 'tom', password: 'hashed:secret', role: 'USER' });
 });
 
-test('behavior: login returns a token for valid credentials', async () => {
+test('behavior: login sets a session cookie for valid credentials', async () => {
   process.env.ADMIN_USERNAMES = 'tom';
   User.findOne = async () => ({ _id: 'user-1', username: 'tom', password: 'hashed', role: 'USER' });
   User.updateOne = async () => ({ matchedCount: 0 });
@@ -134,7 +134,9 @@ test('behavior: login returns a token for valid credentials', async () => {
   });
 
   assert.equal(result.statusCode, 200);
-  assert.deepEqual(result.json, { token: 'signed-token', username: 'tom', role: 'ADMIN' });
+  assert.deepEqual(result.json, { username: 'tom', role: 'ADMIN' });
+  assert.match(result.headers['set-cookie'], /weekly_todo_session=signed-token/);
+  assert.match(result.headers['set-cookie'], /HttpOnly/);
 });
 
 test('behavior: login backfills a missing stored role for legacy users', async () => {
@@ -158,10 +160,33 @@ test('behavior: login backfills a missing stored role for legacy users', async (
   });
 
   assert.equal(result.statusCode, 200);
-  assert.deepEqual(result.json, { token: 'signed-token', username: 'tom', role: 'USER' });
+  assert.deepEqual(result.json, { username: 'tom', role: 'USER' });
   assert.deepEqual(updateFilter, { _id: 'user-1' });
   assert.deepEqual(updatePayload, { $set: { role: 'USER' } });
   assert.deepEqual(updateOptions, { runValidators: true });
+});
+
+test('behavior: session endpoint returns the authenticated user from the session cookie', async () => {
+  jwt.verify = (token, secret, callback) =>
+    callback(null, { userId: 'user-1', username: 'tom', role: 'ADMIN' });
+
+  const result = await invokeApp(app, '/session', {
+    headers: { Cookie: 'weekly_todo_session=signed-token' },
+  });
+
+  assert.equal(result.statusCode, 200);
+  assert.deepEqual(result.json, { username: 'tom', role: 'ADMIN' });
+});
+
+test('behavior: logout clears the session cookie', async () => {
+  const result = await invokeApp(app, '/logout', {
+    method: 'POST',
+  });
+
+  assert.equal(result.statusCode, 200);
+  assert.deepEqual(result.json, { message: 'Logged out' });
+  assert.match(result.headers['set-cookie'], /weekly_todo_session=/);
+  assert.match(result.headers['set-cookie'], /Expires=Thu, 01 Jan 1970/);
 });
 
 test('behavior: authenticated help question fetch returns only the current user questions for standard users', async () => {

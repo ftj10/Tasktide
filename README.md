@@ -1,6 +1,6 @@
 # Weekly To-Do Application
 
-Current version: `v1.15.1`
+Current version: `v1.16.0`
 
 Weekly To-Do is a full-stack planner for daily tasks, weekly routines, reminders, shared help questions, and calendar-based scheduling.
 
@@ -8,7 +8,7 @@ Deployed Web: [website](https://todo-cfun.onrender.com/)
 
 ## Features
 
-- Secure registration and login with JWT-backed sessions and persisted `USER` / `ADMIN` roles.
+- Secure registration and login with HttpOnly cookie sessions and persisted `USER` / `ADMIN` roles.
 - Login and registration screens support an `EN` / `中文` switch before authentication.
 - Today, Week, and Month planning views for one-time and recurring tasks.
 - Today reschedule shortcuts now follow the selected day in the header, so moving a one-time task to `Today` or `Tomorrow` works correctly even while you are browsing future dates.
@@ -67,6 +67,9 @@ PORT=2676
 MONGODB_URI=your_mongodb_connection_string_here
 JWT_SECRET=your_secure_random_secret_string
 ADMIN_USERNAMES=comma_separated_admin_usernames
+CORS_ORIGIN=http://127.0.0.1:5173
+SESSION_COOKIE_SAME_SITE=lax
+SESSION_COOKIE_SECURE=false
 WEB_PUSH_SUBJECT=mailto:you@example.com
 VAPID_PUBLIC_KEY=optional_existing_public_key
 VAPID_PRIVATE_KEY=optional_existing_private_key
@@ -83,7 +86,7 @@ npm run dev
 Frontend `.env`:
 
 ```env
-VITE_API_URL=http://127.0.0.1:2676
+VITE_API_URL=/api
 ```
 
 Workspace tests:
@@ -95,6 +98,9 @@ npm test
 ## Notes
 
 - Review [RELEASENOTES.md](RELEASENOTES.md) for repository-level changes.
+- The login session now lives in an HttpOnly cookie. JavaScript no longer reads the JWT directly, and frontend API calls rely on browser credentials instead of `Authorization` headers.
+- Local frontend development now defaults to the Vite `/api` proxy so cookie-based auth stays same-origin during `npm run dev`.
+- If you deploy the frontend and backend on different HTTPS origins, set `CORS_ORIGIN` to the frontend origin and switch the session cookie to `SESSION_COOKIE_SAME_SITE=none` plus `SESSION_COOKIE_SECURE=true`.
 - Local development can skip manual VAPID setup because the backend generates `backend/.push-vapid.json` on first use. Production should provide `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `WEB_PUSH_SUBJECT`.
 - Use `Import ICS` on the Today page when you want to bring calendar events into the planner from a `.ics` export. The importer keeps titles, notes, locations, multi-day all-day ranges, timed events, and supported daily, weekly, monthly, and yearly recurrence rules.
 - The in-app Updates center mirrors the latest shipped release metadata from `frontend/src/app/releaseNotes.ts` and groups each release under `New Features`, `Improvements`, and `Bug Fixes`.

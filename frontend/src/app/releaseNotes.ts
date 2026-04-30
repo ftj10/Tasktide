@@ -14,6 +14,31 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-04-30-http-only-cookie-sessions",
+    version: "v1.16.0",
+    releasedAt: "2026-04-30",
+    title: {
+      en: "HttpOnly cookie sessions",
+      zh: "HttpOnly Cookie 会话"
+    },
+    summary: {
+      en: "Authentication now uses server-managed HttpOnly cookies, keeping the JWT out of frontend storage while preserving the existing planner session flow.",
+      zh: "认证现在改为使用服务器管理的 HttpOnly Cookie，在保留现有会话体验的同时，把 JWT 移出了前端存储。"
+    },
+    changes: {
+      en: [
+        "Added HttpOnly cookie-based login sessions so the browser no longer keeps the JWT in frontend storage.",
+        "Improved protected frontend requests by switching them to browser credential mode.",
+        "Updated local development to use the Vite `/api` proxy so cookie-based auth works during frontend development."
+      ],
+      zh: [
+        "新增基于 HttpOnly Cookie 的登录会话，让浏览器不再把 JWT 保存在前端存储中。",
+        "改进前端受保护请求，统一改为使用浏览器凭据模式。",
+        "更新本地开发方式，使用 Vite `/api` 代理，让基于 Cookie 的认证在前端开发期间也能正常工作。"
+      ]
+    }
+  },
+  {
     id: "2026-04-29-month-route-sync-fix",
     version: "v1.15.1",
     releasedAt: "2026-04-29",

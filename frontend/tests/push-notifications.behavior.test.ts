@@ -9,12 +9,10 @@ import {
   supportsPushNotifications,
   syncPushSubscription,
 } from "../src/app/pushNotifications";
-import { setAuth } from "../src/app/storage";
 
 describe("pushNotifications behavior", () => {
   beforeEach(() => {
     localStorage.clear();
-    setAuth("token", "tom", "USER");
     vi.stubGlobal("fetch", vi.fn());
   });
 
@@ -85,6 +83,13 @@ describe("pushNotifications behavior", () => {
     expect(getSubscription).toHaveBeenCalledTimes(1);
     expect(subscribe).toHaveBeenCalledTimes(1);
     expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/notifications/public-key", expect.objectContaining({
+      credentials: "include",
+    }));
+    expect(fetchMock).toHaveBeenNthCalledWith(2, "/api/notifications/subscriptions", expect.objectContaining({
+      credentials: "include",
+      method: "POST",
+    }));
   });
 
   it("requests permission before subscribing a new device", async () => {
@@ -131,6 +136,9 @@ describe("pushNotifications behavior", () => {
 
     expect(notificationApi.requestPermission).toHaveBeenCalledTimes(1);
     expect(subscribe).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenNthCalledWith(1, "/api/notifications/public-key", expect.objectContaining({
+      credentials: "include",
+    }));
   });
 
   it("removes the current subscription from the backend and unsubscribes locally", async () => {
@@ -163,6 +171,10 @@ describe("pushNotifications behavior", () => {
     await disablePushNotifications();
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledWith("/api/notifications/subscriptions", expect.objectContaining({
+      credentials: "include",
+      method: "DELETE",
+    }));
     expect(unsubscribe).toHaveBeenCalledTimes(1);
   });
 });

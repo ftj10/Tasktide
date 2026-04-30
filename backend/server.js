@@ -18,7 +18,25 @@ const { getPushPublicKey } = require('./pushNotifications');
 const { startNotificationScheduler } = require('./notificationScheduler');
 
 const app = express();
-app.use(cors());
+const SESSION_COOKIE_NAME = 'weekly_todo_session';
+const SESSION_COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+
+app.use(cors({
+  origin(origin, callback) {
+    const configuredOrigins = String(process.env.CORS_ORIGIN ?? '')
+      .split(',')
+      .map((value) => value.trim())
+      .filter(Boolean);
+
+    if (!origin || configuredOrigins.length === 0 || configuredOrigins.includes(origin)) {
+      callback(null, true);
+      return;
+    }
+
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+}));
 app.use(express.json());
 
 // Keep-Alive Endpoint for Render Free Tier
@@ -91,6 +109,55 @@ async function persistResolvedUserRole(user) {
     { runValidators: true }
   );
   return resolvedRole;
+}
+
+function readCookieValue(cookieHeader, name) {
+  const cookieText = String(cookieHeader ?? '');
+  if (!cookieText) return null;
+
+  const match = cookieText.match(new RegExp(`(?:^|; )${name}=([^;]+)`));
+  if (!match) return null;
+
+  try {
+    return decodeURIComponent(match[1]);
+  } catch {
+    return match[1];
+  }
+}
+
+function getSessionCookieSettings(req) {
+  const configuredSameSite = String(process.env.SESSION_COOKIE_SAME_SITE ?? 'lax').trim().toLowerCase();
+  const sameSite =
+    configuredSameSite === 'none'
+      ? 'none'
+      : configuredSameSite === 'strict'
+      ? 'strict'
+      : 'lax';
+  const secure =
+    String(process.env.SESSION_COOKIE_SECURE ?? '').trim().toLowerCase() === 'true' ||
+    sameSite === 'none';
+
+  return {
+    httpOnly: true,
+    sameSite,
+    secure,
+    maxAge: SESSION_COOKIE_MAX_AGE_MS,
+    path: '/',
+  };
+}
+
+function setSessionCookie(req, res, token) {
+  res.cookie(SESSION_COOKIE_NAME, token, getSessionCookieSettings(req));
+}
+
+function clearSessionCookie(req, res) {
+  const { sameSite, secure, path } = getSessionCookieSettings(req);
+  res.clearCookie(SESSION_COOKIE_NAME, {
+    sameSite,
+    secure,
+    path,
+    httpOnly: true,
+  });
 }
 
 // INPUT: raw push subscription payload
@@ -226,12 +293,14 @@ function cleanupRemindersForUser(userId) {
   });
 }
 
-// INPUT: bearer token request header
+// INPUT: session cookie or bearer token request header
 // OUTPUT: decoded user on req.user or an auth error response
 // EFFECT: Protects planner routes so each request is tied to a signed-in user
 const authenticateToken = (req, res, next) => {
+  const cookieToken = readCookieValue(req.headers.cookie, SESSION_COOKIE_NAME);
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; 
+  const headerToken = authHeader && authHeader.split(' ')[1];
+  const token = cookieToken || headerToken;
 
   if (!token) return res.status(401).json({ error: "Access denied" });
 
@@ -269,7 +338,7 @@ app.post('/register', async (req, res) => {
 });
 
 // INPUT: username and password
-// OUTPUT: JWT token plus session profile for the frontend session
+// OUTPUT: session profile for the frontend session
 // EFFECT: Starts an authenticated planner session for an existing user
 app.post('/login', async (req, res) => {
   try {
@@ -284,11 +353,30 @@ app.post('/login', async (req, res) => {
     const role = await persistResolvedUserRole(user);
     const sessionUser = toSessionUser({ userId: user._id, username: user.username, role });
     const token = jwt.sign(sessionUser, process.env.JWT_SECRET, { expiresIn: '7d' });
-    
-    res.status(200).json({ token, username: user.username, role: sessionUser.role });
+
+    setSessionCookie(req, res, token);
+    res.status(200).json({ username: user.username, role: sessionUser.role });
   } catch (err) {
     res.status(500).json({ error: "Failed to log in" });
   }
+});
+
+// INPUT: authenticated session cookie
+// OUTPUT: signed-in session profile
+// EFFECT: Lets the frontend restore the current browser session without reading the JWT in JavaScript
+app.get('/session', authenticateToken, async (req, res) => {
+  res.status(200).json({
+    username: req.user.username,
+    role: req.user.role,
+  });
+});
+
+// INPUT: current browser session
+// OUTPUT: logout confirmation
+// EFFECT: Clears the authenticated planner session cookie from the browser
+app.post('/logout', (req, res) => {
+  clearSessionCookie(req, res);
+  res.status(200).json({ message: 'Logged out' });
 });
 
 // INPUT: authenticated user id

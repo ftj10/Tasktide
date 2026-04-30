@@ -1,9 +1,9 @@
 // INPUT: browser notification APIs plus authenticated backend endpoints
 // OUTPUT: service-worker registration and push-subscription helpers
 // EFFECT: Connects the signed-in planner session to background push notifications on desktop browsers and supported mobile installs
-import { getToken, logoutUser } from "./storage";
+import { logoutUser } from "./storage";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:2676";
+const API_URL = import.meta.env.VITE_API_URL || "/api";
 const PUSH_SW_PATH = "/push-sw.js";
 
 // INPUT: none
@@ -101,19 +101,16 @@ async function loadPushPublicKey() {
 }
 
 async function authorizedRequest(path: string, options: RequestInit = {}) {
-  const token = getToken();
-  if (!token) return null;
-
   const response = await fetch(`${API_URL}${path}`, {
     ...options,
+    credentials: "include",
     headers: {
       ...(options.headers ?? {}),
-      Authorization: `Bearer ${token}`,
     },
   });
 
   if (response.status === 401 || response.status === 403) {
-    logoutUser();
+    void logoutUser();
     window.location.reload();
     return null;
   }

@@ -62,7 +62,7 @@ describe("LoginPage behavior", () => {
     const onLoginSuccess = vi.fn();
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
-      json: async () => ({ token: "signed-token", username: "tom", role: "ADMIN" }),
+      json: async () => ({ username: "tom", role: "ADMIN" }),
     });
 
     vi.stubGlobal("fetch", fetchMock);
@@ -74,7 +74,11 @@ describe("LoginPage behavior", () => {
     await user.click(screen.getByRole("button", { name: "Login" }));
 
     await waitFor(() => {
-      expect(storageMocks.setAuth).toHaveBeenCalledWith("signed-token", "tom", "ADMIN");
+      expect(fetchMock).toHaveBeenCalledWith("/api/login", expect.objectContaining({
+        method: "POST",
+        credentials: "include",
+      }));
+      expect(storageMocks.setAuth).toHaveBeenCalledWith("tom", "ADMIN");
       expect(onLoginSuccess).toHaveBeenCalledTimes(1);
     });
   });
