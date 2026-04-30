@@ -12,13 +12,17 @@ export type OnboardingTooltipStep = {
 };
 
 export type HelpWalkthroughStep = {
-  gif: string;
+  mediaSrc: string;
+  mediaAlt: string;
   title: string;
   text: string;
 };
 
+export type HelpAudience = "all" | "desktop" | "mobile";
+
 export type HelpCenterItem = {
   id: string;
+  audience: HelpAudience;
   question: string;
   steps: HelpWalkthroughStep[];
 };
@@ -46,51 +50,80 @@ export function getOnboardingSteps(t: TFunction): OnboardingTooltipStep[] {
 export function getHelpCenterData(t: TFunction): HelpCenterItem[] {
   return [
     {
-      id: "add-task",
-      question: t("help.walkthroughs.addTask.question"),
+      id: "add-task-browser",
+      audience: "desktop",
+      question: t("help.walkthroughs.addTaskBrowser.question"),
       steps: [
         {
-          gif: "add-task",
-          title: t("help.walkthroughs.addTask.title"),
-          text: t("help.walkthroughs.addTask.text"),
+          mediaSrc: "/help-walkthroughs/how to add task in todaypage in browser.gif",
+          mediaAlt: t("help.walkthroughs.addTaskBrowser.title"),
+          title: t("help.walkthroughs.addTaskBrowser.title"),
+          text: t("help.walkthroughs.addTaskBrowser.text"),
         },
       ],
     },
     {
-      id: "drag-to-add",
-      question: t("help.walkthroughs.dragToAdd.question"),
+      id: "quick-add-week-browser",
+      audience: "desktop",
+      question: t("help.walkthroughs.quickAddWeekBrowser.question"),
       steps: [
         {
-          gif: "drag-start",
-          title: t("help.walkthroughs.dragToAdd.step1Title"),
-          text: t("help.walkthroughs.dragToAdd.step1Text"),
-        },
-        {
-          gif: "drag-end",
-          title: t("help.walkthroughs.dragToAdd.step2Title"),
-          text: t("help.walkthroughs.dragToAdd.step2Text"),
+          mediaSrc: "/help-walkthroughs/how to quickly add task in weekpage browser.gif",
+          mediaAlt: t("help.walkthroughs.quickAddWeekBrowser.title"),
+          title: t("help.walkthroughs.quickAddWeekBrowser.title"),
+          text: t("help.walkthroughs.quickAddWeekBrowser.text"),
         },
       ],
     },
     {
-      id: "find-tasks",
-      question: t("help.walkthroughs.findTasks.question"),
+      id: "add-task-week-mobile",
+      audience: "mobile",
+      question: t("help.walkthroughs.addTaskWeekMobile.question"),
       steps: [
         {
-          gif: "task-list",
-          title: t("help.walkthroughs.findTasks.title"),
-          text: t("help.walkthroughs.findTasks.text"),
+          mediaSrc: "/help-walkthroughs/how to add task in weekpage in mobile.gif",
+          mediaAlt: t("help.walkthroughs.addTaskWeekMobile.title"),
+          title: t("help.walkthroughs.addTaskWeekMobile.title"),
+          text: t("help.walkthroughs.addTaskWeekMobile.text"),
         },
       ],
     },
     {
-      id: "open-week",
-      question: t("help.walkthroughs.openWeek.question"),
+      id: "task-map",
+      audience: "all",
+      question: t("help.walkthroughs.taskMap.question"),
       steps: [
         {
-          gif: "week-view",
-          title: t("help.walkthroughs.openWeek.title"),
-          text: t("help.walkthroughs.openWeek.text"),
+          mediaSrc: "/help-walkthroughs/how to enable map function for each task(both mobile and desktop browser).gif",
+          mediaAlt: t("help.walkthroughs.taskMap.title"),
+          title: t("help.walkthroughs.taskMap.title"),
+          text: t("help.walkthroughs.taskMap.text"),
+        },
+      ],
+    },
+    {
+      id: "open-web-app-pc",
+      audience: "desktop",
+      question: t("help.walkthroughs.openWebAppPc.question"),
+      steps: [
+        {
+          mediaSrc: "/help-walkthroughs/how to open a web app in pc.gif",
+          mediaAlt: t("help.walkthroughs.openWebAppPc.title"),
+          title: t("help.walkthroughs.openWebAppPc.title"),
+          text: t("help.walkthroughs.openWebAppPc.text"),
+        },
+      ],
+    },
+    {
+      id: "reset-notifications-pc",
+      audience: "desktop",
+      question: t("help.walkthroughs.resetNotificationsPc.question"),
+      steps: [
+        {
+          mediaSrc: "/help-walkthroughs/how to reset:enable notification in pc.gif",
+          mediaAlt: t("help.walkthroughs.resetNotificationsPc.title"),
+          title: t("help.walkthroughs.resetNotificationsPc.title"),
+          text: t("help.walkthroughs.resetNotificationsPc.text"),
         },
       ],
     },

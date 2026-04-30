@@ -44,6 +44,7 @@ const resources = {
         help: "Help",
         mobileNavigation: "Mobile navigation",
         logout: "Logout",
+        switchLanguage: "Switch language",
         greeting: "Hi, {{name}}!"
       },
       login: {
@@ -179,76 +180,85 @@ const resources = {
         walkthroughStep: "Step {{current}} / {{total}}",
         submitSuccess: "Your question has been saved.",
         submitError: "We couldn't post your question. Your draft is still here.",
-        notificationsPitch: {
-          title: "Notifications stopped after a key change?",
-          body: "Keep one final VAPID keypair on the backend, delete the old stored push subscriptions, then open the app again on each device and allow notifications so each browser or installed phone app creates a fresh subscription with the current backend public key."
-        },
         walkthroughs: {
           title: "Quick Walkthroughs",
           open: "Open",
-          addTask: {
-            question: "How do I add a task?",
-            title: "Add a task",
-            text: "Tap Add Task and type your task."
+          mediaPlaceholderTitle: "GIF placeholder",
+          mediaPlaceholderBody: "Add your walkthrough GIF at this path to replace the placeholder.",
+          addTaskBrowser: {
+            question: "Add a task from Today on desktop",
+            title: "how to add task in todaypage in browser.gif",
+            text: "This GIF shows opening Today, clicking Add Task, and saving a new task."
           },
-          dragToAdd: {
-            question: "How does drag to add work?",
-            step1Title: "Start dragging",
-            step1Text: "Press and hold a time slot in Week.",
-            step2Title: "Release to create",
-            step2Text: "Let go to create the task."
+          quickAddWeekBrowser: {
+            question: "Quick-add a task in Week on desktop",
+            title: "how to quickly add task in weekpage browser.gif",
+            text: "This GIF shows choosing a time in Week and creating a task faster."
           },
-          findTasks: {
-            question: "Where do my tasks appear?",
-            title: "Check your task list",
-            text: "Your saved tasks appear in the Today list."
+          addTaskWeekMobile: {
+            question: "Add a task in Week on mobile",
+            title: "how to add task in weekpage in mobile.gif",
+            text: "This GIF shows pressing a time slot in mobile Week and adding a task."
           },
-          openWeek: {
-            question: "How do I open Week view?",
-            title: "Open Week view",
-            text: "Tap Week to plan tasks by time."
+          taskMap: {
+            question: "Open the map from a task",
+            title: "how to enable map function for each task(both mobile and desktop browser).gif",
+            text: "This GIF shows opening the map link from a task on desktop or mobile."
+          },
+          openWebAppPc: {
+            question: "Open the planner as a desktop web app",
+            title: "how to open a web app in pc.gif",
+            text: "This GIF shows installing or opening the planner as a desktop web app."
+          },
+          resetNotificationsPc: {
+            question: "Reset or enable desktop notifications",
+            title: "how to reset:enable notification in pc.gif",
+            text: "This GIF shows fixing desktop browser notification settings for the planner."
           }
         },
         guides: {
           title: "How To Use This Website",
-          step0: "Use the EN / 中文 button on the login page whenever you want to switch the sign-in flow between English and Chinese before entering the app.",
-          step1: "Use Today to add, edit, complete, or move tasks for the current or selected day. The To Today and To Tomorrow actions follow the date you are viewing. Completed tasks leave the active list immediately, stay retained for 30 days, and contribute to the expandable productivity stats and trend chart shown on the page.",
-          step2: "Use the Import ICS action on Today when you want to turn calendar events from a `.ics` file into planner tasks. The importer keeps multi-day all-day ranges, timed events, and supported daily, weekly, monthly, or yearly repeat rules.",
-          step3: "Use Week and Month to review your schedule and jump between dates quickly. Week now opens in Time Grid by default, and on phones you can press-hold a time range before creating a task while Month stays as a simplified task grid.",
-          step4: "Use Reminders for ongoing notes that should stay visible until you mark them done.",
-          step5: "On phones, use the bottom navigation to switch between planner sections, while larger screens keep the sidebar visible. When a task dialog opens, the mobile bottom navigation hides until the task window closes.",
-          step6: "Task, Reminder, and repeat-option forms open full-screen on mobile for easier editing, and stay centered as dialogs on larger screens.",
-          step7: "Planner notifications now use background Web Push on supported desktop browsers and installed mobile web apps. After you interact with the app and allow notifications, daily prompts and upcoming timed-task alerts can arrive even when the planner tab is closed. Browsers without Web Push support still fall back to in-page notifications while the planner stays open."
+          step0: "Use the language button on the login page if you want English or Chinese before signing in.",
+          step1: "Use Today to add tasks, edit tasks, mark tasks done, and move tasks to another day.",
+          step2: "Use Import ICS on Today if you want to turn calendar events into planner tasks.",
+          step3: "Use Week and Month to see your schedule and jump to another date quickly.",
+          step4: "Use Reminders for notes that should stay visible until you finish them.",
+          step5Desktop: "On desktop, use the left sidebar to move between Today, Week, Month, Reminders, and Help.",
+          step5Mobile: "On mobile, use the bottom navigation to move between Today, Week, Month, Reminders, and Help.",
+          step6Desktop: "On desktop, task forms open as centered dialog windows.",
+          step6Mobile: "On mobile, task forms open full screen so they are easier to use.",
+          step7Desktop: "On desktop, allow notifications if you want daily reminders and task alerts from the browser.",
+          step7Mobile: "On mobile, install the web app and allow notifications if you want daily reminders and task alerts."
         },
         faq: {
           title: "Common Q&A",
           q1: {
             question: "How does repeat work for tasks?",
-            answer: "Each task starts with a begin date and a repeat setting. You can keep it as Once, or repeat it daily, weekly, monthly, or yearly with interval and end-date controls. On Today, one-time tasks can also be moved to Today or Tomorrow based on the date you are viewing. Completing a task now stores a completion timestamp, hides it from active views, keeps retained analytics data for 30 days, and feeds the expandable productivity stats on Today."
+            answer: "Choose a begin date, then choose how often the task repeats. You can keep it once, or repeat it daily, weekly, monthly, or yearly."
           },
           q2: {
             question: "How do reminders differ from tasks?",
-            answer: "Reminders are lightweight notes for ongoing follow-up, while tasks are date-based items managed in Today, Week, and Month."
+            answer: "Tasks are planned by date. Reminders are simple notes that stay visible until you mark them done."
           },
           q3: {
             question: "Why does a task need a valid end time?",
-            answer: "If you set an end time, it must be equal to or later than the start time so the calendar can render it correctly."
+            answer: "If you use an end time, it must be the same as or later than the start time."
           },
           q4: {
             question: "Who can see the submitted questions?",
-            answer: "Standard users can only see their own submitted questions in the My Questions list, while admin accounts can review the full question list and delete questions when needed. Every submission is stored as its own post instead of overwriting an older question."
+            answer: "Normal users only see their own questions. Admin accounts can see all questions and delete them if needed."
           },
           q5: {
             question: "How does clicking in Week view work?",
-            answer: "Click a day header to jump to that date in Today, click an empty spot on larger screens so the next new task uses that date by default, and on mobile the Week page now opens in Time Grid so you can press-hold a time range immediately while swiping through each week's 4-day and 3-day pages. If your selected range crosses into the next day, the new task also keeps that end date."
+            answer: "You can jump to a date, pick a time slot, and create a task from Week. On mobile, press and hold the time range you want."
           },
           q6: {
             question: "How does the layout change on mobile devices?",
-            answer: "The planner switches to a bottom navigation layout, narrows typography, uses a swipeable Week view that rolls from 4 days to 3 days and into the next week, replaces the Week add button with press-hold time-range creation, keeps Month as a simplified task grid, expands Task and Reminder forms to full-screen for easier touch use, and hides the mobile bottom navigation whenever an add-task or edit-task window is open."
+            answer: "The app uses bottom navigation, a touch-friendly Week view, and full-screen forms on mobile."
           },
           q7: {
             question: "What happens if a save request fails?",
-            answer: "The app reloads tasks or reminders from the server after a failed save so unsaved local changes do not replace your stored data. If posting a help question fails, the draft stays in the editor and the page shows an error instead of a fake success message."
+            answer: "The app reloads your saved data from the server. If a help question fails to post, your draft stays in the box."
           },
           q8: {
             question: "Can I change the language before logging in?",
@@ -256,19 +266,27 @@ const resources = {
           },
           q9: {
             question: "What happens when I edit one repeating task occurrence?",
-            answer: "After you save or delete one repeating task occurrence, the app asks whether the action should affect only that day or the entire series. Single-day changes are stored as occurrence overrides so the original series stays intact."
+            answer: "The app asks whether you want to change only that day or the whole repeating series."
           },
           q10: {
             question: "Do browser reminder notifications keep growing in storage?",
-            answer: "No. The fallback in-page notification history still stays bounded to three days in one retained browser record, and the new background push scheduler also prunes per-device notification history so duplicate daily or task alerts do not keep growing."
+            answer: "No. Old notification records are cleaned up automatically."
           },
           q12: {
             question: "How do I get notifications on phone and computer?",
-            answer: "Allow notifications after you interact with the app. On desktop, supported browsers can receive background alerts through Web Push. On iPhone or iPad, add the app to the home screen first and then allow notifications from the installed web app. Daily prompts and 15-minute task alerts are then delivered from the backend even if the planner page is not open."
+            answer: "Desktop:\n1. Open the planner.\n2. Allow notifications when the browser asks.\n\nIPhone or iPad:\n1. Add the web app to Home Screen.\n2. Open the installed app.\n3. Allow notifications.\n4. If needed, check Settings > Notifications > [your web app name].\n5. Make sure notifications are on.\n\nAndroid:\n1. Install the web app if your browser supports it.\n2. Open the installed app.\n3. Allow notifications.\n4. If needed, check Settings > Apps > [your web app name or browser] > Notifications.\n5. Make sure notifications are on.\n\nAfter setup, daily prompts and 15-minute task alerts can arrive even when the planner page is closed."
+          },
+          q13: {
+            question: "How do I install the mobile web app?",
+            answer: "IPhone or iPad:\n1. Open the site in Safari.\n2. Tap Share.\n3. Tap Add to Home Screen.\n4. Confirm the app name.\n5. Open it from your Home Screen.\n\nAndroid:\n1. Open the site in Chrome, Edge, or another supported browser.\n2. Open the browser menu.\n3. Tap Install app or Add to Home screen.\n4. Confirm.\n5. Open it from your Home Screen or app list."
+          },
+          q14: {
+            question: "Do installed mobile web apps work the same on every browser?",
+            answer: "No.\n\nIPhone and iPad:\n- Use Safari for the best install support.\n\nAndroid:\n- Chrome and Edge usually work best.\n- Other browsers can vary by device and version.\n\nIf install or notification options do not appear, try Safari on iPhone/iPad or Chrome/Edge on Android."
           },
           q11: {
             question: "What does the ICS importer support?",
-            answer: "Import ICS on Today to convert calendar events into tasks. The importer keeps titles, notes, locations, multi-day all-day ranges, timed events, and supported daily, weekly, monthly, or yearly repeat rules. Unsupported entries are skipped and reported after the import."
+            answer: "Import ICS on Today to turn calendar events into tasks. It supports titles, notes, locations, timed events, multi-day events, and common repeat rules."
           }
         },
         ask: {
@@ -396,6 +414,7 @@ const resources = {
         help: "帮助",
         mobileNavigation: "移动端导航",
         logout: "退出登录",
+        switchLanguage: "切换语言",
         greeting: "你好，{{name}}！"
       },
       login: {
@@ -531,76 +550,85 @@ const resources = {
         walkthroughStep: "步骤 {{current}} / {{total}}",
         submitSuccess: "你的问题已保存。",
         submitError: "问题发布失败，草稿会保留在输入框中。",
-        notificationsPitch: {
-          title: "改了密钥后通知失效了？",
-          body: "先在后端固定使用最终版 VAPID 密钥对，再删除数据库里旧的推送订阅，然后分别在每台设备上重新打开应用并允许通知，让每个浏览器或已安装的手机网页应用都用当前后端公钥重新创建订阅。"
-        },
         walkthroughs: {
           title: "快捷演示",
           open: "打开",
-          addTask: {
-            question: "怎么添加任务？",
-            title: "添加任务",
-            text: "点击添加任务，然后输入内容。"
+          mediaPlaceholderTitle: "GIF 占位区域",
+          mediaPlaceholderBody: "把你的演示 GIF 放到这个路径后，就会替换当前占位区域。",
+          addTaskBrowser: {
+            question: "在桌面端从 Today 添加任务",
+            title: "how to add task in todaypage in browser.gif",
+            text: "这个 GIF 会演示在桌面浏览器中打开 Today、点击 Add Task，并保存新任务。"
           },
-          dragToAdd: {
-            question: "拖动创建任务怎么用？",
-            step1Title: "开始拖动",
-            step1Text: "在 Week 的时间格上长按并开始拖动。",
-            step2Title: "松开创建",
-            step2Text: "松开后就会创建任务。"
+          quickAddWeekBrowser: {
+            question: "在桌面端的 Week 快速添加任务",
+            title: "how to quickly add task in weekpage browser.gif",
+            text: "这个 GIF 会演示在桌面浏览器的 Week 页面快速选择时间并创建任务。"
           },
-          findTasks: {
-            question: "任务会显示在哪里？",
-            title: "查看任务列表",
-            text: "保存后的任务会显示在 Today 列表中。"
+          addTaskWeekMobile: {
+            question: "在手机端的 Week 添加任务",
+            title: "how to add task in weekpage in mobile.gif",
+            text: "这个 GIF 会演示在手机端的 Week 页面按住时间格并添加任务。"
           },
-          openWeek: {
-            question: "怎么打开周视图？",
-            title: "打开周视图",
-            text: "点击 Week 即可按时间安排任务。"
+          taskMap: {
+            question: "从任务中打开地图",
+            title: "how to enable map function for each task(both mobile and desktop browser).gif",
+            text: "这个 GIF 会演示在手机端或桌面端从任务里打开地图链接。"
+          },
+          openWebAppPc: {
+            question: "在桌面端把计划器作为网页应用打开",
+            title: "how to open a web app in pc.gif",
+            text: "这个 GIF 会演示在桌面端安装或打开计划器网页应用。"
+          },
+          resetNotificationsPc: {
+            question: "重置或开启桌面通知",
+            title: "how to reset:enable notification in pc.gif",
+            text: "这个 GIF 会演示在桌面浏览器中修复计划器通知设置。"
           }
         },
         guides: {
           title: "网站使用说明",
-          step0: "如果你想在登录前切换语言，可以先使用登录页上的 EN / 中文 按钮，在英文和中文之间切换认证界面。",
-          step1: "在 Today 页面中添加、编辑、完成或移动当前查看日期的任务。`移到今天` 与 `移到明天` 会跟随你正在查看的日期。任务完成后会立即从进行中列表隐藏，并保留 30 天的完成数据，同时这些记录也会计入页面上可展开的效率统计与趋势图。",
-          step2: "如果你有日历导出的 `.ics` 文件，可以在 Today 页面使用导入按钮把事件直接转换成任务。导入会保留跨天全天范围、定时事件，以及受支持的每天、每周、每月、每年重复规则。",
-          step3: "在 Week 和 Month 页面快速查看整体安排并跳转日期。Week 现在默认进入时间网格；在手机上可直接长按时间范围创建任务，而 Month 则保持为简化后的任务网格。",
-          step4: "使用 Reminders 记录持续存在、直到你手动完成的提醒事项。",
-          step5: "在手机上可使用底部导航切换页面；在较大屏幕上会显示侧边栏导航。当任务弹窗打开时，移动端底部导航会先隐藏，直到任务窗口关闭。",
-          step6: "Task、Reminder 和重复设置表单在手机上会全屏打开，较大屏幕上则保持居中弹窗。",
-          step7: "计划器通知现在会在受支持的桌面浏览器和已安装的移动端网页应用中使用后台 Web Push。你与应用交互并允许通知后，每日提醒和即将开始的定时任务提醒即使在计划器标签页关闭后也能送达。不支持 Web Push 的浏览器仍会在页面保持打开时使用页内通知作为兜底。"
+          step0: "如果你想在登录前切换语言，可以先用登录页的 EN / 中文 按钮。",
+          step1: "Today 用来添加任务、编辑任务、完成任务，或把任务移动到别的日期。",
+          step2: "如果你想把日历事件变成任务，可以在 Today 使用 Import ICS。",
+          step3: "Week 和 Month 用来看安排，也可以快速跳到别的日期。",
+          step4: "Reminders 适合记录会一直显示、直到你完成的提醒事项。",
+          step5Desktop: "桌面端可以用左侧边栏切换 Today、Week、Month、Reminders 和 Help。",
+          step5Mobile: "手机端可以用底部导航切换 Today、Week、Month、Reminders 和 Help。",
+          step6Desktop: "桌面端的任务表单会以居中弹窗打开。",
+          step6Mobile: "手机端的任务表单会全屏打开，操作更方便。",
+          step7Desktop: "如果你想收到每日提醒和任务提醒，请在桌面端允许浏览器通知。",
+          step7Mobile: "如果你想收到每日提醒和任务提醒，请先安装网页应用并允许通知。"
         },
         faq: {
           title: "常见问答",
           q1: {
             question: "任务的重复设置怎么用？",
-            answer: "每个任务都会先设置开始日期，再选择重复方式。你可以保持为一次，也可以设置为每天、每周、每月或每年，并配置间隔和结束日期。在 Today 页面里，一次性任务还可以根据你当前查看的日期移到今天或明天。任务完成后会记录完成时间，从进行中视图隐藏，并保留 30 天的分析数据，同时会计入 Today 页面可展开的效率统计。"
+            answer: "先选开始日期，再选择重复方式。你可以设为一次、每天、每周、每月或每年。"
           },
           q2: {
             question: "提醒和任务有什么不同？",
-            answer: "提醒更适合持续跟进的简短事项，而任务是按日期管理的内容，会出现在 Today、Week 和 Month 中。"
+            answer: "任务按日期安排。提醒更像会一直显示的简短备忘。"
           },
           q3: {
             question: "为什么结束时间必须有效？",
-            answer: "如果设置了结束时间，它必须等于或晚于开始时间，这样日历才能正确显示任务。"
+            answer: "如果设置结束时间，它必须和开始时间一样晚或更晚。"
           },
           q4: {
             question: "谁可以看到提交的问题？",
-            answer: "普通用户只能在“我的问题”列表中看到自己提交的问题，而管理员账号可以查看完整的问题列表，并在需要时删除问题。每次提交都会作为独立帖子保存，不会覆盖旧问题。"
+            answer: "普通用户只会看到自己的问题。管理员可以看到所有问题，也可以删除问题。"
           },
           q5: {
             question: "Week 页面中的点击行为是什么？",
-            answer: "点击某一天的日期标题会跳转到对应的 Today 页面；在较大屏幕上点击周历中的空白区域后，再新增任务时会默认带入该日期；在手机上 Week 页面默认就是时间网格，可直接长按某段时间范围打开该时段的任务创建流程，同时仍可在每周的 4 天页与 3 天页之间持续滑动并进入下一周。如果所选范围跨到下一天，新任务也会保留那个结束日期。"
+            answer: "你可以从 Week 跳到某一天，也可以直接选时间来创建任务。手机端可以长按时间范围来添加任务。"
           },
           q6: {
             question: "移动设备上的布局会怎样变化？",
-            answer: "应用会切换到底部导航、缩小排版字号，并让 Week 页面改为可持续左右滑动的布局，按每周先 4 天再 3 天的顺序切换，同时把 Week 页面上的新增任务入口改成长按时间范围，并让 Month 页面保持为简化后的任务网格，同时让 Task 与 Reminder 表单改为全屏显示，方便触控操作；当新增任务或编辑任务窗口打开时，移动端底部导航会自动隐藏。"
+            answer: "手机端会使用底部导航、触控更方便的 Week 视图，以及全屏表单。"
           },
           q7: {
             question: "如果保存请求失败会怎样？",
-            answer: "当保存失败时，应用会从服务器重新加载任务或提醒，避免未保存的本地变更覆盖你已经存储的数据。如果帮助问题发布失败，草稿会保留在输入框中，页面也会显示错误提示，而不是误报成功。"
+            answer: "应用会重新加载服务器里的数据。如果帮助问题发送失败，草稿会保留下来。"
           },
           q8: {
             question: "我可以在登录前切换语言吗？",
@@ -608,19 +636,27 @@ const resources = {
           },
           q9: {
             question: "修改重复任务的一天时会发生什么？",
-            answer: "当你保存或删除重复任务中的某一天时，应用会让你选择只影响这一天，还是影响整个系列。只针对一天的变更会记录为单次覆盖，不会破坏原来的系列。"
+            answer: "应用会问你是只改这一天，还是改整个重复系列。"
           },
           q10: {
             question: "浏览器提醒通知会一直占用越来越多的存储吗？",
-            answer: "不会。页内通知兜底方案仍然只会把三天内的记录保存在一个浏览器键中，而新的后台推送调度器也会按设备清理通知历史，避免重复的每日提醒或任务提醒不断累积。"
+            answer: "不会。旧的通知记录会自动清理。"
           },
           q12: {
             question: "怎样才能在手机和电脑上都收到通知？",
-            answer: "先在与应用交互后允许通知。桌面端可在受支持的浏览器中通过 Web Push 收到后台提醒；iPhone 和 iPad 需要先把应用加入主屏幕，再在安装后的网页应用中允许通知。之后，每日提醒和任务开始前 15 分钟提醒都会由后端发送，即使计划器页面没有打开。"
+            answer: "桌面端：\n1. 打开计划器。\n2. 在浏览器请求时允许通知。\n\nIPhone 或 iPad：\n1. 先把网页应用加入主屏幕。\n2. 打开安装后的应用。\n3. 允许通知。\n4. 如果需要，到 设置 > 通知 > [你的网页应用名称] 检查。\n5. 确认通知已开启。\n\nAndroid：\n1. 如果浏览器支持，先安装网页应用。\n2. 打开安装后的应用。\n3. 允许通知。\n4. 如果需要，到 设置 > 应用 > [你的网页应用名称或浏览器] > 通知 检查。\n5. 确认通知已开启。\n\n完成后，即使页面关闭，也能收到每日提醒和任务开始前 15 分钟提醒。"
+          },
+          q13: {
+            question: "怎么安装移动端网页应用？",
+            answer: "IPhone 或 iPad：\n1. 用 Safari 打开网站。\n2. 点分享。\n3. 点“添加到主屏幕”。\n4. 确认应用名称。\n5. 从主屏幕打开。\n\nAndroid：\n1. 用 Chrome、Edge 或其他支持的浏览器打开网站。\n2. 打开浏览器菜单。\n3. 点“安装应用”或“添加到主屏幕”。\n4. 确认。\n5. 从主屏幕或应用列表打开。"
+          },
+          q14: {
+            question: "不同浏览器安装后的移动网页应用效果一样吗？",
+            answer: "不完全一样。\n\nIPhone 和 iPad：\n- Safari 的支持最好。\n\nAndroid：\n- Chrome 和 Edge 通常最完整。\n- 其他浏览器会因设备和版本不同而有差异。\n\n如果没有看到安装或通知选项，iPhone/iPad 请优先试 Safari，Android 请优先试 Chrome 或 Edge。"
           },
           q11: {
             question: "ICS 导入功能支持什么？",
-            answer: "你可以在 Today 页面导入 ICS，把日历事件转换成任务。导入会保留标题、备注、地点、跨天全天范围、定时事件，以及受支持的每天、每周、每月、每年重复规则。暂不支持的条目会被跳过，并在导入后提示。"
+            answer: "你可以在 Today 导入 ICS，把日历事件变成任务。支持标题、备注、地点、定时事件、跨天事件和常见重复规则。"
           }
         },
         ask: {

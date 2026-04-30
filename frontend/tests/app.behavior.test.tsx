@@ -67,18 +67,23 @@ describe("App behavior", () => {
 
   it("switches navigation labels when the language toggle is used", async () => {
     const user = userEvent.setup();
+    localStorage.setItem("weekly-todo:onboarding:v1.16.0", "done");
 
     renderWithProviders(<App />);
 
     await waitFor(() => {
       expect(screen.getAllByRole("link", { name: "Today" }).length).toBeGreaterThan(0);
     });
+    await user.hover(screen.getAllByRole("button", { name: "Switch language" })[0]);
+    expect(await screen.findByText("Switch language")).toBeInTheDocument();
 
-    await user.click(screen.getAllByRole("button", { name: "中文" })[0]);
+    await user.click(screen.getAllByRole("button", { name: "Switch language" })[0]);
 
     await waitFor(() => {
       expect(screen.getAllByRole("link", { name: "今天" }).length).toBeGreaterThan(0);
     });
+    await user.hover(screen.getAllByRole("button", { name: "切换语言" })[0]);
+    expect(await screen.findByText("切换语言")).toBeInTheDocument();
   });
 
   it("shows onboarding once and stores completion after the user finishes it", async () => {
@@ -86,6 +91,7 @@ describe("App behavior", () => {
 
     renderWithProviders(<App />);
 
+    expect(screen.queryByText("What's New")).not.toBeInTheDocument();
     expect(await screen.findByRole("dialog", { name: "Quick tour" })).toBeInTheDocument();
     expect(screen.getByText("Tap here to add a task.")).toBeInTheDocument();
 
@@ -101,6 +107,13 @@ describe("App behavior", () => {
       expect(screen.queryByRole("dialog", { name: "Quick tour" })).not.toBeInTheDocument();
     });
     expect(localStorage.getItem("weekly-todo:onboarding:v1.16.0")).toBe("done");
+  });
+
+  it("does not auto-open release notes for first-time users", async () => {
+    renderWithProviders(<App />);
+
+    expect(await screen.findByRole("dialog", { name: "Quick tour" })).toBeInTheDocument();
+    expect(screen.queryByText("What's New")).not.toBeInTheDocument();
   });
 
   it("renders mobile bottom navigation on small screens", async () => {

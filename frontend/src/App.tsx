@@ -99,6 +99,7 @@ export default function App() {
   const mobileNavZIndex = 1700;
   const canUseBackgroundPush = supportsPushNotifications();
   const onboardingSteps = getOnboardingSteps(t);
+  const shouldSuppressReleaseNotes = !localStorage.getItem(ONBOARDING_STORAGE_KEY);
 
   async function reloadTasksFromServer() {
     const serverTasks = rolloverIfNeeded(await loadTasks());
@@ -449,8 +450,8 @@ export default function App() {
               {t("nav.greeting", { name: username })}
             </Typography>
           </Box>
-          {username ? <ReleaseNotesCenter username={username} /> : null}
-          <Tooltip title={currentLanguage === "en" ? "中文" : "English"}>
+          {username ? <ReleaseNotesCenter username={username} suppressAutoOpen={shouldSuppressReleaseNotes} /> : null}
+          <Tooltip title={t("nav.switchLanguage")}>
             <IconButton color="inherit" onClick={handleLanguageToggle} size="small">
               <LanguageRoundedIcon />
             </IconButton>
@@ -569,15 +570,17 @@ export default function App() {
               <Box sx={{ height: 1, bgcolor: "divider" }} />
 
               <Stack spacing={1}>
-                {username ? <ReleaseNotesCenter username={username} /> : null}
-                <Button
-                  variant="outlined"
-                  startIcon={<LanguageRoundedIcon />}
-                  onClick={handleLanguageToggle}
-                  sx={{ borderRadius: 2.5 }}
-                >
-                  {currentLanguage === "en" ? "中文" : "English"}
-                </Button>
+                {username ? <ReleaseNotesCenter username={username} suppressAutoOpen={shouldSuppressReleaseNotes} /> : null}
+                <Tooltip title={t("nav.switchLanguage")}>
+                  <Button
+                    variant="outlined"
+                    startIcon={<LanguageRoundedIcon />}
+                    onClick={handleLanguageToggle}
+                    sx={{ borderRadius: 2.5 }}
+                  >
+                    {currentLanguage === "en" ? "中文" : "English"}
+                  </Button>
+                </Tooltip>
                 <Button
                   variant="text"
                   color="inherit"

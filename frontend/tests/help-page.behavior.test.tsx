@@ -1,13 +1,14 @@
 // INPUT: help page with mocked role-scoped question storage
 // OUTPUT: behavior coverage for help-center interactions
 // EFFECT: Verifies the help feature loads role-scoped questions and handles question submission outcomes
-import { screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import i18n from "../src/i18n";
 import { HelpPage } from "../src/pages/HelpPage";
 import { renderWithProviders } from "./test-utils";
+import { setScreenWidth } from "./setup";
 
 const storageMocks = vi.hoisted(() => ({
   loadHelpQuestions: vi.fn(),
@@ -45,6 +46,7 @@ describe("HelpPage behavior", () => {
     });
     storageMocks.deleteHelpQuestion.mockReset().mockResolvedValue(undefined);
     storageMocks.isAdminUser.mockReset().mockReturnValue(false);
+    setScreenWidth(1024);
     await i18n.changeLanguage("en");
   });
 
@@ -53,11 +55,9 @@ describe("HelpPage behavior", () => {
 
     renderWithProviders(<HelpPage />);
 
-    expect(screen.getByRole("button", { name: /How do I add a task\?/i })).toBeInTheDocument();
-    expect(screen.getByText("Notifications stopped after a key change?")).toBeInTheDocument();
-    expect(
-      screen.getByText(/delete the old stored push subscriptions/i)
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Add a task from Today on desktop/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Add a task in Week on mobile/i })).not.toBeInTheDocument();
+    expect(screen.queryByText("Notifications stopped after a key change?")).not.toBeInTheDocument();
     expect(await screen.findByText("My Questions")).toBeInTheDocument();
     expect(await screen.findByText("How do I move a task?")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Delete" })).not.toBeInTheDocument();
@@ -76,16 +76,37 @@ describe("HelpPage behavior", () => {
 
     renderWithProviders(<HelpPage />);
 
-    await user.click(screen.getByRole("button", { name: /How does drag to add work\?/i }));
+    await user.click(screen.getByRole("button", { name: /Quick-add a task in Week on desktop/i }));
 
-    expect(await screen.findByRole("dialog", { name: "How does drag to add work?" })).toBeInTheDocument();
-    expect(screen.getByText("Start dragging")).toBeInTheDocument();
-    expect(screen.getByText("Press and hold a time slot in Week.")).toBeInTheDocument();
+    expect(await screen.findByRole("dialog", { name: "Quick-add a task in Week on desktop" })).toBeInTheDocument();
+    expect(screen.getByText("how to quickly add task in weekpage browser.gif")).toBeInTheDocument();
+    expect(screen.getByText("This GIF shows choosing a time in Week and creating a task faster.")).toBeInTheDocument();
+    fireEvent.error(screen.getByRole("img", { name: "how to quickly add task in weekpage browser.gif" }));
+    expect(screen.getByText("GIF placeholder")).toBeInTheDocument();
+    expect(screen.getByText("/help-walkthroughs/how to quickly add task in weekpage browser.gif")).toBeInTheDocument();
+  });
 
-    await user.click(screen.getByRole("button", { name: "Next" }));
+  it("shows the updated mobile notification and install guidance in the FAQ", async () => {
+    renderWithProviders(<HelpPage />);
 
-    expect(screen.getByText("Release to create")).toBeInTheDocument();
-    expect(screen.getByText("Let go to create the task.")).toBeInTheDocument();
+    expect(await screen.findByText("How do I get notifications on phone and computer?")).toBeInTheDocument();
+    expect(screen.getByText(/1\. Open the planner\./i)).toBeInTheDocument();
+    expect(screen.getByText(/Settings > Notifications > \[your web app name\]/i)).toBeInTheDocument();
+    expect(screen.getByText(/Settings > Apps > \[your web app name or browser\] > Notifications/i)).toBeInTheDocument();
+    expect(screen.queryByText(/How do I install the mobile web app\?/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Do installed mobile web apps work the same on every browser\?/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/How does the layout change on mobile devices\?/i)).not.toBeInTheDocument();
+  });
+
+  it("shows mobile-only help items on mobile and hides desktop-only ones", async () => {
+    setScreenWidth(390);
+
+    renderWithProviders(<HelpPage />);
+
+    expect(await screen.findByRole("button", { name: /Add a task in Week on mobile/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Add a task from Today on desktop/i })).not.toBeInTheDocument();
+    expect(screen.getByText(/How does the layout change on mobile devices\?/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Do browser reminder notifications keep growing in storage\?/i)).not.toBeInTheDocument();
   });
 
   it("keeps the draft when posting a question fails", async () => {

@@ -6,6 +6,7 @@ import { RELEASE_NOTES, LATEST_RELEASE_ID, getReleaseNotesSeenKey } from "../app
 
 type Props = {
   username: string;
+  suppressAutoOpen?: boolean;
 };
 
 type ReleaseSectionKey = "features" | "improvements" | "fixes";
@@ -55,6 +56,10 @@ export function ReleaseNotesCenter(props: Props) {
   // 1. Extract the check into a reusable function
   const checkSeenState = () => {
     if (!props.username || !LATEST_RELEASE_ID) return;
+    if (props.suppressAutoOpen) {
+      setDialogOpen(false);
+      return;
+    }
     const seenReleaseId = localStorage.getItem(seenKey);
     setDialogOpen(seenReleaseId !== LATEST_RELEASE_ID);
   };
@@ -66,7 +71,7 @@ export function ReleaseNotesCenter(props: Props) {
     // 3. Listen for custom event from other instances
     window.addEventListener("releaseNotesAck", checkSeenState);
     return () => window.removeEventListener("releaseNotesAck", checkSeenState);
-  }, [props.username, seenKey]);
+  }, [props.suppressAutoOpen, props.username, seenKey]);
 
   function markLatestSeen() {
     if (!LATEST_RELEASE_ID) return;

@@ -31,8 +31,8 @@ Deployed Web: [website](https://todo-cfun.onrender.com/)
 - Month view now opens on the month that matches the selected `?date=` route, so clicking a visible day always follows the active planner date context.
 - Reminder tracking with priority ordering and completion flow.
 - Role-based help center with FAQ content, append-only user questions, admin-wide review access, and admin-only question deletion.
-- Help Center now includes `Quick Walkthroughs`: short question-driven modal guides with animated visuals for adding tasks, opening Week, finding saved tasks, and drag-to-add.
-- Help Center now includes a notification-recovery pitch that explains how to recover after VAPID key changes by clearing old subscriptions and re-enabling notifications on each device.
+- Help Center now includes `Quick Walkthroughs`: short question-driven modal guides with GIF-ready media slots for adding tasks, opening Week, finding saved tasks, and drag-to-add.
+- Help Center now explains mobile notification setup, mobile web-app installation, and browser-specific installed-app behavior for iPhone, iPad, and Android.
 - Help-question posting now keeps the draft visible if the request fails instead of showing a false success state.
 - Week view now respects one-day recurring-task time overrides when placing events on the calendar.
 - Week view now generates recurring events only for the visible range and reuses cached occurrence windows for repeated range renders.
@@ -98,6 +98,7 @@ npm test
 - Local development can skip manual VAPID setup because the backend generates `backend/.push-vapid.json` on first use. Production should provide `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `WEB_PUSH_SUBJECT`.
 - Use `Import ICS` on the Today page when you want to bring calendar events into the planner from a `.ics` export. The importer keeps titles, notes, locations, multi-day all-day ranges, timed events, and supported daily, weekly, monthly, and yearly recurrence rules.
 - The in-app Updates center mirrors the latest shipped release metadata from `frontend/src/app/releaseNotes.ts` and groups each release under `New Features`, `Improvements`, and `Bug Fixes`.
+- Walkthrough GIF files can be added under `frontend/public/help-walkthroughs/` using the built-in filenames shown in each Help Center placeholder.
 - First-run onboarding is stored per browser in local storage, so the tooltip guide disappears after completion or skip.
 - Shared help questions are stored as new posts on the server, so another signed-in user cannot overwrite an older question by reusing its client-side id.
 - Standard users can only read their own submitted help questions, while `ADMIN` accounts can review all questions.

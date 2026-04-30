@@ -17,6 +17,8 @@ import {
   Stack,
   TextField,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -24,18 +26,19 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import MenuBookRoundedIcon from "@mui/icons-material/MenuBookRounded";
 import QuestionAnswerRoundedIcon from "@mui/icons-material/QuestionAnswerRounded";
 import ForumRoundedIcon from "@mui/icons-material/ForumRounded";
-import NotificationsActiveOutlinedIcon from "@mui/icons-material/NotificationsActiveOutlined";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 
 import type { HelpQuestion } from "../types";
 import { ConfirmDeleteDialog } from "../components/ConfirmDeleteDialog";
 import { HelpWalkthroughModal } from "../components/HelpWalkthroughModal";
-import { getHelpCenterData } from "../app/helpCenter";
+import { getHelpCenterData, type HelpAudience } from "../app/helpCenter";
 import { createHelpQuestion, deleteHelpQuestion, isAdminUser, loadHelpQuestions } from "../app/storage";
 
 export function HelpPage() {
   const { t, i18n } = useTranslation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [searchParams, setSearchParams] = useSearchParams();
   const [questions, setQuestions] = useState<HelpQuestion[]>([]);
   const [draftQuestion, setDraftQuestion] = useState("");
@@ -49,7 +52,11 @@ export function HelpPage() {
   const [deleteTarget, setDeleteTarget] = useState<HelpQuestion | undefined>();
   const currentLanguage = i18n.resolvedLanguage?.startsWith("zh") ? "zh" : "en";
   const isAdmin = isAdminUser();
-  const helpCenterData = useMemo(() => getHelpCenterData(t), [t]);
+  const deviceAudience: HelpAudience = isMobile ? "mobile" : "desktop";
+  const helpCenterData = useMemo(
+    () => getHelpCenterData(t).filter((item) => item.audience === "all" || item.audience === deviceAudience),
+    [deviceAudience, t]
+  );
   const [selectedWalkthroughId, setSelectedWalkthroughId] = useState<string | null>(
     searchParams.get("topic")
   );
@@ -61,30 +68,32 @@ export function HelpPage() {
       t("help.guides.step2"),
       t("help.guides.step3"),
       t("help.guides.step4"),
-      t("help.guides.step5"),
-      t("help.guides.step6"),
-      t("help.guides.step7"),
+      t(isMobile ? "help.guides.step5Mobile" : "help.guides.step5Desktop"),
+      t(isMobile ? "help.guides.step6Mobile" : "help.guides.step6Desktop"),
+      t(isMobile ? "help.guides.step7Mobile" : "help.guides.step7Desktop"),
     ],
-    [t]
+    [isMobile, t]
   );
 
   const faqItems = useMemo(
     () => [
-      { question: t("help.faq.q1.question"), answer: t("help.faq.q1.answer") },
-      { question: t("help.faq.q2.question"), answer: t("help.faq.q2.answer") },
-      { question: t("help.faq.q3.question"), answer: t("help.faq.q3.answer") },
-      { question: t("help.faq.q4.question"), answer: t("help.faq.q4.answer") },
-      { question: t("help.faq.q5.question"), answer: t("help.faq.q5.answer") },
-      { question: t("help.faq.q6.question"), answer: t("help.faq.q6.answer") },
-      { question: t("help.faq.q7.question"), answer: t("help.faq.q7.answer") },
-      { question: t("help.faq.q8.question"), answer: t("help.faq.q8.answer") },
-      { question: t("help.faq.q9.question"), answer: t("help.faq.q9.answer") },
-      { question: t("help.faq.q10.question"), answer: t("help.faq.q10.answer") },
-      { question: t("help.faq.q11.question"), answer: t("help.faq.q11.answer") },
-      { question: t("help.faq.q12.question"), answer: t("help.faq.q12.answer") },
+      { question: t("help.faq.q1.question"), answer: t("help.faq.q1.answer"), audience: "all" },
+      { question: t("help.faq.q2.question"), answer: t("help.faq.q2.answer"), audience: "all" },
+      { question: t("help.faq.q3.question"), answer: t("help.faq.q3.answer"), audience: "all" },
+      { question: t("help.faq.q4.question"), answer: t("help.faq.q4.answer"), audience: "all" },
+      { question: t("help.faq.q5.question"), answer: t("help.faq.q5.answer"), audience: "all" },
+      { question: t("help.faq.q6.question"), answer: t("help.faq.q6.answer"), audience: "mobile" },
+      { question: t("help.faq.q7.question"), answer: t("help.faq.q7.answer"), audience: "all" },
+      { question: t("help.faq.q8.question"), answer: t("help.faq.q8.answer"), audience: "all" },
+      { question: t("help.faq.q9.question"), answer: t("help.faq.q9.answer"), audience: "all" },
+      { question: t("help.faq.q10.question"), answer: t("help.faq.q10.answer"), audience: "desktop" },
+      { question: t("help.faq.q11.question"), answer: t("help.faq.q11.answer"), audience: "all" },
+      { question: t("help.faq.q12.question"), answer: t("help.faq.q12.answer"), audience: "all" },
+      { question: t("help.faq.q13.question"), answer: t("help.faq.q13.answer"), audience: "mobile" },
+      { question: t("help.faq.q14.question"), answer: t("help.faq.q14.answer"), audience: "mobile" },
     ],
     [t]
-  );
+  ).filter((item) => item.audience === "all" || item.audience === deviceAudience);
 
   useEffect(() => {
     const topic = searchParams.get("topic");
@@ -224,18 +233,6 @@ export function HelpPage() {
         <Card>
           <CardContent>
             {sectionHeader(<MenuBookRoundedIcon />, t("help.guides.title"), "#4f46e5")}
-            <Alert
-              severity="info"
-              sx={{ mb: 2, borderRadius: 2.5, alignItems: "flex-start" }}
-              icon={<NotificationsActiveOutlinedIcon fontSize="inherit" />}
-            >
-              <Typography fontWeight={700} sx={{ mb: 0.5 }}>
-                {t("help.notificationsPitch.title")}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {t("help.notificationsPitch.body")}
-              </Typography>
-            </Alert>
             <Stack spacing={1.25}>
               {guideSteps.map((step, index) => (
                 <Stack key={step} direction="row" spacing={1.5} alignItems="flex-start">
@@ -323,7 +320,9 @@ export function HelpPage() {
                     <Typography fontWeight={700}>{item.question}</Typography>
                   </AccordionSummary>
                   <AccordionDetails sx={{ bgcolor: alpha("#0f172a", 0.02) }}>
-                    <Typography color="text.secondary">{item.answer}</Typography>
+                    <Typography color="text.secondary" sx={{ whiteSpace: "pre-line" }}>
+                      {item.answer}
+                    </Typography>
                   </AccordionDetails>
                 </Accordion>
               ))}
