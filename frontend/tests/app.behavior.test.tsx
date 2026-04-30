@@ -69,7 +69,7 @@ describe("App behavior", () => {
 
   it("switches navigation labels when the language toggle is used", async () => {
     const user = userEvent.setup();
-    localStorage.setItem("weekly-todo:onboarding:v1.16.0", "done");
+    localStorage.setItem("tasktide:onboarding:v1.18.0", "done");
 
     renderWithProviders(<App />);
 
@@ -95,6 +95,9 @@ describe("App behavior", () => {
 
     expect(screen.queryByText("What's New")).not.toBeInTheDocument();
     expect(await screen.findByRole("dialog", { name: "Quick tour" })).toBeInTheDocument();
+    expect(screen.getByText("Use this button to switch between English and Chinese.")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Next" }));
     expect(screen.getByText("Tap here to add a task.")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Next" }));
@@ -108,7 +111,7 @@ describe("App behavior", () => {
     await waitFor(() => {
       expect(screen.queryByRole("dialog", { name: "Quick tour" })).not.toBeInTheDocument();
     });
-    expect(localStorage.getItem("weekly-todo:onboarding:v1.16.0")).toBe("done");
+    expect(localStorage.getItem("tasktide:onboarding:v1.18.0")).toBe("done");
   });
 
   it("does not auto-open release notes for first-time users", async () => {

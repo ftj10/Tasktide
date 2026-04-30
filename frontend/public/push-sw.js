@@ -3,12 +3,12 @@
 // EFFECT: Delivers backend Web Push alerts for desktop browsers and installed mobile web apps
 self.addEventListener("push", (event) => {
   const payload = event.data ? event.data.json() : {};
-  const title = payload.title || "Weekly To-Do";
+  const title = payload.title || "TaskTide";
   const options = {
     body: payload.body || "",
-    icon: "/todo.svg",
-    badge: "/todo.svg",
-    tag: payload.tag || "weekly-todo",
+    icon: "/tasktide.svg",
+    badge: "/tasktide.svg",
+    tag: payload.tag || "tasktide",
     data: {
       url: payload.url || "/",
     },

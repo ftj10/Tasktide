@@ -288,7 +288,7 @@ export default function App() {
 
       const notification = new Notification(title, {
         body,
-        icon: "/todo.svg",
+        icon: "/tasktide.svg",
       });
 
       notification.onclick = () => {
@@ -485,7 +485,7 @@ export default function App() {
           </Avatar>
           <Box sx={{ minWidth: 0, flexGrow: 1 }}>
             <Typography variant="h6" sx={{ fontSize: "1rem", fontWeight: 700, lineHeight: 1.2 }}>
-              Weekly To-Do
+              TaskTide
             </Typography>
             <Typography
               variant="body2"
@@ -502,7 +502,7 @@ export default function App() {
           </Box>
           {username ? <ReleaseNotesCenter username={username} suppressAutoOpen={shouldSuppressReleaseNotes} /> : null}
           <Tooltip title={t("nav.switchLanguage")}>
-            <IconButton color="inherit" onClick={handleLanguageToggle} size="small">
+            <IconButton id="language-switch-mobile" color="inherit" onClick={handleLanguageToggle} size="small">
               <LanguageRoundedIcon />
             </IconButton>
           </Tooltip>
@@ -556,7 +556,7 @@ export default function App() {
                 </Avatar>
                 <Box sx={{ minWidth: 0 }}>
                   <Typography variant="h6" fontWeight={800} sx={{ lineHeight: 1.1 }}>
-                    Weekly To-Do
+                    TaskTide
                   </Typography>
                   <Typography
                     variant="caption"
@@ -623,6 +623,7 @@ export default function App() {
                 {username ? <ReleaseNotesCenter username={username} suppressAutoOpen={shouldSuppressReleaseNotes} /> : null}
                 <Tooltip title={t("nav.switchLanguage")}>
                   <Button
+                    id="language-switch-desktop"
                     variant="outlined"
                     startIcon={<LanguageRoundedIcon />}
                     onClick={handleLanguageToggle}

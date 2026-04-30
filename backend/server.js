@@ -18,7 +18,7 @@ const { getPushPublicKey } = require('./pushNotifications');
 const { startNotificationScheduler } = require('./notificationScheduler');
 
 const app = express();
-const SESSION_COOKIE_NAME = 'weekly_todo_session';
+const SESSION_COOKIE_NAME = 'tasktide_session';
 const SESSION_COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 app.use(cors({

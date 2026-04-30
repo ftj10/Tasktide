@@ -6,9 +6,9 @@ import dayjs from "dayjs";
 import { weekStartMonday } from "./date";
 import { normalizeTasks } from "./tasks";
 
-const WEEK_KEY = "weekly_todo_lastWeekStart_v1";
-const USERNAME_KEY = "todo_username";
-const ROLE_KEY = "todo_user_role";
+const WEEK_KEY = "tasktide_lastWeekStart_v1";
+const USERNAME_KEY = "tasktide_username";
+const ROLE_KEY = "tasktide_user_role";
 
 const API_URL = import.meta.env.VITE_API_URL || "/api";
 

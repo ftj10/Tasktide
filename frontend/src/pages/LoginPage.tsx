@@ -153,7 +153,7 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
               {isRegistering ? t("login.title.register") : t("login.title.login")}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Weekly To-Do · {t("nav.reminders")} · {t("nav.week")} · {t("nav.month")}
+              TaskTide · {t("nav.reminders")} · {t("nav.week")} · {t("nav.month")}
             </Typography>
           </Box>
 

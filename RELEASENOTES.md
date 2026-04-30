@@ -1,5 +1,35 @@
 # Release Notes
 
+## Version 1.18.0
+Version: 1.18.0
+Update Date: 2026-04-30
+
+### New Features
+- Added a first-time coach mark that points users to the TaskTide language switch before the rest of the onboarding tour.
+
+### Improvements
+- Improved onboarding target detection so coach marks attach to the visible desktop or mobile control.
+- Updated Help Center guidance to explain that users can switch language from the login page or inside TaskTide.
+- Updated README onboarding documentation to describe the new four-step first-run tour.
+
+### Bug Fixes
+- Fixed the first-run tour so responsive duplicate targets do not attach to hidden controls.
+
+## Version 1.17.0
+Version: 1.17.0
+Update Date: 2026-04-30
+
+### New Features
+- Added TaskTide as the project and web-app name across the application shell, login screen, install metadata, notifications, and package metadata.
+
+### Improvements
+- Updated Help Center install and notification guidance so users see TaskTide as the app name in setup instructions.
+- Updated README setup notes and project metadata to reflect the TaskTide brand and identifier changes.
+- Updated backup, session cookie, local browser profile, onboarding, and notification identifiers to use TaskTide naming.
+
+### Bug Fixes
+- Fixed remaining legacy brand labels in user-facing and developer-facing surfaces.
+
 ## Version 1.16.0
 Version: 1.16.0
 Update Date: 2026-04-30

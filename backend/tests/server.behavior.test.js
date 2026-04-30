@@ -135,7 +135,7 @@ test('behavior: login sets a session cookie for valid credentials', async () => 
 
   assert.equal(result.statusCode, 200);
   assert.deepEqual(result.json, { username: 'tom', role: 'ADMIN' });
-  assert.match(result.headers['set-cookie'], /weekly_todo_session=signed-token/);
+  assert.match(result.headers['set-cookie'], /tasktide_session=signed-token/);
   assert.match(result.headers['set-cookie'], /HttpOnly/);
 });
 
@@ -171,7 +171,7 @@ test('behavior: session endpoint returns the authenticated user from the session
     callback(null, { userId: 'user-1', username: 'tom', role: 'ADMIN' });
 
   const result = await invokeApp(app, '/session', {
-    headers: { Cookie: 'weekly_todo_session=signed-token' },
+    headers: { Cookie: 'tasktide_session=signed-token' },
   });
 
   assert.equal(result.statusCode, 200);
@@ -185,7 +185,7 @@ test('behavior: logout clears the session cookie', async () => {
 
   assert.equal(result.statusCode, 200);
   assert.deepEqual(result.json, { message: 'Logged out' });
-  assert.match(result.headers['set-cookie'], /weekly_todo_session=/);
+  assert.match(result.headers['set-cookie'], /tasktide_session=/);
   assert.match(result.headers['set-cookie'], /Expires=Thu, 01 Jan 1970/);
 });
 

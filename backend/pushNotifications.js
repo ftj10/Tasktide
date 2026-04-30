@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const webPush = require('web-push');
 
-const DEFAULT_PUSH_SUBJECT = 'mailto:notifications@weekly-todo.local';
+const DEFAULT_PUSH_SUBJECT = 'mailto:notifications@tasktide.local';
 const DEFAULT_VAPID_FILE_PATH = path.join(__dirname, '.push-vapid.json');
 
 // INPUT: optional environment and filesystem overrides

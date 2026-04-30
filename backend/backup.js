@@ -73,7 +73,7 @@ async function createBackupPayload({
   ]);
 
   return {
-    app: 'weekly-todo',
+    app: 'tasktide',
     generatedAt: now.toISOString(),
     databaseName: connection.name || '',
     collections: {

@@ -1,6 +1,6 @@
 // INPUT: route-visible target selectors and onboarding step content
 // OUTPUT: one-time contextual coach mark overlay
-// EFFECT: Guides first-time users toward the fastest task-creation actions and stores completion per browser
+// EFFECT: Guides first-time users through app basics and stores completion per browser
 import { Box, Button, Paper, Stack, Typography } from "@mui/material";
 import { useEffect, useLayoutEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -29,7 +29,11 @@ export function OnboardingTooltip(props: {
     const syncTarget = () => {
       const target = step.targets
         .map((selector) => document.querySelector(selector))
-        .find((node): node is HTMLElement => node instanceof HTMLElement);
+        .find((node): node is HTMLElement => {
+          if (!(node instanceof HTMLElement)) return false;
+          const rect = node.getBoundingClientRect();
+          return rect.width > 0 && rect.height > 0;
+        });
 
       setTargetRect(target?.getBoundingClientRect() ?? null);
     };

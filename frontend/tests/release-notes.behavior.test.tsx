@@ -33,8 +33,8 @@ describe("ReleaseNotesCenter behavior", () => {
   it("shows the latest shipped version in the update dialog", () => {
     renderWithProviders(<ReleaseNotesCenter username="tom" />);
 
-    expect(screen.getByText("v1.16.0")).toBeInTheDocument();
-    expect(screen.getByText("HttpOnly cookie sessions")).toBeInTheDocument();
+    expect(screen.getByText("v1.18.0")).toBeInTheDocument();
+    expect(screen.getByText("Language switch coach mark")).toBeInTheDocument();
   });
 
   it("keeps onboarding and help walkthroughs in the 1.15 release series", async () => {

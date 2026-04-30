@@ -3,7 +3,7 @@
 // EFFECT: Keeps activation messaging and walkthrough content aligned across the app shell and Help Center
 import type { TFunction } from "i18next";
 
-export const ONBOARDING_STORAGE_KEY = "weekly-todo:onboarding:v1.16.0";
+export const ONBOARDING_STORAGE_KEY = "tasktide:onboarding:v1.18.0";
 
 export type OnboardingTooltipStep = {
   id: string;
@@ -29,6 +29,11 @@ export type HelpCenterItem = {
 
 export function getOnboardingSteps(t: TFunction): OnboardingTooltipStep[] {
   return [
+    {
+      id: "language-switch",
+      targets: ["#language-switch-desktop", "#language-switch-mobile"],
+      text: t("onboarding.steps.languageSwitch"),
+    },
     {
       id: "add-task",
       targets: ["#today-add-task-button", "#today-empty-add-task-button"],

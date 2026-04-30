@@ -58,11 +58,11 @@ test.afterEach(() => {
 });
 
 test('behavior: backupDataset stores all collections in one local JSON file', async () => {
-  process.env.MONGODB_URI = 'mongodb://example.local/weekly-todo';
+  process.env.MONGODB_URI = 'mongodb://example.local/tasktide';
 
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'weekly-todo-backup-'));
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'tasktide-backup-'));
   const now = new Date('2026-04-25T08:15:30.000Z');
-  const connection = { readyState: 0, name: 'weekly-todo-test' };
+  const connection = { readyState: 0, name: 'tasktide-test' };
 
   let connectedUri = '';
   let disconnected = false;
@@ -90,10 +90,10 @@ test('behavior: backupDataset stores all collections in one local JSON file', as
   const writtenFile = await fs.readFile(result.filePath, 'utf8');
   const parsedPayload = JSON.parse(writtenFile);
 
-  assert.equal(connectedUri, 'mongodb://example.local/weekly-todo');
+  assert.equal(connectedUri, 'mongodb://example.local/tasktide');
   assert.equal(disconnected, true);
   assert.equal(parsedPayload.generatedAt, '2026-04-25T08:15:30.000Z');
-  assert.equal(parsedPayload.databaseName, 'weekly-todo-test');
+  assert.equal(parsedPayload.databaseName, 'tasktide-test');
   assert.deepEqual(parsedPayload.collections, {
     users: [{ username: 'tom' }],
     tasks: [{ id: 'task-1', title: 'Review backup flow' }],
@@ -123,18 +123,18 @@ test('behavior: getNextBackupDate targets the next local 1:00 AM run', () => {
 });
 
 test('behavior: restoreDataset overwrites all collections from a backup JSON file', async () => {
-  process.env.MONGODB_URI = 'mongodb://example.local/weekly-todo';
+  process.env.MONGODB_URI = 'mongodb://example.local/tasktide';
 
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'weekly-todo-restore-'));
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'tasktide-restore-'));
   const backupFilePath = path.join(tempDir, 'dataset-backup.json');
-  const connection = { readyState: 0, name: 'weekly-todo-test' };
+  const connection = { readyState: 0, name: 'tasktide-test' };
   const operations = [];
 
   let connectedUri = '';
   let disconnected = false;
 
   await fs.writeFile(backupFilePath, JSON.stringify({
-    app: 'weekly-todo',
+    app: 'tasktide',
     generatedAt: '2026-04-25T12:29:11.000Z',
     collections: {
       users: [{ username: 'tom', password: 'hashed' }],
@@ -183,7 +183,7 @@ test('behavior: restoreDataset overwrites all collections from a backup JSON fil
     logger: { log() {} },
   });
 
-  assert.equal(connectedUri, 'mongodb://example.local/weekly-todo');
+  assert.equal(connectedUri, 'mongodb://example.local/tasktide');
   assert.equal(disconnected, true);
   assert.deepEqual(result.collections, {
     users: [{ username: 'tom', password: 'hashed' }],

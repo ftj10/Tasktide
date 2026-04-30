@@ -14,6 +14,56 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-04-30-language-switch-coach-mark",
+    version: "v1.18.0",
+    releasedAt: "2026-04-30",
+    title: {
+      en: "Language switch coach mark",
+      zh: "语言切换引导提示"
+    },
+    summary: {
+      en: "First-time users now see a coach mark that points to the TaskTide language switch before the rest of the onboarding tour.",
+      zh: "首次使用的用户现在会先看到指向 TaskTide 语言切换按钮的引导提示，然后再继续完成其他新手引导。"
+    },
+    changes: {
+      en: [
+        "Added a first-run coach mark for the language switch.",
+        "Improved coach-mark targeting so the tour uses the visible desktop or mobile language control.",
+        "Updated Help Center and README guidance to mention the in-app language switch."
+      ],
+      zh: [
+        "新增首次使用时的语言切换按钮引导提示。",
+        "改进引导提示定位，让引导使用桌面端或移动端当前可见的语言控件。",
+        "更新帮助中心和 README 说明，补充应用内语言切换入口。"
+      ]
+    }
+  },
+  {
+    id: "2026-04-30-tasktide-brand-update",
+    version: "v1.17.0",
+    releasedAt: "2026-04-30",
+    title: {
+      en: "TaskTide brand update",
+      zh: "TaskTide 品牌更新"
+    },
+    summary: {
+      en: "The planner now uses the TaskTide name across the web app, install metadata, notifications, and support content.",
+      zh: "计划器现在在网页应用、安装信息、通知和帮助内容中统一使用 TaskTide 名称。"
+    },
+    changes: {
+      en: [
+        "Added TaskTide branding across the app shell, login screen, browser title, install manifest, and service worker notifications.",
+        "Updated Help Center setup guidance so install and notification steps refer directly to TaskTide.",
+        "Fixed legacy project identifiers in package metadata, backup metadata, session cookies, onboarding keys, and local browser profile keys."
+      ],
+      zh: [
+        "在应用外壳、登录页、浏览器标题、安装清单和服务工作线程通知中统一加入 TaskTide 品牌。",
+        "更新帮助中心设置说明，让安装和通知步骤直接指向 TaskTide。",
+        "修复包元数据、备份元数据、会话 Cookie、新手引导键和本地浏览器资料键中的旧项目标识。"
+      ]
+    }
+  },
+  {
     id: "2026-04-30-http-only-cookie-sessions",
     version: "v1.16.0",
     releasedAt: "2026-04-30",

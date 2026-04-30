@@ -218,7 +218,7 @@ const resources = {
         },
         guides: {
           title: "How To Use This Website",
-          step0: "Use the language button on the login page if you want English or Chinese before signing in.",
+          step0: "Use the language button on the login page or inside TaskTide if you want English or Chinese.",
           step1: "Use Today to add tasks, edit tasks, mark tasks done, and move tasks to another day.",
           step2: "Use Import ICS on Today if you want to turn calendar events into planner tasks.",
           step3: "Use Week and Month to see your schedule and jump to another date quickly.",
@@ -274,11 +274,11 @@ const resources = {
           },
           q12: {
             question: "How do I get notifications on phone and computer?",
-            answer: "Desktop:\n1. Open the planner.\n2. Allow notifications when the browser asks.\n\nIPhone or iPad:\n1. Add the web app to Home Screen.\n2. Open the installed app.\n3. Allow notifications.\n4. If needed, check Settings > Notifications > [your web app name].\n5. Make sure notifications are on.\n\nAndroid:\n1. Install the web app if your browser supports it.\n2. Open the installed app.\n3. Allow notifications.\n4. If needed, check Settings > Apps > [your web app name or browser] > Notifications.\n5. Make sure notifications are on.\n\nAfter setup, daily prompts and 15-minute task alerts can arrive even when the planner page is closed."
+            answer: "Desktop:\n1. Open TaskTide.\n2. Allow notifications when the browser asks.\n\nIPhone or iPad:\n1. Add TaskTide to Home Screen.\n2. Open TaskTide from your Home Screen.\n3. Allow notifications.\n4. If needed, check Settings > Notifications > TaskTide.\n5. Make sure notifications are on.\n\nAndroid:\n1. Install TaskTide if your browser supports it.\n2. Open TaskTide.\n3. Allow notifications.\n4. If needed, check Settings > Apps > TaskTide or your browser > Notifications.\n5. Make sure notifications are on.\n\nAfter setup, daily prompts and 15-minute task alerts can arrive even when TaskTide is closed."
           },
           q13: {
             question: "How do I install the mobile web app?",
-            answer: "IPhone or iPad:\n1. Open the site in Safari.\n2. Tap Share.\n3. Tap Add to Home Screen.\n4. Confirm the app name.\n5. Open it from your Home Screen.\n\nAndroid:\n1. Open the site in Chrome, Edge, or another supported browser.\n2. Open the browser menu.\n3. Tap Install app or Add to Home screen.\n4. Confirm.\n5. Open it from your Home Screen or app list."
+            answer: "IPhone or iPad:\n1. Open TaskTide in Safari.\n2. Tap Share.\n3. Tap Add to Home Screen.\n4. Confirm the TaskTide app name.\n5. Open TaskTide from your Home Screen.\n\nAndroid:\n1. Open TaskTide in Chrome, Edge, or another supported browser.\n2. Open the browser menu.\n3. Tap Install app or Add to Home screen.\n4. Confirm TaskTide.\n5. Open TaskTide from your Home Screen or app list."
           },
           q14: {
             question: "Do installed mobile web apps work the same on every browser?",
@@ -373,6 +373,7 @@ const resources = {
         skip: "Skip",
         done: "Done",
         steps: {
+          languageSwitch: "Use this button to switch between English and Chinese.",
           addTask: "Tap here to add a task.",
           taskList: "Your tasks appear here after you save.",
           weekView: "Open Week to plan tasks by time."
@@ -592,7 +593,7 @@ const resources = {
         },
         guides: {
           title: "网站使用说明",
-          step0: "如果你想在登录前切换语言，可以先用登录页的 EN / 中文 按钮。",
+          step0: "如果你想切换英文或中文，可以使用登录页或 TaskTide 内的语言按钮。",
           step1: "Today 用来添加任务、编辑任务、完成任务，或把任务移动到别的日期。",
           step2: "如果你想把日历事件变成任务，可以在 Today 使用 Import ICS。",
           step3: "Week 和 Month 用来看安排，也可以快速跳到别的日期。",
@@ -648,11 +649,11 @@ const resources = {
           },
           q12: {
             question: "怎样才能在手机和电脑上都收到通知？",
-            answer: "桌面端：\n1. 打开计划器。\n2. 在浏览器请求时允许通知。\n\nIPhone 或 iPad：\n1. 先把网页应用加入主屏幕。\n2. 打开安装后的应用。\n3. 允许通知。\n4. 如果需要，到 设置 > 通知 > [你的网页应用名称] 检查。\n5. 确认通知已开启。\n\nAndroid：\n1. 如果浏览器支持，先安装网页应用。\n2. 打开安装后的应用。\n3. 允许通知。\n4. 如果需要，到 设置 > 应用 > [你的网页应用名称或浏览器] > 通知 检查。\n5. 确认通知已开启。\n\n完成后，即使页面关闭，也能收到每日提醒和任务开始前 15 分钟提醒。"
+            answer: "桌面端：\n1. 打开 TaskTide。\n2. 在浏览器请求时允许通知。\n\nIPhone 或 iPad：\n1. 先把 TaskTide 加入主屏幕。\n2. 从主屏幕打开 TaskTide。\n3. 允许通知。\n4. 如果需要，到 设置 > 通知 > TaskTide 检查。\n5. 确认通知已开启。\n\nAndroid：\n1. 如果浏览器支持，先安装 TaskTide。\n2. 打开 TaskTide。\n3. 允许通知。\n4. 如果需要，到 设置 > 应用 > TaskTide 或你的浏览器 > 通知 检查。\n5. 确认通知已开启。\n\n完成后，即使 TaskTide 关闭，也能收到每日提醒和任务开始前 15 分钟提醒。"
           },
           q13: {
             question: "怎么安装移动端网页应用？",
-            answer: "IPhone 或 iPad：\n1. 用 Safari 打开网站。\n2. 点分享。\n3. 点“添加到主屏幕”。\n4. 确认应用名称。\n5. 从主屏幕打开。\n\nAndroid：\n1. 用 Chrome、Edge 或其他支持的浏览器打开网站。\n2. 打开浏览器菜单。\n3. 点“安装应用”或“添加到主屏幕”。\n4. 确认。\n5. 从主屏幕或应用列表打开。"
+            answer: "IPhone 或 iPad：\n1. 用 Safari 打开 TaskTide。\n2. 点分享。\n3. 点“添加到主屏幕”。\n4. 确认 TaskTide 应用名称。\n5. 从主屏幕打开 TaskTide。\n\nAndroid：\n1. 用 Chrome、Edge 或其他支持的浏览器打开 TaskTide。\n2. 打开浏览器菜单。\n3. 点“安装应用”或“添加到主屏幕”。\n4. 确认 TaskTide。\n5. 从主屏幕或应用列表打开 TaskTide。"
           },
           q14: {
             question: "不同浏览器安装后的移动网页应用效果一样吗？",
@@ -747,6 +748,7 @@ const resources = {
         skip: "跳过",
         done: "完成",
         steps: {
+          languageSwitch: "用这个按钮在英文和中文之间切换。",
           addTask: "点这里添加任务。",
           taskList: "保存后，任务会显示在这里。",
           weekView: "打开 Week 按时间安排任务。"

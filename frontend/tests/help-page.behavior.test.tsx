@@ -56,6 +56,7 @@ describe("HelpPage behavior", () => {
     renderWithProviders(<HelpPage />);
 
     expect(screen.getByRole("button", { name: /Add a task from Today on desktop/i })).toBeInTheDocument();
+    expect(screen.getByText("Use the language button on the login page or inside TaskTide if you want English or Chinese.")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Add a task in Week on mobile/i })).not.toBeInTheDocument();
     expect(screen.queryByText("Notifications stopped after a key change?")).not.toBeInTheDocument();
     expect(await screen.findByText("My Questions")).toBeInTheDocument();
@@ -90,9 +91,9 @@ describe("HelpPage behavior", () => {
     renderWithProviders(<HelpPage />);
 
     expect(await screen.findByText("How do I get notifications on phone and computer?")).toBeInTheDocument();
-    expect(screen.getByText(/1\. Open the planner\./i)).toBeInTheDocument();
-    expect(screen.getByText(/Settings > Notifications > \[your web app name\]/i)).toBeInTheDocument();
-    expect(screen.getByText(/Settings > Apps > \[your web app name or browser\] > Notifications/i)).toBeInTheDocument();
+    expect(screen.getByText(/1\. Open TaskTide\./i)).toBeInTheDocument();
+    expect(screen.getByText(/Settings > Notifications > TaskTide/i)).toBeInTheDocument();
+    expect(screen.getByText(/Settings > Apps > TaskTide or your browser > Notifications/i)).toBeInTheDocument();
     expect(screen.queryByText(/How do I install the mobile web app\?/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Do installed mobile web apps work the same on every browser\?/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/How does the layout change on mobile devices\?/i)).not.toBeInTheDocument();
