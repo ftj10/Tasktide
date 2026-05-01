@@ -1,5 +1,21 @@
 # Release Notes
 
+## Version 1.19.0
+Version: 1.19.0
+Update Date: 2026-04-30
+
+### New Features
+- Added offline task access for signed-in browsers and installed TaskTide web apps after tasks have been cached online.
+- Added queued offline task creation, editing, completion, and deletion that sync when the API is reachable again.
+
+### Improvements
+- Improved installed web-app startup by caching the TaskTide app shell through the service worker.
+- Updated Help Center guidance so users understand how offline task access works and when sync happens.
+- Updated README setup notes with the local-storage cache and service-worker sync behavior for offline task edits.
+
+### Bug Fixes
+- Fixed failed task API saves so offline task edits are no longer immediately discarded from the planner view.
+
 ## Version 1.18.1
 Version: 1.18.1
 Update Date: 2026-04-30

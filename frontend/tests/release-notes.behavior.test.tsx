@@ -33,8 +33,8 @@ describe("ReleaseNotesCenter behavior", () => {
   it("shows the latest shipped version in the update dialog", () => {
     renderWithProviders(<ReleaseNotesCenter username="tom" />);
 
-    expect(screen.getByText("v1.18.1")).toBeInTheDocument();
-    expect(screen.getByText("Hosted login session fix")).toBeInTheDocument();
+    expect(screen.getByText("v1.19.0")).toBeInTheDocument();
+    expect(screen.getByText("Offline task editing")).toBeInTheDocument();
   });
 
   it("keeps onboarding and help walkthroughs in the 1.15 release series", async () => {

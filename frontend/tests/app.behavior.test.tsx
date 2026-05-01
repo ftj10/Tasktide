@@ -167,12 +167,8 @@ describe("App behavior", () => {
     });
   });
 
-  it("reloads server tasks after a failed task save so local-only edits do not linger", async () => {
+  it("keeps a new task visible when storage accepts it for offline sync", async () => {
     const user = userEvent.setup();
-    storageMocks.createTask.mockRejectedValueOnce(new Error("save failed"));
-    storageMocks.loadTasks
-      .mockResolvedValueOnce([])
-      .mockResolvedValueOnce([]);
 
     renderWithProviders(<App />);
 
@@ -185,12 +181,10 @@ describe("App behavior", () => {
     await user.click(screen.getByRole("button", { name: "Add" }));
 
     await waitFor(() => {
-      expect(storageMocks.loadTasks).toHaveBeenCalledTimes(2);
+      expect(screen.getByText("Unsaved task")).toBeInTheDocument();
     });
 
-    await waitFor(() => {
-      expect(screen.queryByText("Unsaved task")).not.toBeInTheDocument();
-    });
+    expect(storageMocks.loadTasks).toHaveBeenCalledTimes(1);
   });
 
   it("stores daily notification dedupe state in the retained history key", async () => {

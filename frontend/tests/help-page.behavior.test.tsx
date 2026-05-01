@@ -91,6 +91,8 @@ describe("HelpPage behavior", () => {
     renderWithProviders(<HelpPage />);
 
     expect(await screen.findByText("How do I get notifications on phone and computer?")).toBeInTheDocument();
+    expect(screen.getByText("Can I use tasks offline in the installed web app?")).toBeInTheDocument();
+    expect(screen.getByText(/add tasks, edit tasks, mark tasks done, and delete tasks while offline/i)).toBeInTheDocument();
     expect(screen.getByText(/1\. Open TaskTide\./i)).toBeInTheDocument();
     expect(screen.getByText(/Settings > Notifications > TaskTide/i)).toBeInTheDocument();
     expect(screen.getByText(/Settings > Apps > TaskTide or your browser > Notifications/i)).toBeInTheDocument();

@@ -1,6 +1,6 @@
 # TaskTide Application
 
-Current version: `v1.18.1`
+Current version: `v1.19.0`
 
 TaskTide is a full-stack planner for daily tasks, weekly routines, reminders, shared help questions, and calendar-based scheduling.
 
@@ -10,6 +10,7 @@ Deployed Web: TaskTide
 
 - Secure registration and login with HttpOnly cookie sessions and persisted `USER` / `ADMIN` roles.
 - Hosted frontend and backend deployments now keep users signed in after login by automatically using cross-site session cookie settings when the browser request comes from a different hostname.
+- Installed TaskTide sessions can reopen cached tasks offline after a successful online load, then add, edit, complete, and delete tasks while changes wait for the API to return.
 - Project, web-app, install, notification, storage, and backup identifiers now use the TaskTide name.
 - Login and registration screens support an `EN` / `中文` switch before authentication.
 - Today, Week, and Month planning views for one-time and recurring tasks.
@@ -44,6 +45,7 @@ Deployed Web: TaskTide
 - Map links for task locations plus background push notifications for daily prompts and upcoming timed tasks.
 - Desktop browsers can now receive background planner notifications through a service worker after permission is granted.
 - Supported mobile installs can now receive the same background planner notifications after you add the app to the home screen and allow notifications.
+- The shared service worker caches the TaskTide app shell so installed web-app sessions can start from cached files while offline.
 - Browsers without Web Push support still fall back to in-page notification timers while the planner tab stays open.
 - Consistent `INPUT` / `OUTPUT` / `EFFECT` code comments across source and test files for faster feature scanning during maintenance.
 
@@ -107,6 +109,7 @@ npm test
 - Local development can skip manual VAPID setup because the backend generates `backend/.push-vapid.json` on first use. Production should provide `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `WEB_PUSH_SUBJECT`.
 - Use `Import ICS` on the Today page when you want to bring calendar events into the planner from a `.ics` export. The importer keeps titles, notes, locations, multi-day all-day ranges, timed events, and supported daily, weekly, monthly, and yearly recurrence rules.
 - The in-app Updates center mirrors the latest shipped release metadata from `frontend/src/app/releaseNotes.ts` and groups each release under `New Features`, `Improvements`, and `Bug Fixes`.
+- Offline task access uses browser local storage for the latest task cache and a queued task mutation list. The queue replays task create, update, and delete operations when the browser fires `online` or the app next loads tasks successfully.
 - Walkthrough GIF files can be added under `frontend/public/help-walkthroughs/` using the built-in filenames shown in each Help Center placeholder.
 - First-run onboarding is stored per browser in local storage, so the language-switch and planner tooltip guide disappears after completion or skip.
 - Shared help questions are stored as new posts on the server, so another signed-in user cannot overwrite an older question by reusing its client-side id.

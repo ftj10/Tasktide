@@ -9,8 +9,105 @@ import { normalizeTasks } from "./tasks";
 const WEEK_KEY = "tasktide_lastWeekStart_v1";
 const USERNAME_KEY = "tasktide_username";
 const ROLE_KEY = "tasktide_user_role";
+const TASK_CACHE_KEY = "tasktide_tasks_cache_v1";
+const TASK_SYNC_QUEUE_KEY = "tasktide_tasks_sync_queue_v1";
 
 const API_URL = import.meta.env.VITE_API_URL || "/api";
+
+type PendingTaskSync =
+  | { type: "create" | "update"; task: Task }
+  | { type: "delete"; taskId: string };
+
+function hasSavedProfile() {
+  return Boolean(getUsername());
+}
+
+function getSavedSessionProfile(): SessionProfile | null {
+  const username = getUsername();
+  if (!username) return null;
+  return {
+    username,
+    role: getUserRole(),
+  };
+}
+
+function readJsonStorage<T>(key: string, fallback: T): T {
+  try {
+    const stored = localStorage.getItem(key);
+    return stored ? (JSON.parse(stored) as T) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeJsonStorage<T>(key: string, value: T) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+function getPendingTaskSyncQueue() {
+  return readJsonStorage<PendingTaskSync[]>(TASK_SYNC_QUEUE_KEY, []);
+}
+
+function setPendingTaskSyncQueue(queue: PendingTaskSync[]) {
+  writeJsonStorage(TASK_SYNC_QUEUE_KEY, queue);
+}
+
+function enqueueTaskSync(entry: PendingTaskSync) {
+  setPendingTaskSyncQueue([...getPendingTaskSyncQueue(), entry]);
+}
+
+function clearPendingTaskSyncQueue() {
+  localStorage.removeItem(TASK_SYNC_QUEUE_KEY);
+}
+
+// INPUT: task list
+// OUTPUT: persisted browser task cache
+// EFFECT: Keeps the most recent planner tasks available when the app is opened without a network connection
+export function saveCachedTasks(tasks: Task[]) {
+  writeJsonStorage(TASK_CACHE_KEY, normalizeTasks(tasks));
+}
+
+// INPUT: none
+// OUTPUT: cached task list
+// EFFECT: Restores planner tasks from browser storage when the backend cannot be reached
+export function loadCachedTasks(): Task[] {
+  return normalizeTasks(readJsonStorage<Task[]>(TASK_CACHE_KEY, []));
+}
+
+// INPUT: pending task mutations
+// OUTPUT: backend sync completion
+// EFFECT: Replays offline task changes when the browser regains API access
+export async function flushPendingTaskSync() {
+  const queue = getPendingTaskSyncQueue();
+  if (!queue.length) return;
+
+  const remainingQueue = [...queue];
+
+  while (remainingQueue.length) {
+    const entry = remainingQueue[0];
+    if (entry.type === "create") {
+      await requestOk('/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(entry.task),
+      });
+    } else if (entry.type === "update") {
+      await requestOk(`/tasks/${entry.task.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(entry.task),
+      });
+    } else if (entry.type === "delete") {
+      await requestOk(`/tasks/${entry.taskId}`, {
+        method: 'DELETE',
+      });
+    }
+    remainingQueue.shift();
+    setPendingTaskSyncQueue(remainingQueue);
+  }
+
+  clearPendingTaskSyncQueue();
+}
 
 export type SessionProfile = {
   username: string;
@@ -117,6 +214,10 @@ export async function loadSession(): Promise<SessionProfile | null> {
     setAuth(session.username, session.role);
     return session;
   } catch (error) {
+    const savedProfile = getSavedSessionProfile();
+    if (savedProfile) {
+      return savedProfile;
+    }
     clearAuth();
     console.error("Failed to load session", error);
     return null;
@@ -144,8 +245,15 @@ export async function logoutUser() {
 // EFFECT: Hydrates the signed-in planner with the user's saved tasks
 export async function loadTasks(): Promise<Task[]> {
   try {
-    return normalizeTasks(await requestJson<Task[]>('/tasks'));
+    await flushPendingTaskSync();
+    const serverTasks = normalizeTasks(await requestJson<Task[]>('/tasks'));
+    saveCachedTasks(serverTasks);
+    return serverTasks;
   } catch (error) {
+    const cachedTasks = loadCachedTasks();
+    if (hasSavedProfile() && cachedTasks.length) {
+      return cachedTasks;
+    }
     console.error("Failed to load from server", error);
     throw error;
   }
@@ -164,8 +272,8 @@ export async function createTask(task: Task): Promise<void> {
       body: JSON.stringify(task),
     });
   } catch (error) {
+    enqueueTaskSync({ type: "create", task: normalizeTasks([task])[0] });
     console.error("Failed to create task", error);
-    throw error;
   }
 }
 
@@ -182,8 +290,8 @@ export async function updateTask(task: Task): Promise<void> {
       body: JSON.stringify(task),
     });
   } catch (error) {
+    enqueueTaskSync({ type: "update", task: normalizeTasks([task])[0] });
     console.error("Failed to update task", error);
-    throw error;
   }
 }
 
@@ -196,8 +304,8 @@ export async function deleteTask(taskId: string): Promise<void> {
       method: 'DELETE',
     });
   } catch (error) {
+    enqueueTaskSync({ type: "delete", taskId });
     console.error("Failed to delete task", error);
-    throw error;
   }
 }
 

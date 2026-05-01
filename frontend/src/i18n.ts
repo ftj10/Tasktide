@@ -258,7 +258,7 @@ const resources = {
           },
           q7: {
             question: "What happens if a save request fails?",
-            answer: "The app reloads your saved data from the server. If a help question fails to post, your draft stays in the box."
+            answer: "Task changes stay visible and sync later when the app is offline. If a help question fails to post, your draft stays in the box."
           },
           q8: {
             question: "Can I change the language before logging in?",
@@ -287,6 +287,10 @@ const resources = {
           q15: {
             question: "How does sign-in stay active in this browser?",
             answer: "The planner keeps your sign-in in a secure browser session cookie. On the hosted web app, signing in should keep you in the planner even when the app and API use different web addresses. You usually stay signed in until you log out or the session expires."
+          },
+          q16: {
+            question: "Can I use tasks offline in the installed web app?",
+            answer: "Yes, after you sign in once while online. Install TaskTide, open it while online so your tasks are cached, then you can reopen cached tasks, add tasks, edit tasks, mark tasks done, and delete tasks while offline. Task changes sync when the app can reach the server again."
           },
           q11: {
             question: "What does the ICS importer support?",
@@ -633,7 +637,7 @@ const resources = {
           },
           q7: {
             question: "如果保存请求失败会怎样？",
-            answer: "应用会重新加载服务器里的数据。如果帮助问题发送失败，草稿会保留下来。"
+            answer: "离线时，任务修改会继续显示，并在应用恢复连接后同步。如果帮助问题发送失败，草稿会保留下来。"
           },
           q8: {
             question: "我可以在登录前切换语言吗？",
@@ -662,6 +666,10 @@ const resources = {
           q15: {
             question: "这个浏览器里的登录状态会怎样保持？",
             answer: "计划器会用更安全的浏览器会话 Cookie 保持登录。在托管网页版中，即使应用和 API 使用不同的网址，登录后也应该继续停留在计划器内。一般情况下，除非你主动退出或会话过期，否则会继续保持登录。"
+          },
+          q16: {
+            question: "安装后的网页应用可以离线使用任务吗？",
+            answer: "可以，但需要先在线登录一次。安装 TaskTide，并在线打开一次让任务完成缓存后，你可以在离线时重新打开缓存任务、添加任务、编辑任务、完成任务和删除任务。应用重新连接服务器后会同步这些任务修改。"
           },
           q11: {
             question: "ICS 导入功能支持什么？",

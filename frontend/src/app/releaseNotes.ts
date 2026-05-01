@@ -14,6 +14,31 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-04-30-offline-task-editing",
+    version: "v1.19.0",
+    releasedAt: "2026-04-30",
+    title: {
+      en: "Offline task editing",
+      zh: "离线任务编辑"
+    },
+    summary: {
+      en: "Installed TaskTide sessions can now reopen cached tasks offline and keep task changes queued until the API is available again.",
+      zh: "已安装的 TaskTide 现在可以离线重新打开缓存任务，并在 API 恢复后同步任务修改。"
+    },
+    changes: {
+      en: [
+        "Added offline task caching for signed-in browsers and installed web apps.",
+        "Added queued task create, update, and delete sync when the API is unavailable.",
+        "Updated app-shell caching so installed TaskTide sessions can start from a cached page offline."
+      ],
+      zh: [
+        "新增已登录浏览器和已安装网页应用的离线任务缓存。",
+        "新增 API 不可用时的任务新增、更新和删除排队同步。",
+        "更新应用外壳缓存，让已安装的 TaskTide 离线时也能从缓存页面启动。"
+      ]
+    }
+  },
+  {
     id: "2026-04-30-hosted-login-session-fix",
     version: "v1.18.1",
     releasedAt: "2026-04-30",

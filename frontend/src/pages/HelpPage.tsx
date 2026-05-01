@@ -92,6 +92,7 @@ export function HelpPage() {
       { question: t("help.faq.q12.question"), answer: t("help.faq.q12.answer"), audience: "all" },
       { question: t("help.faq.q13.question"), answer: t("help.faq.q13.answer"), audience: "mobile" },
       { question: t("help.faq.q14.question"), answer: t("help.faq.q14.answer"), audience: "mobile" },
+      { question: t("help.faq.q16.question"), answer: t("help.faq.q16.answer"), audience: "all" },
     ],
     [t]
   ).filter((item) => item.audience === "all" || item.audience === deviceAudience);

@@ -8,6 +8,9 @@ import App from "./App";
 import { CssBaseline } from "@mui/material";
 import { alpha, createTheme, ThemeProvider } from "@mui/material/styles";
 import { BrowserRouter } from "react-router-dom";
+import { registerTaskTideServiceWorker } from "./app/serviceWorker";
+
+registerTaskTideServiceWorker();
 
 // INPUT: design tokens for the planner UI
 // OUTPUT: shared MUI theme

@@ -36,12 +36,14 @@ import {
   createTask,
   deleteReminder,
   deleteTask,
+  flushPendingTaskSync,
   getUsername,
   loadSession,
   loadReminders,
   loadTasks,
   logoutUser,
   rolloverIfNeeded,
+  saveCachedTasks,
   updateReminder,
   updateTask,
 } from "./app/storage";
@@ -223,6 +225,7 @@ export default function App() {
   function handleSetTasks(nextTasks: Task[]) {
     const previousTasks = tasksRef.current;
     tasksRef.current = nextTasks;
+    saveCachedTasks(nextTasks);
     setTasks(nextTasks);
     queueTaskSync(previousTasks, nextTasks);
   }
@@ -261,6 +264,24 @@ export default function App() {
       window.removeEventListener("keydown", requestPermission);
     };
   }, [canUseBackgroundPush, currentLanguage, isAuthenticated]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    function syncOfflineTaskChanges() {
+      void flushPendingTaskSync()
+        .then(() => reloadTasksFromServer())
+        .catch((error) => {
+          console.error(error);
+        });
+    }
+
+    window.addEventListener("online", syncOfflineTaskChanges);
+
+    return () => {
+      window.removeEventListener("online", syncOfflineTaskChanges);
+    };
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (!isAuthenticated || !canUseBackgroundPush || Notification.permission !== "granted") {
