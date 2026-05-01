@@ -125,8 +125,6 @@ async function authorizedRequest(path: string, options: RequestInit = {}): Promi
 
   if (response.status === 401 || response.status === 403) {
     clearAuth();
-    void logoutUser();
-    window.location.reload();
     return null;
   }
 
@@ -266,7 +264,7 @@ export async function createTask(task: Task): Promise<void> {
   try {
     await requestOk('/tasks', {
       method: 'POST',
-      headers: { 
+      headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(task),
@@ -328,7 +326,7 @@ export async function createReminder(reminder: Reminder): Promise<void> {
   try {
     await requestOk('/reminders', {
       method: 'POST',
-      headers: { 
+      headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(reminder),
@@ -398,7 +396,7 @@ export async function createHelpQuestion(question: { question: string }): Promis
   } catch (error) {
     console.error("Failed to save help question", error);
     throw error;
-  } 
+  }
 }
 
 // INPUT: help question id
