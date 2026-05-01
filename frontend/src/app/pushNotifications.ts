@@ -6,12 +6,21 @@ import { logoutUser } from "./storage";
 const API_URL = import.meta.env.VITE_API_URL || "/api";
 const PUSH_SW_PATH = "/push-sw.js";
 
+function shouldRegisterPushServiceWorker() {
+  return (
+    import.meta.env.PROD ||
+    import.meta.env.MODE === "test" ||
+    import.meta.env.VITE_ENABLE_DEV_SERVICE_WORKER === "true"
+  );
+}
+
 // INPUT: none
 // OUTPUT: push support flag
 // EFFECT: Detects whether the current browser can receive background Web Push through a service worker
 export function supportsPushNotifications() {
   return (
     typeof window !== "undefined" &&
+    shouldRegisterPushServiceWorker() &&
     "Notification" in window &&
     "serviceWorker" in navigator &&
     "PushManager" in window

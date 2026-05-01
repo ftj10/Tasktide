@@ -110,6 +110,7 @@ npm test
 - Use `Import ICS` on the Today page when you want to bring calendar events into the planner from a `.ics` export. The importer keeps titles, notes, locations, multi-day all-day ranges, timed events, and supported daily, weekly, monthly, and yearly recurrence rules.
 - The in-app Updates center mirrors the latest shipped release metadata from `frontend/src/app/releaseNotes.ts` and groups each release under `New Features`, `Improvements`, and `Bug Fixes`.
 - Offline task access uses browser local storage for the latest task cache and a queued task mutation list. The queue replays task create, update, and delete operations when the browser fires `online` or the app next loads tasks successfully.
+- During `npm run dev`, the frontend unregisters the TaskTide app-shell service worker and background push service-worker registration stays disabled unless `VITE_ENABLE_DEV_SERVICE_WORKER=true` is set. This keeps Vite HMR and React Fast Refresh on a single fresh module graph.
 - Walkthrough GIF files can be added under `frontend/public/help-walkthroughs/` using the built-in filenames shown in each Help Center placeholder.
 - First-run onboarding is stored per browser in local storage, so the language-switch and planner tooltip guide disappears after completion or skip.
 - Shared help questions are stored as new posts on the server, so another signed-in user cannot overwrite an older question by reusing its client-side id.
