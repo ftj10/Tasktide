@@ -17,6 +17,8 @@ const { invokeApp } = require('./helpers/http');
 const originals = {
   env: {
     adminUsernames: process.env.ADMIN_USERNAMES,
+    sessionCookieSameSite: process.env.SESSION_COOKIE_SAME_SITE,
+    sessionCookieSecure: process.env.SESSION_COOKIE_SECURE,
     vapidPublicKey: process.env.VAPID_PUBLIC_KEY,
     vapidPrivateKey: process.env.VAPID_PRIVATE_KEY,
   },
@@ -63,6 +65,16 @@ function resetStubs() {
     process.env.ADMIN_USERNAMES = originals.env.adminUsernames;
   } else {
     delete process.env.ADMIN_USERNAMES;
+  }
+  if (typeof originals.env.sessionCookieSameSite === 'string') {
+    process.env.SESSION_COOKIE_SAME_SITE = originals.env.sessionCookieSameSite;
+  } else {
+    delete process.env.SESSION_COOKIE_SAME_SITE;
+  }
+  if (typeof originals.env.sessionCookieSecure === 'string') {
+    process.env.SESSION_COOKIE_SECURE = originals.env.sessionCookieSecure;
+  } else {
+    delete process.env.SESSION_COOKIE_SECURE;
   }
   if (typeof originals.env.vapidPublicKey === 'string') {
     process.env.VAPID_PUBLIC_KEY = originals.env.vapidPublicKey;
@@ -137,6 +149,27 @@ test('behavior: login sets a session cookie for valid credentials', async () => 
   assert.deepEqual(result.json, { username: 'tom', role: 'ADMIN' });
   assert.match(result.headers['set-cookie'], /tasktide_session=signed-token/);
   assert.match(result.headers['set-cookie'], /HttpOnly/);
+});
+
+test('behavior: login uses a cross-site session cookie for hosted frontend origins', async () => {
+  delete process.env.SESSION_COOKIE_SAME_SITE;
+  delete process.env.SESSION_COOKIE_SECURE;
+  User.findOne = async () => ({ _id: 'user-1', username: 'tom', password: 'hashed', role: 'USER' });
+  bcrypt.compare = async () => true;
+  jwt.sign = () => 'signed-token';
+
+  const result = await invokeApp(app, '/login', {
+    method: 'POST',
+    headers: {
+      Host: 'tasktide-api.onrender.com',
+      Origin: 'https://tasktide.vercel.app',
+    },
+    body: { username: 'tom', password: 'secret' },
+  });
+
+  assert.equal(result.statusCode, 200);
+  assert.match(result.headers['set-cookie'], /SameSite=None/);
+  assert.match(result.headers['set-cookie'], /Secure/);
 });
 
 test('behavior: login backfills a missing stored role for legacy users', async () => {

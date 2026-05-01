@@ -1,5 +1,19 @@
 # Release Notes
 
+## Version 1.18.1
+Version: 1.18.1
+Update Date: 2026-04-30
+
+### New Features
+- Added automatic cross-site session cookie handling for hosted frontend and backend deployments on different hostnames.
+
+### Improvements
+- Updated deployment guidance so teams can rely on the backend default for secure cross-host login cookies and only override it when needed.
+- Improved Help Center sign-in guidance to explain that hosted web sessions should remain active after login.
+
+### Bug Fixes
+- Fixed hosted web login sessions so users are no longer immediately returned to the login page after signing in from a separate frontend origin.
+
 ## Version 1.18.0
 Version: 1.18.0
 Update Date: 2026-04-30

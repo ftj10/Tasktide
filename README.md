@@ -1,6 +1,6 @@
 # TaskTide Application
 
-Current version: `v1.18.0`
+Current version: `v1.18.1`
 
 TaskTide is a full-stack planner for daily tasks, weekly routines, reminders, shared help questions, and calendar-based scheduling.
 
@@ -9,6 +9,7 @@ Deployed Web: TaskTide
 ## Features
 
 - Secure registration and login with HttpOnly cookie sessions and persisted `USER` / `ADMIN` roles.
+- Hosted frontend and backend deployments now keep users signed in after login by automatically using cross-site session cookie settings when the browser request comes from a different hostname.
 - Project, web-app, install, notification, storage, and backup identifiers now use the TaskTide name.
 - Login and registration screens support an `EN` / `中文` switch before authentication.
 - Today, Week, and Month planning views for one-time and recurring tasks.
@@ -69,8 +70,8 @@ MONGODB_URI=your_mongodb_connection_string_here
 JWT_SECRET=your_secure_random_secret_string
 ADMIN_USERNAMES=comma_separated_admin_usernames
 CORS_ORIGIN=http://127.0.0.1:5173
-SESSION_COOKIE_SAME_SITE=lax
-SESSION_COOKIE_SECURE=false
+SESSION_COOKIE_SAME_SITE=optional_lax_strict_or_none
+SESSION_COOKIE_SECURE=optional_true_or_false
 WEB_PUSH_SUBJECT=mailto:you@example.com
 VAPID_PUBLIC_KEY=optional_existing_public_key
 VAPID_PRIVATE_KEY=optional_existing_private_key
@@ -102,7 +103,7 @@ npm test
 - The installable web app, browser tab title, service worker notifications, package metadata, session cookie, and local browser profile keys use the TaskTide brand.
 - The login session now lives in an HttpOnly cookie. JavaScript no longer reads the JWT directly, and frontend API calls rely on browser credentials instead of `Authorization` headers.
 - Local frontend development now defaults to the Vite `/api` proxy so cookie-based auth stays same-origin during `npm run dev`.
-- If you deploy the frontend and backend on different HTTPS origins, set `CORS_ORIGIN` to the frontend origin and switch the session cookie to `SESSION_COOKIE_SAME_SITE=none` plus `SESSION_COOKIE_SECURE=true`.
+- If you deploy the frontend and backend on different HTTPS hostnames, set `CORS_ORIGIN` to the frontend origin. The backend now defaults those cross-host login responses to `SameSite=None; Secure`; use `SESSION_COOKIE_SAME_SITE` and `SESSION_COOKIE_SECURE` only when you need to override that behavior.
 - Local development can skip manual VAPID setup because the backend generates `backend/.push-vapid.json` on first use. Production should provide `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `WEB_PUSH_SUBJECT`.
 - Use `Import ICS` on the Today page when you want to bring calendar events into the planner from a `.ics` export. The importer keeps titles, notes, locations, multi-day all-day ranges, timed events, and supported daily, weekly, monthly, and yearly recurrence rules.
 - The in-app Updates center mirrors the latest shipped release metadata from `frontend/src/app/releaseNotes.ts` and groups each release under `New Features`, `Improvements`, and `Bug Fixes`.

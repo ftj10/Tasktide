@@ -21,6 +21,8 @@ const app = express();
 const SESSION_COOKIE_NAME = 'tasktide_session';
 const SESSION_COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
+app.set('trust proxy', 1);
+
 app.use(cors({
   origin(origin, callback) {
     const configuredOrigins = String(process.env.CORS_ORIGIN ?? '')
@@ -125,13 +127,32 @@ function readCookieValue(cookieHeader, name) {
   }
 }
 
+function isCrossHostnameRequest(req) {
+  const origin = String(req.headers.origin ?? '').trim();
+  const requestHost = String(req.headers['x-forwarded-host'] ?? req.headers.host ?? '')
+    .split(',')[0]
+    .trim();
+
+  if (!origin || !requestHost) return false;
+
+  try {
+    return new URL(origin).hostname !== requestHost.split(':')[0];
+  } catch {
+    return false;
+  }
+}
+
 function getSessionCookieSettings(req) {
-  const configuredSameSite = String(process.env.SESSION_COOKIE_SAME_SITE ?? 'lax').trim().toLowerCase();
+  const configuredSameSite = String(process.env.SESSION_COOKIE_SAME_SITE ?? '').trim().toLowerCase();
   const sameSite =
     configuredSameSite === 'none'
       ? 'none'
       : configuredSameSite === 'strict'
       ? 'strict'
+      : configuredSameSite === 'lax'
+      ? 'lax'
+      : isCrossHostnameRequest(req)
+      ? 'none'
       : 'lax';
   const secure =
     String(process.env.SESSION_COOKIE_SECURE ?? '').trim().toLowerCase() === 'true' ||

@@ -14,6 +14,31 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-04-30-hosted-login-session-fix",
+    version: "v1.18.1",
+    releasedAt: "2026-04-30",
+    title: {
+      en: "Hosted login session fix",
+      zh: "托管版登录会话修复"
+    },
+    summary: {
+      en: "Hosted TaskTide deployments now keep users signed in when the frontend and backend run on different hostnames.",
+      zh: "当前端和后端部署在不同主机名时，托管版 TaskTide 现在也会在登录后保持登录状态。"
+    },
+    changes: {
+      en: [
+        "Added automatic cross-site session cookie handling for hosted frontend and backend deployments.",
+        "Updated deployment guidance so secure cookie overrides are only needed for custom cases.",
+        "Fixed hosted web login sessions so users are no longer sent back to the login page immediately after signing in."
+      ],
+      zh: [
+        "新增面向托管前后端分离部署的跨站会话 Cookie 自动处理。",
+        "更新部署说明，只有自定义场景才需要手动覆盖安全 Cookie 设置。",
+        "修复托管网页登录会话，用户登录后不再立刻被带回登录页。"
+      ]
+    }
+  },
+  {
     id: "2026-04-30-language-switch-coach-mark",
     version: "v1.18.0",
     releasedAt: "2026-04-30",

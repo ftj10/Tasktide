@@ -286,7 +286,7 @@ const resources = {
           },
           q15: {
             question: "How does sign-in stay active in this browser?",
-            answer: "The planner keeps your sign-in in a secure browser session cookie. You usually stay signed in until you log out or the session expires."
+            answer: "The planner keeps your sign-in in a secure browser session cookie. On the hosted web app, signing in should keep you in the planner even when the app and API use different web addresses. You usually stay signed in until you log out or the session expires."
           },
           q11: {
             question: "What does the ICS importer support?",
@@ -661,7 +661,7 @@ const resources = {
           },
           q15: {
             question: "这个浏览器里的登录状态会怎样保持？",
-            answer: "计划器会用更安全的浏览器会话 Cookie 保持登录。一般情况下，除非你主动退出或会话过期，否则会继续保持登录。"
+            answer: "计划器会用更安全的浏览器会话 Cookie 保持登录。在托管网页版中，即使应用和 API 使用不同的网址，登录后也应该继续停留在计划器内。一般情况下，除非你主动退出或会话过期，否则会继续保持登录。"
           },
           q11: {
             question: "ICS 导入功能支持什么？",
