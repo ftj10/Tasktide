@@ -1,8 +1,6 @@
 // INPUT: browser notification APIs plus authenticated backend endpoints
 // OUTPUT: service-worker registration and push-subscription helpers
 // EFFECT: Connects the signed-in planner session to background push notifications on desktop browsers and supported mobile installs
-import { logoutUser } from "./storage";
-
 const API_URL = import.meta.env.VITE_API_URL || "/api";
 const PUSH_SW_PATH = "/push-sw.js";
 
