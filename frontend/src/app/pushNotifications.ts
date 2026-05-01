@@ -119,8 +119,6 @@ async function authorizedRequest(path: string, options: RequestInit = {}) {
   });
 
   if (response.status === 401 || response.status === 403) {
-    void logoutUser();
-    window.location.reload();
     return null;
   }
 
