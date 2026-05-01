@@ -17,6 +17,7 @@ const { invokeApp } = require('./helpers/http');
 const originals = {
   env: {
     adminUsernames: process.env.ADMIN_USERNAMES,
+    corsOrigin: process.env.CORS_ORIGIN,
     sessionCookieSameSite: process.env.SESSION_COOKIE_SAME_SITE,
     sessionCookieSecure: process.env.SESSION_COOKIE_SECURE,
     vapidPublicKey: process.env.VAPID_PUBLIC_KEY,
@@ -65,6 +66,11 @@ function resetStubs() {
     process.env.ADMIN_USERNAMES = originals.env.adminUsernames;
   } else {
     delete process.env.ADMIN_USERNAMES;
+  }
+  if (typeof originals.env.corsOrigin === 'string') {
+    process.env.CORS_ORIGIN = originals.env.corsOrigin;
+  } else {
+    delete process.env.CORS_ORIGIN;
   }
   if (typeof originals.env.sessionCookieSameSite === 'string') {
     process.env.SESSION_COOKIE_SAME_SITE = originals.env.sessionCookieSameSite;
@@ -154,6 +160,7 @@ test('behavior: login sets a session cookie for valid credentials', async () => 
 test('behavior: login uses a cross-site session cookie for hosted frontend origins', async () => {
   delete process.env.SESSION_COOKIE_SAME_SITE;
   delete process.env.SESSION_COOKIE_SECURE;
+  process.env.CORS_ORIGIN = 'https://tasktide.vercel.app';
   User.findOne = async () => ({ _id: 'user-1', username: 'tom', password: 'hashed', role: 'USER' });
   bcrypt.compare = async () => true;
   jwt.sign = () => 'signed-token';
@@ -220,6 +227,62 @@ test('behavior: logout clears the session cookie', async () => {
   assert.deepEqual(result.json, { message: 'Logged out' });
   assert.match(result.headers['set-cookie'], /tasktide_session=/);
   assert.match(result.headers['set-cookie'], /Expires=Thu, 01 Jan 1970/);
+});
+
+test('behavior: unsafe cookie-authenticated requests reject untrusted browser origins', async () => {
+  jwt.verify = () => {
+    throw new Error('CSRF should run before auth');
+  };
+
+  const result = await invokeApp(app, '/tasks', {
+    method: 'POST',
+    headers: {
+      Cookie: 'tasktide_session=signed-token',
+      Origin: 'https://evil.example',
+    },
+    body: { id: 'task-1', title: 'Blocked task' },
+  });
+
+  assert.equal(result.statusCode, 403);
+  assert.deepEqual(result.json, { error: 'CSRF check failed' });
+});
+
+test('behavior: unsafe cookie-authenticated requests require an origin or referer', async () => {
+  jwt.verify = () => {
+    throw new Error('CSRF should run before auth');
+  };
+
+  const result = await invokeApp(app, '/tasks', {
+    method: 'POST',
+    headers: {
+      Cookie: 'tasktide_session=signed-token',
+    },
+    body: { id: 'task-1', title: 'Blocked task' },
+  });
+
+  assert.equal(result.statusCode, 403);
+  assert.deepEqual(result.json, { error: 'CSRF check failed' });
+});
+
+test('behavior: unsafe cookie-authenticated requests accept configured frontend origins', async () => {
+  process.env.CORS_ORIGIN = 'https://tasktide.example';
+  jwt.verify = (token, secret, callback) =>
+    callback(null, { userId: '507f1f77bcf86cd799439011', username: 'tom', role: 'USER' });
+  Task.deleteMany = async () => ({ deletedCount: 0 });
+  Task.updateOne = async () => ({ upsertedCount: 1 });
+
+  const result = await invokeApp(app, '/tasks', {
+    method: 'POST',
+    headers: {
+      Cookie: 'tasktide_session=signed-token',
+      Origin: 'https://tasktide.example',
+      Host: 'api.tasktide.example',
+    },
+    body: { id: 'task-1', title: 'Allowed task' },
+  });
+
+  assert.equal(result.statusCode, 201);
+  assert.deepEqual(result.json, { message: 'Created' });
 });
 
 test('behavior: authenticated help question fetch returns only the current user questions for standard users', async () => {

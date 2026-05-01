@@ -23,13 +23,46 @@ const SESSION_COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 app.set('trust proxy', 1);
 
+function getConfiguredOrigins() {
+  return String(process.env.CORS_ORIGIN ?? '')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
+function getRequestOrigin(req) {
+  const requestHost = String(req.headers['x-forwarded-host'] ?? req.headers.host ?? '')
+    .split(',')[0]
+    .trim();
+  if (!requestHost) return null;
+
+  const requestProtocol = String(req.headers['x-forwarded-proto'] ?? req.protocol ?? 'http')
+    .split(',')[0]
+    .trim();
+
+  return `${requestProtocol}://${requestHost}`;
+}
+
+function getHeaderOrigin(value) {
+  const headerValue = String(value ?? '').trim();
+  if (!headerValue) return null;
+
+  try {
+    const parsedUrl = new URL(headerValue);
+    return parsedUrl.origin;
+  } catch {
+    return null;
+  }
+}
+
+function isTrustedRequestOrigin(req, origin) {
+  if (!origin) return false;
+  return origin === getRequestOrigin(req) || getConfiguredOrigins().includes(origin);
+}
+
 app.use(cors({
   origin(origin, callback) {
-    const configuredOrigins = String(process.env.CORS_ORIGIN ?? '')
-      .split(',')
-      .map((value) => value.trim())
-      .filter(Boolean);
-
+    const configuredOrigins = getConfiguredOrigins();
     if (!origin || configuredOrigins.length === 0 || configuredOrigins.includes(origin)) {
       callback(null, true);
       return;
@@ -40,6 +73,30 @@ app.use(cors({
   credentials: true,
 }));
 app.use(express.json());
+
+function verifyCsrfOrigin(req, res, next) {
+  if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
+    next();
+    return;
+  }
+
+  const cookieToken = readCookieValue(req.headers.cookie, SESSION_COOKIE_NAME);
+  const origin = getHeaderOrigin(req.headers.origin);
+  const refererOrigin = getHeaderOrigin(req.headers.referer);
+  const requestOrigin = origin || refererOrigin;
+
+  if (requestOrigin && !isTrustedRequestOrigin(req, requestOrigin)) {
+    return res.status(403).json({ error: "CSRF check failed" });
+  }
+
+  if (cookieToken && !requestOrigin) {
+    return res.status(403).json({ error: "CSRF check failed" });
+  }
+
+  next();
+}
+
+app.use(verifyCsrfOrigin);
 
 // Keep-Alive Endpoint for Render Free Tier
 app.get('/ping', (req, res) => {

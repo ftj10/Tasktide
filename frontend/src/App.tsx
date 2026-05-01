@@ -29,6 +29,7 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import LanguageRoundedIcon from "@mui/icons-material/LanguageRounded";
 import TaskAltRoundedIcon from "@mui/icons-material/TaskAltRounded";
+import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
 
 import type { Task, Reminder } from "./types";
 import {
@@ -475,11 +476,11 @@ export default function App() {
   }
 
   const navigationItems = [
-    { to: "/reminders", label: t("nav.reminders"), icon: <NotificationsActiveOutlinedIcon /> },
-    { to: "/", label: t("nav.today"), icon: <TodayOutlinedIcon /> },
-    { to: "/week", label: t("nav.week"), icon: <ViewWeekOutlinedIcon /> },
-    { to: "/month", label: t("nav.month"), icon: <CalendarMonthOutlinedIcon /> },
-    { to: "/help", label: t("nav.help"), icon: <HelpOutlineIcon /> },
+    { to: "/reminders", label: t("nav.reminders"), icon: <NotificationsActiveOutlinedIcon />, id: "nav-reminders" },
+    { to: "/", label: t("nav.today"), icon: <TodayOutlinedIcon />, id: "nav-today" },
+    { to: "/week", label: t("nav.week"), icon: <ViewWeekOutlinedIcon />, id: "nav-week" },
+    { to: "/month", label: t("nav.month"), icon: <CalendarMonthOutlinedIcon />, id: "nav-month" },
+    { to: "/help", label: t("nav.help"), icon: <HelpOutlineIcon />, id: "nav-help" },
   ];
 
   const activePath = navigationItems.some((item) => item.to === location.pathname)
@@ -525,6 +526,11 @@ export default function App() {
           <Tooltip title={t("nav.switchLanguage")}>
             <IconButton id="language-switch-mobile" color="inherit" onClick={handleLanguageToggle} size="small">
               <LanguageRoundedIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title={t("nav.installApp")}>
+            <IconButton id="install-web-app-mobile" component={Link} to="/help?topic=open-web-app-pc" color="inherit" size="small">
+              <DownloadRoundedIcon />
             </IconButton>
           </Tooltip>
           <Tooltip title={t("nav.logout")}>
@@ -600,7 +606,7 @@ export default function App() {
                   return (
                     <Button
                       key={item.to}
-                      id={item.to === "/week" ? "nav-week-desktop" : undefined}
+                      id={`${item.id}-desktop`}
                       component={Link}
                       to={item.to}
                       startIcon={item.icon}
@@ -642,6 +648,16 @@ export default function App() {
 
               <Stack spacing={1}>
                 {username ? <ReleaseNotesCenter username={username} suppressAutoOpen={shouldSuppressReleaseNotes} /> : null}
+                <Button
+                  id="install-web-app-desktop"
+                  component={Link}
+                  to="/help?topic=open-web-app-pc"
+                  variant="outlined"
+                  startIcon={<DownloadRoundedIcon />}
+                  sx={{ borderRadius: 2.5 }}
+                >
+                  {t("nav.installApp")}
+                </Button>
                 <Tooltip title={t("nav.switchLanguage")}>
                   <Button
                     id="language-switch-desktop"
@@ -741,7 +757,7 @@ export default function App() {
           {navigationItems.map((item) => (
             <BottomNavigationAction
               key={item.to}
-              id={item.to === "/week" ? "nav-week-mobile" : undefined}
+              id={`${item.id}-mobile`}
               component={Link}
               to={item.to}
               value={item.to}

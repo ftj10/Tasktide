@@ -14,6 +14,29 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-05-01-csrf-safe-session-writes",
+    version: "v1.19.1",
+    releasedAt: "2026-05-01",
+    title: {
+      en: "Safer session updates",
+      zh: "更安全的会话更新"
+    },
+    summary: {
+      en: "TaskTide now adds stronger browser-request checks around signed-in changes while keeping the planner flow the same.",
+      zh: "TaskTide 现在为登录后的更改加入更强的浏览器请求检查，同时保持原有计划流程不变。"
+    },
+    changes: {
+      en: [
+        "Improved account and planner safety for signed-in changes.",
+        "Fixed browser requests from untrusted pages so they cannot use an existing TaskTide session to change planner data."
+      ],
+      zh: [
+        "改进登录后修改账号和计划内容时的安全性。",
+        "修复来自不受信任页面的浏览器请求，避免它们使用现有 TaskTide 会话修改计划数据。"
+      ]
+    }
+  },
+  {
     id: "2026-04-30-offline-task-editing",
     version: "v1.19.0",
     releasedAt: "2026-04-30",
@@ -35,6 +58,54 @@ export const RELEASE_NOTES: ReleaseNote[] = [
         "新增已登录浏览器和已安装网页应用的离线任务缓存。",
         "新增 API 不可用时的任务新增、更新和删除排队同步。",
         "更新应用外壳缓存，让已安装的 TaskTide 离线时也能从缓存页面启动。"
+      ]
+    }
+  },
+  {
+    id: "2026-04-30-install-web-app-coach-mark",
+    version: "v1.18.4",
+    releasedAt: "2026-04-30",
+    title: {
+      en: "Install app coach mark",
+      zh: "安装应用引导提示"
+    },
+    summary: {
+      en: "First-time users now see where to learn how to add TaskTide to their device.",
+      zh: "首次使用的用户现在可以看到在哪里学习如何把 TaskTide 添加到设备上。"
+    },
+    changes: {
+      en: [
+        "Added an Install app entry point in the app shell.",
+        "Added a first-run coach mark that points to the Install app guide.",
+        "Improved Help Center guidance for opening TaskTide as an installed web app."
+      ],
+      zh: [
+        "在应用外壳中新增安装应用入口。",
+        "新增首次使用时指向安装应用指引的引导提示。",
+        "改进帮助中心中关于以已安装网页应用方式打开 TaskTide 的说明。"
+      ]
+    }
+  },
+  {
+    id: "2026-04-30-help-center-coach-mark",
+    version: "v1.18.3",
+    releasedAt: "2026-04-30",
+    title: {
+      en: "Help Center coach mark",
+      zh: "帮助中心引导提示"
+    },
+    summary: {
+      en: "First-time users now get a clearer pointer to the Help Center, where most TaskTide features are introduced.",
+      zh: "首次使用的用户现在会更清楚地看到帮助中心入口，那里介绍了 TaskTide 的大多数功能。"
+    },
+    changes: {
+      en: [
+        "Added a first-run coach mark that points to Help Center.",
+        "Improved onboarding so users can find walkthroughs and common answers earlier."
+      ],
+      zh: [
+        "新增首次使用时指向帮助中心的引导提示。",
+        "改进新手引导，让用户更早找到演示和常见答案。"
       ]
     }
   },

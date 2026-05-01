@@ -1,5 +1,22 @@
 # Release Notes
 
+## Version 1.19.1
+Version: 1.19.1
+Update Date: 2026-05-01
+
+Title: Version 1.19.1 – Update Released (2026-05-01)
+
+### What’s New
+- Added: A clearer Install app entry point so users can find the web-app download guidance from the main planner.
+- Added: New first-time coach marks that point users to Help Center and the Install app guide.
+
+### Improvements
+- Improved: Help Center now gives a fuller start-to-finish workflow for planning, managing, completing, and getting support in TaskTide.
+- Improved: Signed-in sessions now check that browser requests come from a trusted TaskTide page before accepting changes.
+
+### Fixes
+- Fixed: Planner changes are now protected from untrusted web pages trying to use an active TaskTide session.
+
 ## Version 1.19.0
 Version: 1.19.0
 Update Date: 2026-04-30
@@ -15,6 +32,37 @@ Update Date: 2026-04-30
 
 ### Bug Fixes
 - Fixed failed task API saves so offline task edits are no longer immediately discarded from the planner view.
+
+## Version 1.18.4
+Version: 1.18.4
+Update Date: 2026-04-30
+
+Title: Version 1.18.4 – Update Released (2026-04-30)
+
+### What’s New
+- Added: A first-time coach mark that points users to the Install app guide.
+- Added: A visible Install app entry point for users who want to add TaskTide to their device.
+
+### Improvements
+- Improved: Users can now find web-app download guidance without searching through Help Center first.
+
+### Fixes
+- Fixed: New users are less likely to miss the installed web-app option during setup.
+
+## Version 1.18.3
+Version: 1.18.3
+Update Date: 2026-04-30
+
+Title: Version 1.18.3 – Update Released (2026-04-30)
+
+### What’s New
+- Added: A first-time coach mark that points users to Help Center.
+
+### Improvements
+- Improved: New users can find walkthroughs, common answers, and support earlier in the onboarding flow.
+
+### Fixes
+- Fixed: Users are less likely to miss where most TaskTide features are introduced.
 
 ## Version 1.18.1
 Version: 1.18.1

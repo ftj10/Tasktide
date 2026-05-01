@@ -45,6 +45,7 @@ const resources = {
         mobileNavigation: "Mobile navigation",
         logout: "Logout",
         switchLanguage: "Switch language",
+        installApp: "Install app",
         greeting: "Hi, {{name}}!"
       },
       login: {
@@ -218,17 +219,17 @@ const resources = {
         },
         guides: {
           title: "How To Use This Website",
-          step0: "Use the language button on the login page or inside TaskTide if you want English or Chinese.",
-          step1: "Use Today to add tasks, edit tasks, mark tasks done, and move tasks to another day.",
-          step2: "Use Import ICS on Today if you want to turn calendar events into planner tasks.",
-          step3: "Use Week and Month to see your schedule and jump to another date quickly.",
-          step4: "Use Reminders for notes that should stay visible until you finish them.",
-          step5Desktop: "On desktop, use the left sidebar to move between Today, Week, Month, Reminders, and Help.",
-          step5Mobile: "On mobile, use the bottom navigation to move between Today, Week, Month, Reminders, and Help.",
-          step6Desktop: "On desktop, task forms open as centered dialog windows.",
-          step6Mobile: "On mobile, task forms open full screen so they are easier to use.",
-          step7Desktop: "On desktop, allow notifications if you want daily reminders and task alerts from the browser.",
-          step7Mobile: "On mobile, install the web app and allow notifications if you want daily reminders and task alerts."
+          step0: "TaskTide helps you plan the week from one place: create tasks, review your schedule, finish work, and keep reminders visible until they are done.",
+          step1: "Start on Today. Add the tasks you want to handle, import calendar events if you have an ICS file, and mark items done as you finish them.",
+          step2: "Use Week when you want to place tasks into time slots, compare busy days, or plan ahead before the week starts.",
+          step3: "Use Month when you need a wider view and want to jump to a date quickly.",
+          step4: "Use Reminders for notes that should stay easy to find until you complete them.",
+          step5Desktop: "On desktop, use the left sidebar to move between Reminders, Today, Week, Month, Help, and the install guide.",
+          step5Mobile: "On mobile, use the bottom navigation to move between the main pages and the top install button to learn how to add TaskTide to your device.",
+          step6Desktop: "If you want TaskTide to open like an app, choose Install app and follow the walkthrough for your browser.",
+          step6Mobile: "If you want TaskTide on your home screen, choose Install app and follow the mobile steps for your browser.",
+          step7Desktop: "Visit Help whenever you want guided walkthroughs, common answers, or a place to send a question.",
+          step7Mobile: "Visit Help whenever you want guided walkthroughs, common answers, or a place to send a question."
         },
         faq: {
           title: "Common Q&A",
@@ -378,6 +379,8 @@ const resources = {
         done: "Done",
         steps: {
           languageSwitch: "Use this button to switch between English and Chinese.",
+          helpCenter: "Open Help Center for walkthroughs, common answers, and question support.",
+          installWebApp: "Use Install app to learn how to add TaskTide to your device.",
           addTask: "Tap here to add a task.",
           taskList: "Your tasks appear here after you save.",
           weekView: "Open Week to plan tasks by time."
@@ -424,6 +427,7 @@ const resources = {
         mobileNavigation: "移动端导航",
         logout: "退出登录",
         switchLanguage: "切换语言",
+        installApp: "安装应用",
         greeting: "你好，{{name}}！"
       },
       login: {
@@ -597,17 +601,17 @@ const resources = {
         },
         guides: {
           title: "网站使用说明",
-          step0: "如果你想切换英文或中文，可以使用登录页或 TaskTide 内的语言按钮。",
-          step1: "Today 用来添加任务、编辑任务、完成任务，或把任务移动到别的日期。",
-          step2: "如果你想把日历事件变成任务，可以在 Today 使用 Import ICS。",
-          step3: "Week 和 Month 用来看安排，也可以快速跳到别的日期。",
-          step4: "Reminders 适合记录会一直显示、直到你完成的提醒事项。",
-          step5Desktop: "桌面端可以用左侧边栏切换 Today、Week、Month、Reminders 和 Help。",
-          step5Mobile: "手机端可以用底部导航切换 Today、Week、Month、Reminders 和 Help。",
-          step6Desktop: "桌面端的任务表单会以居中弹窗打开。",
-          step6Mobile: "手机端的任务表单会全屏打开，操作更方便。",
-          step7Desktop: "如果你想收到每日提醒和任务提醒，请在桌面端允许浏览器通知。",
-          step7Mobile: "如果你想收到每日提醒和任务提醒，请先安装网页应用并允许通知。"
+          step0: "TaskTide 帮你在一个地方规划一周：创建任务、查看安排、完成事项，并让提醒保持可见直到完成。",
+          step1: "从 Today 开始。添加今天要处理的任务，如果有 ICS 文件也可以导入日历事件，完成后把任务标记为完成。",
+          step2: "需要按时间段安排任务、比较哪天更忙，或提前规划一周时，使用 Week。",
+          step3: "需要看更大的日期范围或快速跳到某一天时，使用 Month。",
+          step4: "Reminders 适合记录需要一直容易找到、直到完成的事项。",
+          step5Desktop: "桌面端可以用左侧边栏切换 Reminders、Today、Week、Month、Help，并打开安装指引。",
+          step5Mobile: "手机端可以用底部导航切换主要页面，也可以用顶部安装按钮学习如何把 TaskTide 加到设备上。",
+          step6Desktop: "如果希望 TaskTide 像应用一样打开，请选择“安装应用”，然后按浏览器演示操作。",
+          step6Mobile: "如果希望 TaskTide 出现在主屏幕，请选择“安装应用”，然后按手机浏览器步骤操作。",
+          step7Desktop: "需要演示、常见答案或提交问题时，随时打开 Help。",
+          step7Mobile: "需要演示、常见答案或提交问题时，随时打开 Help。"
         },
         faq: {
           title: "常见问答",
@@ -757,6 +761,8 @@ const resources = {
         done: "完成",
         steps: {
           languageSwitch: "用这个按钮在英文和中文之间切换。",
+          helpCenter: "打开帮助中心，查看演示、常见答案和问题支持。",
+          installWebApp: "使用“安装应用”学习如何把 TaskTide 加到你的设备上。",
           addTask: "点这里添加任务。",
           taskList: "保存后，任务会显示在这里。",
           weekView: "打开 Week 按时间安排任务。"

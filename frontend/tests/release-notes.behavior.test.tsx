@@ -33,8 +33,22 @@ describe("ReleaseNotesCenter behavior", () => {
   it("shows the latest shipped version in the update dialog", () => {
     renderWithProviders(<ReleaseNotesCenter username="tom" />);
 
-    expect(screen.getByText("v1.19.0")).toBeInTheDocument();
-    expect(screen.getByText("Offline task editing")).toBeInTheDocument();
+    expect(screen.getByText("v1.19.1")).toBeInTheDocument();
+    expect(screen.getByText("Safer session updates")).toBeInTheDocument();
+  });
+
+  it("keeps the 1.18.3 and 1.18.4 coach-mark updates in history", async () => {
+    const user = userEvent.setup();
+    localStorage.setItem("release-notes-seen:tom", LATEST_RELEASE_ID);
+
+    renderWithProviders(<ReleaseNotesCenter username="tom" />);
+
+    await user.click(screen.getByRole("button", { name: "Updates" }));
+
+    expect(screen.getByText("v1.18.3")).toBeInTheDocument();
+    expect(screen.getByText("Help Center coach mark")).toBeInTheDocument();
+    expect(screen.getByText("v1.18.4")).toBeInTheDocument();
+    expect(screen.getByText("Install app coach mark")).toBeInTheDocument();
   });
 
   it("keeps onboarding and help walkthroughs in the 1.15 release series", async () => {
