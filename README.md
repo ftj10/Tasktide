@@ -1,6 +1,6 @@
 # TaskTide Application
 
-Current version: `v1.19.2`
+Current version: `v1.19.3`
 
 TaskTide is a full-stack planner for daily tasks, weekly routines, reminders, shared help questions, and calendar-based scheduling.
 
@@ -9,6 +9,7 @@ Deployed Web: TaskTide
 ## Features
 
 - Secure registration and login with HttpOnly cookie sessions and persisted `USER` / `ADMIN` roles.
+- Registration now trims usernames, prevents duplicate-looking username casing, and requires stronger passwords before an account is created.
 - Cookie-backed write requests are checked against trusted TaskTide origins so signed-in planner changes stay protected from cross-site request attempts.
 - Hosted frontend and backend deployments now keep users signed in after login by automatically using cross-site session cookie settings when the browser request comes from a different hostname.
 - Installed TaskTide sessions can reopen cached tasks offline after a successful online load, then add, edit, complete, and delete tasks while changes wait for the API to return.
@@ -137,3 +138,4 @@ npm --prefix frontend run build
 - On smaller screens, the app uses bottom navigation, a swipe-through Week view with single-step settled paging and default Time Grid focus, press-held time-range task creation in Week, a refreshed Month task grid with direct vertical swipe navigation plus a quick jump-to-current-month action, and full-screen editing dialogs to keep controls touch-friendly. When a task dialog opens, the mobile bottom navigation hides until that task window closes.
 - The login page language switch uses the same bilingual copy system as the signed-in app, so authentication flows can be changed before sign-in.
 - Keep backend running before opening the frontend locally.
+- New account names are normalized by the backend so extra spaces and mixed casing do not create duplicate-looking accounts.

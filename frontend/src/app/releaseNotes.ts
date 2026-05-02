@@ -14,6 +14,31 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-05-02-auth-input-validation",
+    version: "v1.19.3",
+    releasedAt: "2026-05-02",
+    title: {
+      en: "Clearer account setup",
+      zh: "更清晰的账号创建"
+    },
+    summary: {
+      en: "TaskTide now gives clearer account setup guidance and prevents common username and password mistakes.",
+      zh: "TaskTide 现在提供更清晰的账号创建提示，并避免常见的用户名和密码错误。"
+    },
+    changes: {
+      en: [
+        "Improved account creation by removing extra spaces from usernames.",
+        "Improved sign-in by matching usernames even when letter casing differs.",
+        "Fixed weak or blank account inputs so users see clear guidance before an account is created."
+      ],
+      zh: [
+        "改进账号创建，会去除用户名前后的多余空格。",
+        "改进登录体验，即使用户名大小写不同也能匹配账号。",
+        "修复空白或过弱的账号输入，让用户在创建账号前看到清楚提示。"
+      ]
+    }
+  },
+  {
     id: "2026-05-02-lint-quality-fix",
     version: "v1.19.2",
     releasedAt: "2026-05-02",

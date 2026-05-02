@@ -70,6 +70,9 @@ const resources = {
         errors: {
           usernameTaken: "Username taken",
           invalidCredentials: "Invalid credentials",
+          requiredFields: "Username and password are required",
+          usernameTooShort: "Username must be at least 3 characters",
+          passwordTooShort: "Password must be at least 8 characters",
           failedToRegister: "Failed to register",
           failedToLogin: "Failed to log in",
           generic: "Something went wrong"
@@ -219,7 +222,7 @@ const resources = {
         },
         guides: {
           title: "How To Use This Website",
-          step0: "TaskTide is for planning a week of work from start to finish. Add what you need to do, arrange it by day or time, then mark work complete as your week moves forward.",
+          step0: "TaskTide is for planning a week of work from start to finish. Create a clean account, add what you need to do, arrange it by day or time, then mark work complete as your week moves forward.",
           step1: "If you want to plan today, start on Today. Add tasks, import calendar events from an ICS file if you have one, and use the list as your daily work plan.",
           step2: "When you need to organize the whole week, open Week. Place tasks into time slots, compare busy days, and adjust your plan before the work happens.",
           step3: "Use Month when you want to scan a larger schedule, choose a future date, or jump back into Today for a specific day.",
@@ -452,6 +455,9 @@ const resources = {
         errors: {
           usernameTaken: "用户名已被使用",
           invalidCredentials: "用户名或密码错误",
+          requiredFields: "请输入用户名和密码",
+          usernameTooShort: "用户名至少需要 3 个字符",
+          passwordTooShort: "密码至少需要 8 个字符",
           failedToRegister: "注册失败",
           failedToLogin: "登录失败",
           generic: "发生了一些问题"
@@ -601,7 +607,7 @@ const resources = {
         },
         guides: {
           title: "网站使用说明",
-          step0: "TaskTide 用来从开始到完成规划一周的工作。先添加要做的事，按日期或时间安排，然后随着一周推进把事项标记为完成。",
+          step0: "TaskTide 用来从开始到完成规划一周的工作。先创建清晰账号，再添加要做的事，按日期或时间安排，然后随着一周推进把事项标记为完成。",
           step1: "如果要规划今天，就从 Today 开始。添加任务，有 ICS 文件时可以导入日历事件，并把列表当作当天的执行计划。",
           step2: "需要整理整周安排时，打开 Week。把任务放进时间段，比较哪些天更忙，并在开始前调整计划。",
           step3: "想查看更大范围、选择未来日期，或进入某一天的 Today 时，使用 Month。",

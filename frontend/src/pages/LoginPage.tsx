@@ -43,6 +43,9 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
     const authMessages: Record<string, string> = {
       "Username taken": t("login.errors.usernameTaken"),
       "Invalid credentials": t("login.errors.invalidCredentials"),
+      "Username and password are required": t("login.errors.requiredFields"),
+      "Username must be at least 3 characters": t("login.errors.usernameTooShort"),
+      "Password must be at least 8 characters": t("login.errors.passwordTooShort"),
       "Failed to register": t("login.errors.failedToRegister"),
       "Failed to log in": t("login.errors.failedToLogin"),
       "Something went wrong": t("login.errors.generic"),
@@ -61,13 +64,14 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
     setIsLoading(true);
 
     const endpoint = isRegistering ? "/register" : "/login";
+    const normalizedUsername = username.trim();
 
     try {
       const response = await fetch(`${API_URL}${endpoint}`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username: normalizedUsername, password }),
       });
 
       const data = await response.json();

@@ -20,6 +20,8 @@ const { startNotificationScheduler } = require('./notificationScheduler');
 const app = express();
 const SESSION_COOKIE_NAME = 'tasktide_session';
 const SESSION_COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+const MIN_USERNAME_LENGTH = 3;
+const MIN_PASSWORD_LENGTH = 8;
 
 app.set('trust proxy', 1);
 
@@ -115,6 +117,57 @@ function parseConfiguredAdminUsernames() {
 
 function normalizeRole(role) {
   return role === 'ADMIN' || role === 'USER' ? role : null;
+}
+
+function normalizeAuthUsername(username) {
+  return String(username ?? '').trim();
+}
+
+function normalizeStoredUsername(username) {
+  return normalizeAuthUsername(username).toLowerCase();
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function buildUsernameLookup(username) {
+  const normalizedUsername = normalizeAuthUsername(username);
+  return {
+    username: new RegExp(`^${escapeRegExp(normalizedUsername)}$`, 'i'),
+  };
+}
+
+function validateRegistrationPayload(username, password) {
+  const normalizedUsername = normalizeStoredUsername(username);
+  const normalizedPassword = String(password ?? '');
+
+  if (normalizedUsername.length < MIN_USERNAME_LENGTH) {
+    return { error: "Username must be at least 3 characters" };
+  }
+
+  if (normalizedPassword.length < MIN_PASSWORD_LENGTH) {
+    return { error: "Password must be at least 8 characters" };
+  }
+
+  return {
+    username: normalizedUsername,
+    password: normalizedPassword,
+  };
+}
+
+function validateLoginPayload(username, password) {
+  const normalizedUsername = normalizeAuthUsername(username);
+  const normalizedPassword = String(password ?? '');
+
+  if (!normalizedUsername || !normalizedPassword) {
+    return { error: "Username and password are required" };
+  }
+
+  return {
+    username: normalizedUsername,
+    password: normalizedPassword,
+  };
 }
 
 function resolveUserRole(user) {
@@ -394,18 +447,21 @@ const authenticateToken = (req, res, next) => {
 // EFFECT: Creates a new account for the planner authentication feature
 app.post('/register', async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const validatedPayload = validateRegistrationPayload(req.body?.username, req.body?.password);
+    if (validatedPayload.error) {
+      return res.status(400).json({ error: validatedPayload.error });
+    }
     
-    const existingUser = await User.findOne({ username });
+    const existingUser = await User.findOne(buildUsernameLookup(validatedPayload.username));
     if (existingUser) return res.status(400).json({ error: "Username taken" });
 
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(validatedPayload.password, salt);
     
     const newUser = new User({
-      username,
+      username: validatedPayload.username,
       password: hashedPassword,
-      role: resolveUserRole({ username }),
+      role: resolveUserRole({ username: validatedPayload.username }),
     });
     await newUser.save();
 
@@ -420,12 +476,15 @@ app.post('/register', async (req, res) => {
 // EFFECT: Starts an authenticated planner session for an existing user
 app.post('/login', async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const validatedPayload = validateLoginPayload(req.body?.username, req.body?.password);
+    if (validatedPayload.error) {
+      return res.status(400).json({ error: validatedPayload.error });
+    }
 
-    const user = await User.findOne({ username });
+    const user = await User.findOne(buildUsernameLookup(validatedPayload.username));
     if (!user) return res.status(400).json({ error: "Invalid credentials" });
 
-    const validPassword = await bcrypt.compare(password, user.password);
+    const validPassword = await bcrypt.compare(validatedPayload.password, user.password);
     if (!validPassword) return res.status(400).json({ error: "Invalid credentials" });
 
     const role = await persistResolvedUserRole(user);

@@ -56,7 +56,7 @@ describe("HelpPage behavior", () => {
     renderWithProviders(<HelpPage />);
 
     expect(screen.getByRole("button", { name: /Add a task from Today on desktop/i })).toBeInTheDocument();
-    expect(screen.getByText("TaskTide is for planning a week of work from start to finish. Add what you need to do, arrange it by day or time, then mark work complete as your week moves forward.")).toBeInTheDocument();
+    expect(screen.getByText("TaskTide is for planning a week of work from start to finish. Create a clean account, add what you need to do, arrange it by day or time, then mark work complete as your week moves forward.")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Add a task in Week on mobile/i })).not.toBeInTheDocument();
     expect(screen.queryByText("Notifications stopped after a key change?")).not.toBeInTheDocument();
     expect(await screen.findByText("My Questions")).toBeInTheDocument();

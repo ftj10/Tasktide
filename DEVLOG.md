@@ -1,5 +1,31 @@
 # Development Log
 
+## Version 1.19.3
+Version: 1.19.3
+Update Date: 2026-05-02
+
+### Technical Changes
+- `backend/server.js`: Added username normalization, case-insensitive username lookup, registration validation, and login blank-field validation.
+- `backend/tests/server.behavior.test.js`: Added backend coverage for trimmed/lowercased registration usernames, short username rejection, weak password rejection, trimmed login usernames, and blank login fields.
+- `frontend/src/pages/LoginPage.tsx`: Trimmed username input before submitting login and registration requests and mapped new backend validation messages.
+- `frontend/src/i18n.ts`: Added English and Chinese auth validation messages and improved the Help Center core-flow opening step.
+- `frontend/tests/login-page.behavior.test.tsx`, `frontend/tests/help-page.behavior.test.tsx`, and `frontend/tests/release-notes.behavior.test.tsx`: Updated expectations for auth validation, Help Center guidance, and the latest release.
+- `frontend/src/app/releaseNotes.ts`, `README.md`, and `RELEASENOTES.md`: Added the 1.19.3 account setup update.
+- `package.json`, `frontend/package.json`, `frontend/package-lock.json`, `backend/package.json`, and `backend/package-lock.json`: Bumped package metadata to 1.19.3.
+
+### Design Decisions
+- Registration stores new usernames in lowercase so `FTJ`, `ftj`, and ` ftj ` do not become separate duplicate-looking accounts.
+- Login uses a case-insensitive exact username lookup so users can still sign in when they type different casing.
+- Password length validation is applied during registration only, so existing users with older short passwords are not locked out by this change.
+
+### Edge Cases
+- Registration rejects blank or two-character usernames before database lookup.
+- Registration rejects passwords shorter than 8 characters before hashing.
+- Login rejects blank username or blank password with a direct validation message.
+
+### Known Limitations
+- Existing accounts already stored with duplicate-looking casing are not automatically merged.
+
 ## Version 1.19.2
 Version: 1.19.2
 Update Date: 2026-05-02

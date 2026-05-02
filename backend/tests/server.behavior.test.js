@@ -131,12 +131,60 @@ test('behavior: register hashes the password and saves the user', async () => {
 
   const result = await invokeApp(app, '/register', {
     method: 'POST',
-    body: { username: 'tom', password: 'secret' },
+    body: { username: 'tom', password: 'secret123' },
   });
 
   assert.equal(result.statusCode, 201);
   assert.deepEqual(result.json, { message: 'Registered' });
-  assert.deepEqual(savedUser, { username: 'tom', password: 'hashed:secret', role: 'USER' });
+  assert.deepEqual(savedUser, { username: 'tom', password: 'hashed:secret123', role: 'USER' });
+});
+
+test('behavior: register trims and lowercases usernames before saving', async () => {
+  bcrypt.genSalt = async () => 'salt';
+  bcrypt.hash = async (password) => `hashed:${password}`;
+
+  let lookupFilter;
+  User.findOne = async (filter) => {
+    lookupFilter = filter;
+    return null;
+  };
+
+  let savedUser;
+  User.prototype.save = async function save() {
+    savedUser = { username: this.username, password: this.password, role: this.role };
+  };
+
+  const result = await invokeApp(app, '/register', {
+    method: 'POST',
+    body: { username: ' Casey ', password: 'strong-pass' },
+  });
+
+  assert.equal(result.statusCode, 201);
+  assert.equal(String(lookupFilter.username), '/^casey$/i');
+  assert.deepEqual(savedUser, { username: 'casey', password: 'hashed:strong-pass', role: 'USER' });
+});
+
+test('behavior: register rejects short usernames and weak passwords', async () => {
+  let findOneCalls = 0;
+  User.findOne = async () => {
+    findOneCalls += 1;
+    return null;
+  };
+
+  const shortUsernameResult = await invokeApp(app, '/register', {
+    method: 'POST',
+    body: { username: '  ', password: 'strong-pass' },
+  });
+  const shortPasswordResult = await invokeApp(app, '/register', {
+    method: 'POST',
+    body: { username: 'tom', password: '123' },
+  });
+
+  assert.equal(shortUsernameResult.statusCode, 400);
+  assert.deepEqual(shortUsernameResult.json, { error: 'Username must be at least 3 characters' });
+  assert.equal(shortPasswordResult.statusCode, 400);
+  assert.deepEqual(shortPasswordResult.json, { error: 'Password must be at least 8 characters' });
+  assert.equal(findOneCalls, 0);
 });
 
 test('behavior: login sets a session cookie for valid credentials', async () => {
@@ -155,6 +203,31 @@ test('behavior: login sets a session cookie for valid credentials', async () => 
   assert.deepEqual(result.json, { username: 'tom', role: 'ADMIN' });
   assert.match(result.headers['set-cookie'], /tasktide_session=signed-token/);
   assert.match(result.headers['set-cookie'], /HttpOnly/);
+});
+
+test('behavior: login trims username and rejects blank auth fields', async () => {
+  let lookupFilter;
+  User.findOne = async (filter) => {
+    lookupFilter = filter;
+    return { _id: 'user-1', username: 'Casey', password: 'hashed', role: 'USER' };
+  };
+  bcrypt.compare = async () => true;
+  jwt.sign = () => 'signed-token';
+
+  const result = await invokeApp(app, '/login', {
+    method: 'POST',
+    body: { username: ' casey ', password: 'secret' },
+  });
+  const blankResult = await invokeApp(app, '/login', {
+    method: 'POST',
+    body: { username: '', password: '' },
+  });
+
+  assert.equal(result.statusCode, 200);
+  assert.equal(String(lookupFilter.username), '/^casey$/i');
+  assert.deepEqual(result.json, { username: 'Casey', role: 'USER' });
+  assert.equal(blankResult.statusCode, 400);
+  assert.deepEqual(blankResult.json, { error: 'Username and password are required' });
 });
 
 test('behavior: login uses a cross-site session cookie for hosted frontend origins', async () => {

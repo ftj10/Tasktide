@@ -1,5 +1,22 @@
 # Release Notes
 
+## Version 1.19.3
+Version: 1.19.3
+Update Date: 2026-05-02
+
+Title: Version 1.19.3 – Update Released (2026-05-02)
+
+### What’s New
+- Added: Clearer account setup guidance when username or password input needs attention.
+
+### Improvements
+- Improved: Usernames now ignore extra spaces during sign-in and account creation.
+- Improved: Account creation now helps prevent duplicate-looking usernames with different letter casing.
+- Improved: Help Center now starts the website flow with creating a clean account before planning tasks.
+
+### Fixes
+- Fixed: Very short passwords and blank account fields are now blocked before an account is created.
+
 ## Version 1.19.2
 Version: 1.19.2
 Update Date: 2026-05-02

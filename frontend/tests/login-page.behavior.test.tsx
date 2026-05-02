@@ -82,4 +82,28 @@ describe("LoginPage behavior", () => {
       expect(onLoginSuccess).toHaveBeenCalledTimes(1);
     });
   });
+
+  it("trims the username before submitting auth requests", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      json: async () => ({ error: "Password must be at least 8 characters" }),
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    renderWithProviders(<LoginPage onLoginSuccess={vi.fn()} />);
+
+    await user.click(screen.getByRole("button", { name: "Don't have an account? Register" }));
+    await user.type(screen.getByLabelText(/Username/i), " FTJ ");
+    await user.type(screen.getByLabelText(/Password/i), "123");
+    await user.click(screen.getByRole("button", { name: "Register" }));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith("/api/register", expect.objectContaining({
+        body: JSON.stringify({ username: "FTJ", password: "123" }),
+      }));
+      expect(screen.getByText("Password must be at least 8 characters")).toBeInTheDocument();
+    });
+  });
 });
