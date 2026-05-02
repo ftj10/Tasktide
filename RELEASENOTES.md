@@ -1,5 +1,23 @@
 # Release Notes
 
+## Version 1.21.0
+Version: 1.21.0
+Update Date: 2026-05-02
+
+Title: Version 1.21.0 – Update Released (2026-05-02)
+
+### What’s New
+- Added: A visible Help Center action lets users turn Task Notifications on for the current browser or device.
+- Added: A matching Disable Task Notifications action lets users turn off only the current browser or device.
+
+### Improvements
+- Improved: TaskTide now asks for notification permission only after users choose to enable Task Notifications.
+- Improved: Users now see a short explanation before enabling task alerts, task start reminders, and daily task check-ins.
+
+### Fixes
+- Fixed: TaskTide no longer asks for notification permission during login, page load, app startup, or session restore.
+- Fixed: Disabling Task Notifications keeps other signed-in devices connected.
+
 ## Version 1.20.0
 Version: 1.20.0
 Update Date: 2026-05-02

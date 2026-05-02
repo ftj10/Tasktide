@@ -224,7 +224,7 @@ describe("App behavior", () => {
     expect(localStorage.getItem("notified-Sun Apr 26 2026-10")).toBeNull();
   });
 
-  it("requests notification permission only after a user interaction", async () => {
+  it("does not request notification permission on startup or generic app interactions", async () => {
     const requestPermission = vi.fn().mockResolvedValue("granted");
     const notificationApi = function notificationConstructor() {};
     Object.assign(notificationApi, {
@@ -248,9 +248,10 @@ describe("App behavior", () => {
 
     await act(async () => {
       window.dispatchEvent(new PointerEvent("pointerdown"));
+      window.dispatchEvent(new KeyboardEvent("keydown"));
     });
 
-    expect(requestPermission).toHaveBeenCalledTimes(1);
+    expect(requestPermission).not.toHaveBeenCalled();
   });
 
   it("prunes stale notification history before writing the next reminder", async () => {

@@ -883,6 +883,84 @@ test('behavior: notification subscription save stores one browser endpoint for t
   assert.deepEqual(updateOptions, { runValidators: true });
 });
 
+test('behavior: notification subscription save upserts one matching browser endpoint', async () => {
+  jwt.verify = (token, secret, callback) =>
+    callback(null, { userId: 'user-1', username: 'tom', role: 'USER' });
+  User.findOne = async () => ({
+    _id: 'user-1',
+    pushSubscriptions: [
+      {
+        endpoint: 'https://push.example/sub-1',
+        expirationTime: null,
+        keys: {
+          p256dh: 'old-p256dh-key',
+          auth: 'old-auth-key',
+        },
+        timezone: 'UTC',
+        locale: 'en',
+        userAgent: 'Old Browser',
+        createdAt: '2026-04-28T16:00:00.000Z',
+        updatedAt: '2026-04-28T16:00:00.000Z',
+        notificationHistory: [{ id: 'daily:2026-04-28:10', firedAt: '2026-04-28T17:00:00.000Z' }],
+      },
+      {
+        endpoint: 'https://push.example/sub-2',
+        expirationTime: null,
+        keys: {
+          p256dh: 'p256dh-key-2',
+          auth: 'auth-key-2',
+        },
+        timezone: 'America/Los_Angeles',
+        locale: 'en',
+        userAgent: 'Phone Browser',
+        createdAt: '2026-04-28T16:05:00.000Z',
+        updatedAt: '2026-04-28T16:05:00.000Z',
+        notificationHistory: [],
+      },
+    ],
+  });
+
+  let updatePayload;
+  User.updateOne = async (filter, payload) => {
+    updatePayload = payload;
+    return { matchedCount: 1 };
+  };
+
+  const result = await invokeApp(app, '/notifications/subscriptions', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer token' },
+    body: {
+      endpoint: 'https://push.example/sub-1',
+      expirationTime: null,
+      keys: {
+        p256dh: 'new-p256dh-key',
+        auth: 'new-auth-key',
+      },
+      timezone: 'America/New_York',
+      locale: 'zh',
+      userAgent: 'Updated Browser',
+    },
+  });
+
+  assert.equal(result.statusCode, 200);
+  assert.equal(updatePayload.$set.pushSubscriptions.length, 2);
+  assert.deepEqual(updatePayload.$set.pushSubscriptions[0], {
+    endpoint: 'https://push.example/sub-1',
+    expirationTime: null,
+    keys: {
+      p256dh: 'new-p256dh-key',
+      auth: 'new-auth-key',
+    },
+    timezone: 'America/New_York',
+    locale: 'zh',
+    userAgent: 'Updated Browser',
+    createdAt: '2026-04-28T16:00:00.000Z',
+    updatedAt: updatePayload.$set.pushSubscriptions[0].updatedAt,
+    notificationHistory: [{ id: 'daily:2026-04-28:10', firedAt: '2026-04-28T17:00:00.000Z' }],
+  });
+  assert.equal(updatePayload.$set.pushSubscriptions[1].endpoint, 'https://push.example/sub-2');
+});
+
 test('behavior: notification subscription delete removes one browser endpoint for the authenticated user', async () => {
   jwt.verify = (token, secret, callback) =>
     callback(null, { userId: 'user-1', username: 'tom', role: 'USER' });

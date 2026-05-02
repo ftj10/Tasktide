@@ -16,6 +16,12 @@ const storageMocks = vi.hoisted(() => ({
   deleteHelpQuestion: vi.fn(),
   isAdminUser: vi.fn(),
 }));
+const pushMocks = vi.hoisted(() => ({
+  supportsPushNotifications: vi.fn(),
+  enablePushNotifications: vi.fn(),
+  syncPushSubscription: vi.fn(),
+  disablePushNotifications: vi.fn(),
+}));
 
 vi.mock("../src/app/storage", async () => {
   const actual = await vi.importActual<typeof import("../src/app/storage")>("../src/app/storage");
@@ -27,6 +33,13 @@ vi.mock("../src/app/storage", async () => {
     isAdminUser: storageMocks.isAdminUser,
   };
 });
+
+vi.mock("../src/app/pushNotifications", () => ({
+  supportsPushNotifications: pushMocks.supportsPushNotifications,
+  enablePushNotifications: pushMocks.enablePushNotifications,
+  syncPushSubscription: pushMocks.syncPushSubscription,
+  disablePushNotifications: pushMocks.disablePushNotifications,
+}));
 
 describe("HelpPage behavior", () => {
   beforeEach(async () => {
@@ -46,6 +59,13 @@ describe("HelpPage behavior", () => {
     });
     storageMocks.deleteHelpQuestion.mockReset().mockResolvedValue(undefined);
     storageMocks.isAdminUser.mockReset().mockReturnValue(false);
+    pushMocks.supportsPushNotifications.mockReset().mockReturnValue(true);
+    pushMocks.enablePushNotifications.mockReset().mockResolvedValue(true);
+    pushMocks.syncPushSubscription.mockReset().mockResolvedValue(undefined);
+    pushMocks.disablePushNotifications.mockReset().mockResolvedValue(undefined);
+    vi.stubGlobal("Notification", {
+      permission: "default",
+    });
     setScreenWidth(1024);
     await i18n.changeLanguage("en");
   });
@@ -90,15 +110,95 @@ describe("HelpPage behavior", () => {
   it("shows the updated mobile notification and install guidance in the FAQ", async () => {
     renderWithProviders(<HelpPage />);
 
-    expect(await screen.findByText("How do I get notifications on phone and computer?")).toBeInTheDocument();
+    expect(await screen.findByText("How do I get Task Notifications on phone and computer?")).toBeInTheDocument();
     expect(screen.getByText("Can I use tasks offline in the installed web app?")).toBeInTheDocument();
     expect(screen.getByText(/add tasks, edit tasks, mark tasks done, and delete tasks while offline/i)).toBeInTheDocument();
-    expect(screen.getByText(/1\. Open TaskTide\./i)).toBeInTheDocument();
+    expect(screen.getByText(/1\. Open Help\./i)).toBeInTheDocument();
     expect(screen.getByText(/Settings > Notifications > TaskTide/i)).toBeInTheDocument();
     expect(screen.getByText(/Settings > Apps > TaskTide or your browser > Notifications/i)).toBeInTheDocument();
     expect(screen.queryByText(/How do I install the mobile web app\?/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Do installed mobile web apps work the same on every browser\?/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/How does the layout change on mobile devices\?/i)).not.toBeInTheDocument();
+  });
+
+  it("requests Task Notifications permission only after enable is confirmed", async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(<HelpPage />);
+
+    expect(await screen.findByText("Task Notifications")).toBeInTheDocument();
+    expect(pushMocks.enablePushNotifications).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole("button", { name: "Enable Task Notifications" }));
+    expect(screen.getByText("Enable notifications to receive task alerts, upcoming task start reminders, and daily task check-ins.")).toBeInTheDocument();
+    expect(pushMocks.enablePushNotifications).not.toHaveBeenCalled();
+
+    const dialog = screen.getByRole("dialog", { name: "Enable Task Notifications?" });
+    await user.click(within(dialog).getByRole("button", { name: "Enable Task Notifications" }));
+
+    await waitFor(() => {
+      expect(pushMocks.enablePushNotifications).toHaveBeenCalledWith("en");
+      expect(screen.getByText("Task Notifications are enabled for this browser or device.")).toBeInTheDocument();
+    });
+  });
+
+  it("syncs Task Notifications without prompting when permission is already granted", async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal("Notification", {
+      permission: "granted",
+    });
+
+    renderWithProviders(<HelpPage />);
+
+    await user.click(await screen.findByRole("button", { name: "Enable Task Notifications" }));
+    const dialog = screen.getByRole("dialog", { name: "Enable Task Notifications?" });
+    await user.click(within(dialog).getByRole("button", { name: "Enable Task Notifications" }));
+
+    await waitFor(() => {
+      expect(pushMocks.syncPushSubscription).toHaveBeenCalledWith("en");
+      expect(pushMocks.enablePushNotifications).not.toHaveBeenCalled();
+    });
+  });
+
+  it("does not repeatedly prompt when Task Notifications are denied", async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal("Notification", {
+      permission: "denied",
+    });
+
+    renderWithProviders(<HelpPage />);
+
+    await user.click(await screen.findByRole("button", { name: "Enable Task Notifications" }));
+    await user.click(screen.getByRole("button", { name: "Enable Task Notifications" }));
+
+    expect(pushMocks.enablePushNotifications).not.toHaveBeenCalled();
+    expect(pushMocks.syncPushSubscription).not.toHaveBeenCalled();
+    expect(screen.getByText("Task Notifications are blocked. Re-enable them from your browser or site notification settings, then try again.")).toBeInTheDocument();
+  });
+
+  it("shows unsupported-browser guidance for Task Notifications", async () => {
+    const user = userEvent.setup();
+    pushMocks.supportsPushNotifications.mockReturnValue(false);
+
+    renderWithProviders(<HelpPage />);
+
+    await user.click(await screen.findByRole("button", { name: "Enable Task Notifications" }));
+
+    expect(pushMocks.enablePushNotifications).not.toHaveBeenCalled();
+    expect(screen.getByText("This browser does not support Task Notifications through web push.")).toBeInTheDocument();
+  });
+
+  it("disables Task Notifications for the current browser or device", async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(<HelpPage />);
+
+    await user.click(await screen.findByRole("button", { name: "Disable Task Notifications" }));
+
+    await waitFor(() => {
+      expect(pushMocks.disablePushNotifications).toHaveBeenCalledTimes(1);
+      expect(screen.getByText("Task Notifications are disabled for this browser or device.")).toBeInTheDocument();
+    });
   });
 
   it("shows mobile-only help items on mobile and hides desktop-only ones", async () => {

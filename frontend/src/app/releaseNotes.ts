@@ -14,6 +14,31 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-05-02-explicit-task-notifications",
+    version: "v1.21.0",
+    releasedAt: "2026-05-02",
+    title: {
+      en: "User-controlled Task Notifications",
+      zh: "由用户控制的 Task Notifications"
+    },
+    summary: {
+      en: "TaskTide now asks for Task Notifications only after users choose to enable them from Help.",
+      zh: "TaskTide 现在只会在用户从 Help 主动开启后请求 Task Notifications。"
+    },
+    changes: {
+      en: [
+        "Added a Help Center control for enabling or disabling Task Notifications on the current browser or device.",
+        "Improved notification setup so TaskTide no longer asks immediately after login, page load, or session restore.",
+        "Fixed notification guidance around task alerts, task start reminders, and daily task check-ins."
+      ],
+      zh: [
+        "新增 Help Center 控制项，可在当前浏览器或设备开启或关闭 Task Notifications。",
+        "改进通知设置流程，TaskTide 不再在登录、页面加载或会话恢复后立即询问。",
+        "修正通知说明，明确用于 task alerts、task start reminders 和 daily task check-ins。"
+      ]
+    }
+  },
+  {
     id: "2026-05-02-lazy-loaded-planner-pages",
     version: "v1.20.0",
     releasedAt: "2026-05-02",

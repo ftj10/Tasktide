@@ -215,10 +215,25 @@ const resources = {
             text: "This GIF shows installing or opening the planner as a desktop web app."
           },
           resetNotificationsPc: {
-            question: "Reset or enable desktop notifications",
+            question: "Enable or reset Task Notifications",
             title: "how to reset:enable notification in pc.gif",
-            text: "This GIF shows fixing desktop browser notification settings for the planner."
+            text: "This GIF shows enabling Task Notifications from Help or fixing browser notification settings."
           }
+        },
+        taskNotifications: {
+          title: "Task Notifications",
+          body: "Enable Task Notifications when you want task alerts, task start reminders, and daily task check-ins from this browser or installed app.",
+          enable: "Enable Task Notifications",
+          disable: "Disable Task Notifications",
+          dialogTitle: "Enable Task Notifications?",
+          explanation: "Enable notifications to receive task alerts, upcoming task start reminders, and daily task check-ins.",
+          confirmEnable: "Enable Task Notifications",
+          enabled: "Task Notifications are enabled for this browser or device.",
+          disabled: "Task Notifications are disabled for this browser or device.",
+          denied: "Task Notifications are blocked. Re-enable them from your browser or site notification settings, then try again.",
+          unsupported: "This browser does not support Task Notifications through web push.",
+          enableError: "We couldn't enable Task Notifications. Check browser notification settings and try again.",
+          disableError: "We couldn't disable Task Notifications for this browser or device."
         },
         guides: {
           title: "How To Use This Website",
@@ -229,8 +244,8 @@ const resources = {
           step4: "Use Reminders for notes that are not tied to one schedule slot but should stay easy to find until you complete them.",
           step5Desktop: "On desktop, use the left sidebar to move between Reminders, Today, Week, Month, Help, and the install guide.",
           step5Mobile: "On mobile, use the bottom navigation to move between the main pages and the top install button to learn how to add TaskTide to your device.",
-          step6Desktop: "If you want TaskTide to open like an app, choose Install app and follow the walkthrough for your browser.",
-          step6Mobile: "If you want TaskTide on your home screen, choose Install app and follow the mobile steps for your browser.",
+          step6Desktop: "If you want TaskTide to open like an app, choose Install app and follow the walkthrough for your browser. If you want task alerts, task start reminders, and daily task check-ins, open Help and choose Enable Task Notifications.",
+          step6Mobile: "If you want TaskTide on your home screen, choose Install app and follow the mobile steps for your browser. Then open Help and choose Enable Task Notifications if you want task alerts, task start reminders, and daily task check-ins.",
           step7Desktop: "If your connection drops, keep editing tasks normally. TaskTide will merge repeated offline edits and sync them when the server is available again. Heavier areas such as Week, Month, Help, and Updates load when you open them, so the first screen can start sooner.",
           step7Mobile: "If your connection drops, keep editing tasks normally. TaskTide will merge repeated offline edits and sync them when the server is available again. Heavier areas such as Week, Month, Help, and Updates load when you open them, so the first screen can start sooner."
         },
@@ -273,12 +288,12 @@ const resources = {
             answer: "The app asks whether you want to change only that day or the whole repeating series."
           },
           q10: {
-            question: "Do browser reminder notifications keep growing in storage?",
+            question: "Do browser Task Notifications keep growing in storage?",
             answer: "No. Old notification records are cleaned up automatically."
           },
           q12: {
-            question: "How do I get notifications on phone and computer?",
-            answer: "Desktop:\n1. Open TaskTide.\n2. Allow notifications when the browser asks.\n\nIPhone or iPad:\n1. Add TaskTide to Home Screen.\n2. Open TaskTide from your Home Screen.\n3. Allow notifications.\n4. If needed, check Settings > Notifications > TaskTide.\n5. Make sure notifications are on.\n\nAndroid:\n1. Install TaskTide if your browser supports it.\n2. Open TaskTide.\n3. Allow notifications.\n4. If needed, check Settings > Apps > TaskTide or your browser > Notifications.\n5. Make sure notifications are on.\n\nAfter setup, daily prompts and 15-minute task alerts can arrive even when TaskTide is closed."
+            question: "How do I get Task Notifications on phone and computer?",
+            answer: "Desktop:\n1. Open Help.\n2. Choose Enable Task Notifications.\n3. Confirm the explanation, then allow notifications if your browser asks.\n\nIPhone or iPad:\n1. Add TaskTide to Home Screen.\n2. Open TaskTide from your Home Screen.\n3. Open Help and choose Enable Task Notifications.\n4. If needed, check Settings > Notifications > TaskTide.\n5. Make sure notifications are on.\n\nAndroid:\n1. Install TaskTide if your browser supports it.\n2. Open TaskTide.\n3. Open Help and choose Enable Task Notifications.\n4. If needed, check Settings > Apps > TaskTide or your browser > Notifications.\n5. Make sure notifications are on.\n\nAfter setup, task alerts, task start reminders, and daily task check-ins can arrive even when TaskTide is closed."
           },
           q13: {
             question: "How do I install the mobile web app?",
@@ -600,10 +615,25 @@ const resources = {
             text: "这个 GIF 会演示在桌面端安装或打开计划器网页应用。"
           },
           resetNotificationsPc: {
-            question: "重置或开启桌面通知",
+            question: "开启或重置 Task Notifications",
             title: "how to reset:enable notification in pc.gif",
-            text: "这个 GIF 会演示在桌面浏览器中修复计划器通知设置。"
+            text: "这个 GIF 会演示从 Help 开启 Task Notifications，或修复浏览器通知设置。"
           }
+        },
+        taskNotifications: {
+          title: "Task Notifications",
+          body: "如果希望这个浏览器或已安装应用接收 task alerts、task start reminders 和 daily task check-ins，请开启 Task Notifications。",
+          enable: "Enable Task Notifications",
+          disable: "Disable Task Notifications",
+          dialogTitle: "开启 Task Notifications？",
+          explanation: "Enable notifications to receive task alerts, upcoming task start reminders, and daily task check-ins.",
+          confirmEnable: "Enable Task Notifications",
+          enabled: "这个浏览器或设备已开启 Task Notifications。",
+          disabled: "这个浏览器或设备已关闭 Task Notifications。",
+          denied: "Task Notifications 已被阻止。请从浏览器或网站通知设置中重新开启，然后再试一次。",
+          unsupported: "这个浏览器不支持通过网页推送使用 Task Notifications。",
+          enableError: "无法开启 Task Notifications。请检查浏览器通知设置后再试一次。",
+          disableError: "无法为这个浏览器或设备关闭 Task Notifications。"
         },
         guides: {
           title: "网站使用说明",
@@ -614,8 +644,8 @@ const resources = {
           step4: "Reminders 适合记录不绑定具体时间段、但需要一直容易找到直到完成的事项。",
           step5Desktop: "桌面端可以用左侧边栏切换 Reminders、Today、Week、Month、Help，并打开安装指引。",
           step5Mobile: "手机端可以用底部导航切换主要页面，也可以用顶部安装按钮学习如何把 TaskTide 加到设备上。",
-          step6Desktop: "如果希望 TaskTide 像应用一样打开，请选择“安装应用”，然后按浏览器演示操作。",
-          step6Mobile: "如果希望 TaskTide 出现在主屏幕，请选择“安装应用”，然后按手机浏览器步骤操作。",
+          step6Desktop: "如果希望 TaskTide 像应用一样打开，请选择“安装应用”，然后按浏览器演示操作。如果希望收到 task alerts、task start reminders 和 daily task check-ins，请打开 Help 并选择 Enable Task Notifications。",
+          step6Mobile: "如果希望 TaskTide 出现在主屏幕，请选择“安装应用”，然后按手机浏览器步骤操作。之后如果希望收到 task alerts、task start reminders 和 daily task check-ins，请打开 Help 并选择 Enable Task Notifications。",
           step7Desktop: "如果连接中断，可以继续正常编辑任务。TaskTide 会合并重复的离线修改，并在服务器恢复后同步。Week、Month、Help 和 Updates 等较重区域会在打开时加载，让首次进入更快。",
           step7Mobile: "如果连接中断，可以继续正常编辑任务。TaskTide 会合并重复的离线修改，并在服务器恢复后同步。Week、Month、Help 和 Updates 等较重区域会在打开时加载，让首次进入更快。"
         },
@@ -658,12 +688,12 @@ const resources = {
             answer: "应用会问你是只改这一天，还是改整个重复系列。"
           },
           q10: {
-            question: "浏览器提醒通知会一直占用越来越多的存储吗？",
+            question: "浏览器 Task Notifications 会一直占用越来越多的存储吗？",
             answer: "不会。旧的通知记录会自动清理。"
           },
           q12: {
-            question: "怎样才能在手机和电脑上都收到通知？",
-            answer: "桌面端：\n1. 打开 TaskTide。\n2. 在浏览器请求时允许通知。\n\nIPhone 或 iPad：\n1. 先把 TaskTide 加入主屏幕。\n2. 从主屏幕打开 TaskTide。\n3. 允许通知。\n4. 如果需要，到 设置 > 通知 > TaskTide 检查。\n5. 确认通知已开启。\n\nAndroid：\n1. 如果浏览器支持，先安装 TaskTide。\n2. 打开 TaskTide。\n3. 允许通知。\n4. 如果需要，到 设置 > 应用 > TaskTide 或你的浏览器 > 通知 检查。\n5. 确认通知已开启。\n\n完成后，即使 TaskTide 关闭，也能收到每日提醒和任务开始前 15 分钟提醒。"
+            question: "怎样才能在手机和电脑上都收到 Task Notifications？",
+            answer: "桌面端：\n1. 打开 Help。\n2. 选择 Enable Task Notifications。\n3. 确认说明后，如果浏览器询问，请允许通知。\n\nIPhone 或 iPad：\n1. 先把 TaskTide 加入主屏幕。\n2. 从主屏幕打开 TaskTide。\n3. 打开 Help 并选择 Enable Task Notifications。\n4. 如果需要，到 设置 > 通知 > TaskTide 检查。\n5. 确认通知已开启。\n\nAndroid：\n1. 如果浏览器支持，先安装 TaskTide。\n2. 打开 TaskTide。\n3. 打开 Help 并选择 Enable Task Notifications。\n4. 如果需要，到 设置 > 应用 > TaskTide 或你的浏览器 > 通知 检查。\n5. 确认通知已开启。\n\n完成后，即使 TaskTide 关闭，也能收到 task alerts、task start reminders 和 daily task check-ins。"
           },
           q13: {
             question: "怎么安装移动端网页应用？",

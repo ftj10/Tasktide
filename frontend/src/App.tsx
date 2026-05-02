@@ -56,7 +56,6 @@ import {
 } from "./app/notificationHistory";
 import {
   disablePushNotifications,
-  enablePushNotifications,
   supportsPushNotifications,
   syncPushSubscription,
 } from "./app/pushNotifications";
@@ -270,34 +269,6 @@ export default function App() {
     setReminders(nextReminders);
     queueReminderSync(previousReminders, nextReminders);
   }
-
-  useEffect(() => {
-    if (
-      !isAuthenticated ||
-      !("Notification" in window) ||
-      Notification.permission !== "default"
-    ) {
-      return;
-    }
-
-    const requestPermission = () => {
-      if (canUseBackgroundPush) {
-        void enablePushNotifications(currentLanguage);
-      } else {
-        void Notification.requestPermission();
-      }
-      window.removeEventListener("pointerdown", requestPermission);
-      window.removeEventListener("keydown", requestPermission);
-    };
-
-    window.addEventListener("pointerdown", requestPermission, { once: true });
-    window.addEventListener("keydown", requestPermission, { once: true });
-
-    return () => {
-      window.removeEventListener("pointerdown", requestPermission);
-      window.removeEventListener("keydown", requestPermission);
-    };
-  }, [canUseBackgroundPush, currentLanguage, isAuthenticated]);
 
   useEffect(() => {
     if (!isAuthenticated) return;

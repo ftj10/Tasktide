@@ -1,5 +1,31 @@
 # Development Log
 
+## Version 1.21.0
+Version: 1.21.0
+Update Date: 2026-05-02
+
+### Technical Changes
+- `frontend/src/App.tsx`: Removed the global post-login pointer and keyboard listener that automatically requested browser notification permission, while preserving existing granted-permission subscription sync and task notification scheduling.
+- `frontend/src/pages/HelpPage.tsx`: Added explicit Task Notifications enable and disable actions, a confirmation dialog before permission requests, denied-permission guidance, unsupported-browser feedback, already-granted sync behavior, and current-device disable feedback.
+- `frontend/src/i18n.ts`: Added English and Chinese Help Center wording for Task Notifications, task alerts, task start reminders, and daily task check-ins.
+- `frontend/tests/app.behavior.test.tsx`, `frontend/tests/help-page.behavior.test.tsx`, and `frontend/tests/push-notifications.behavior.test.ts`: Added coverage for no startup prompt, click-confirmed enable prompts, granted sync, denied handling, unsupported browsers, current-subscription disable, and existing PushManager subscription reuse.
+- `backend/tests/server.behavior.test.js`: Added backend coverage confirming notification subscription POST upserts by endpoint and keeps other device endpoints.
+- `frontend/src/app/releaseNotes.ts`, `frontend/tests/release-notes.behavior.test.tsx`, `README.md`, and `RELEASENOTES.md`: Added the 1.21.0 Task Notifications update.
+- `package.json`, `frontend/package.json`, `frontend/package-lock.json`, `backend/package.json`, and `backend/package-lock.json`: Bumped package metadata to 1.21.0.
+
+### Design Decisions
+- Notification permission is now tied to an explicit Help Center action so users understand the request before the browser prompt appears.
+- Existing backend endpoints, `User.pushSubscriptions`, endpoint upsert logic, and endpoint-specific delete logic remain unchanged to preserve current push delivery behavior.
+- Already-granted browsers call subscription sync instead of requesting permission again, relying on backend endpoint upsert to avoid duplicate records.
+
+### Edge Cases
+- Denied permission does not call the enable flow again; users receive guidance to re-enable notifications from browser or site settings.
+- Unsupported browsers show a direct message without opening the confirmation dialog.
+- Disable removes and unsubscribes the current local PushManager subscription only, leaving other device subscriptions stored.
+
+### Known Limitations
+- Browser-level denied notification permission still has to be changed outside TaskTide through the browser or site settings.
+
 ## Version 1.20.0
 Version: 1.20.0
 Update Date: 2026-05-02

@@ -13,6 +13,10 @@ import {
   Card,
   CardContent,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Paper,
   Stack,
   TextField,
@@ -26,6 +30,7 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import MenuBookRoundedIcon from "@mui/icons-material/MenuBookRounded";
 import QuestionAnswerRoundedIcon from "@mui/icons-material/QuestionAnswerRounded";
 import ForumRoundedIcon from "@mui/icons-material/ForumRounded";
+import NotificationsActiveOutlinedIcon from "@mui/icons-material/NotificationsActiveOutlined";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 
@@ -34,6 +39,12 @@ import { ConfirmDeleteDialog } from "../components/ConfirmDeleteDialog";
 import { HelpWalkthroughModal } from "../components/HelpWalkthroughModal";
 import { getHelpCenterData, type HelpAudience } from "../app/helpCenter";
 import { createHelpQuestion, deleteHelpQuestion, isAdminUser, loadHelpQuestions } from "../app/storage";
+import {
+  disablePushNotifications,
+  enablePushNotifications,
+  supportsPushNotifications,
+  syncPushSubscription,
+} from "../app/pushNotifications";
 
 export function HelpPage() {
   const { t, i18n } = useTranslation();
@@ -50,6 +61,10 @@ export function HelpPage() {
   const [boardMessage, setBoardMessage] = useState("");
   const [boardSeverity, setBoardSeverity] = useState<"success" | "error">("success");
   const [deleteTarget, setDeleteTarget] = useState<HelpQuestion | undefined>();
+  const [notificationDialogOpen, setNotificationDialogOpen] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState("");
+  const [notificationSeverity, setNotificationSeverity] = useState<"success" | "info" | "error">("info");
+  const [isNotificationActionRunning, setIsNotificationActionRunning] = useState(false);
   const currentLanguage = i18n.resolvedLanguage?.startsWith("zh") ? "zh" : "en";
   const isAdmin = isAdminUser();
   const deviceAudience: HelpAudience = isMobile ? "mobile" : "desktop";
@@ -153,6 +168,79 @@ export function HelpPage() {
       setBoardMessage(t("help.community.deleteError"));
     } finally {
       setIsDeleting(false);
+    }
+  }
+
+  function showNotificationMessage(severity: "success" | "info" | "error", message: string) {
+    setNotificationSeverity(severity);
+    setNotificationMessage(message);
+  }
+
+  function handleOpenNotificationDialog() {
+    setNotificationMessage("");
+
+    if (!supportsPushNotifications()) {
+      showNotificationMessage("error", t("help.taskNotifications.unsupported"));
+      return;
+    }
+
+    if (Notification.permission === "denied") {
+      showNotificationMessage("error", t("help.taskNotifications.denied"));
+      return;
+    }
+
+    setNotificationDialogOpen(true);
+  }
+
+  async function handleEnableTaskNotifications() {
+    setIsNotificationActionRunning(true);
+    setNotificationMessage("");
+
+    try {
+      if (!supportsPushNotifications()) {
+        showNotificationMessage("error", t("help.taskNotifications.unsupported"));
+        return;
+      }
+
+      if (Notification.permission === "denied") {
+        showNotificationMessage("error", t("help.taskNotifications.denied"));
+        return;
+      }
+
+      if (Notification.permission === "granted") {
+        await syncPushSubscription(currentLanguage);
+        showNotificationMessage("success", t("help.taskNotifications.enabled"));
+        setNotificationDialogOpen(false);
+        return;
+      }
+
+      const enabled = await enablePushNotifications(currentLanguage);
+      if (enabled) {
+        showNotificationMessage("success", t("help.taskNotifications.enabled"));
+        setNotificationDialogOpen(false);
+        return;
+      }
+
+      showNotificationMessage("error", t("help.taskNotifications.denied"));
+      setNotificationDialogOpen(false);
+    } catch {
+      showNotificationMessage("error", t("help.taskNotifications.enableError"));
+    } finally {
+      setIsNotificationActionRunning(false);
+    }
+  }
+
+  async function handleDisableTaskNotifications() {
+    setIsNotificationActionRunning(true);
+    setNotificationMessage("");
+
+    try {
+      await disablePushNotifications();
+      showNotificationMessage("success", t("help.taskNotifications.disabled"));
+    } catch {
+      showNotificationMessage("error", t("help.taskNotifications.disableError"));
+    } finally {
+      setIsNotificationActionRunning(false);
     }
   }
 
@@ -292,6 +380,40 @@ export function HelpPage() {
                   </Typography>
                 </Button>
               ))}
+            </Stack>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent>
+            {sectionHeader(<NotificationsActiveOutlinedIcon />, t("help.taskNotifications.title"), "#7c3aed")}
+            <Stack spacing={2}>
+              <Typography color="text.secondary">
+                {t("help.taskNotifications.body")}
+              </Typography>
+              {notificationMessage ? (
+                <Alert severity={notificationSeverity} sx={{ borderRadius: 2 }}>
+                  {notificationMessage}
+                </Alert>
+              ) : null}
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
+                <Button
+                  variant="contained"
+                  onClick={handleOpenNotificationDialog}
+                  disabled={isNotificationActionRunning}
+                  sx={{ borderRadius: 2.5 }}
+                >
+                  {t("help.taskNotifications.enable")}
+                </Button>
+                <Button
+                  variant="outlined"
+                  onClick={() => void handleDisableTaskNotifications()}
+                  disabled={isNotificationActionRunning}
+                  sx={{ borderRadius: 2.5 }}
+                >
+                  {t("help.taskNotifications.disable")}
+                </Button>
+              </Stack>
             </Stack>
           </CardContent>
         </Card>
@@ -444,6 +566,26 @@ export function HelpPage() {
           setSearchParams({});
         }}
       />
+      <Dialog open={notificationDialogOpen} onClose={() => setNotificationDialogOpen(false)} fullWidth maxWidth="sm">
+        <DialogTitle>{t("help.taskNotifications.dialogTitle")}</DialogTitle>
+        <DialogContent>
+          <Typography color="text.secondary">
+            {t("help.taskNotifications.explanation")}
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setNotificationDialogOpen(false)}>
+            {t("common.cancel")}
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => void handleEnableTaskNotifications()}
+            disabled={isNotificationActionRunning}
+          >
+            {t("help.taskNotifications.confirmEnable")}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

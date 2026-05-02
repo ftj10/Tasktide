@@ -1,6 +1,6 @@
 # TaskTide Application
 
-Current version: `v1.20.0`
+Current version: `v1.21.0`
 
 TaskTide is a full-stack planner for daily tasks, weekly routines, reminders, shared help questions, and calendar-based scheduling.
 
@@ -38,7 +38,7 @@ Deployed Web: TaskTide
 - Month view now opens on the month that matches the selected `?date=` route, so clicking a visible day always follows the active planner date context.
 - Reminder tracking with priority ordering and completion flow.
 - Role-based help center with FAQ content, append-only user questions, admin-wide review access, and admin-only question deletion.
-- Help Center now includes `Quick Walkthroughs`: short question-driven modal guides with GIF-ready media slots for adding tasks, opening Week, finding saved tasks, and drag-to-add.
+- Help Center now includes `Quick Walkthroughs`: short question-driven modal guides with GIF-ready media slots for adding tasks, opening Week, finding saved tasks, drag-to-add, and Task Notifications setup.
 - Help Center now explains mobile notification setup, mobile web-app installation, and browser-specific installed-app behavior for iPhone, iPad, and Android.
 - The app shell includes an Install app entry point that opens the Help Center walkthrough for adding TaskTide as a web app.
 - Help-question posting now keeps the draft visible if the request fails instead of showing a false success state.
@@ -47,9 +47,9 @@ Deployed Web: TaskTide
 - Responsive application shell with a desktop sidebar, mobile bottom navigation, and full-screen mobile task and reminder forms.
 - The mobile bottom navigation hides automatically while add-task and edit-task dialogs are open, then returns after the task dialog closes.
 - Idempotent save routes and client-side recovery that reload persisted planner data after a failed task or reminder sync.
-- Map links for task locations plus background push notifications for daily prompts and upcoming timed tasks.
-- Desktop browsers can now receive background planner notifications through a service worker after permission is granted.
-- Supported mobile installs can now receive the same background planner notifications after you add the app to the home screen and allow notifications.
+- Map links for task locations plus explicit Task Notifications for task alerts, task start reminders, and daily task check-ins.
+- Desktop browsers can receive Task Notifications through a service worker after the user opens Help, chooses `Enable Task Notifications`, confirms the explanation, and grants browser permission.
+- Supported mobile installs can receive the same Task Notifications after you add TaskTide to the home screen, open the installed app, and enable notifications from Help.
 - The shared service worker caches the TaskTide app shell so installed web-app sessions can start from cached files while offline.
 - Browsers without Web Push support still fall back to in-page notification timers while the planner tab stays open.
 - Consistent `INPUT` / `OUTPUT` / `EFFECT` code comments across source and test files for faster feature scanning during maintenance.
@@ -121,6 +121,9 @@ npm --prefix frontend run build
 - Local frontend development now defaults to the Vite `/api` proxy so cookie-based auth stays same-origin during `npm run dev`.
 - If you deploy the frontend and backend on different HTTPS hostnames, set `CORS_ORIGIN` to the frontend origin. The backend uses this value for credentialed CORS and CSRF origin checks. Cross-host login responses default to `SameSite=None; Secure`; use `SESSION_COOKIE_SAME_SITE` and `SESSION_COOKIE_SECURE` only when you need to override that behavior.
 - Local development can skip manual VAPID setup because the backend generates `backend/.push-vapid.json` on first use. Production should provide `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `WEB_PUSH_SUBJECT`.
+- Task Notifications are user-controlled from Help. TaskTide does not request notification permission automatically after login, page load, app startup, or session restore.
+- `Enable Task Notifications` creates or reuses the current browser subscription and saves it through `POST /notifications/subscriptions`; the backend upserts by endpoint so the same browser does not create duplicate subscription records.
+- `Disable Task Notifications` unsubscribes only the current browser or installed app and deletes only that endpoint through `DELETE /notifications/subscriptions`; other signed-in devices remain connected.
 - Use `Import ICS` on the Today page when you want to bring calendar events into the planner from a `.ics` export. The importer keeps titles, notes, locations, multi-day all-day ranges, timed events, and supported daily, weekly, monthly, and yearly recurrence rules.
 - The in-app Updates center mirrors the latest shipped release metadata from `frontend/src/app/releaseNotes.ts` and groups each release under `New Features`, `Improvements`, and `Bug Fixes`.
 - The frontend lint check is separate from `npm test`; run it before shipping UI changes so type, hook, and style issues are caught early.
@@ -138,7 +141,7 @@ npm --prefix frontend run build
 - Older datasets that still use `TEMPORARY` and `PERMANENT` task records remain readable; the frontend normalizes them into the new recurrence model when it loads.
 - Completed one-time tasks and completed recurring occurrences stay in retained history for 30 days before the backend cleanup scheduler removes them.
 - Web Push requires `https` in production or `http://127.0.0.1` / `http://localhost` during local development.
-- On iPhone and iPad, background notifications require installing the web app to the home screen before allowing notifications.
+- On iPhone and iPad, Task Notifications require installing the web app to the home screen before enabling notifications from Help.
 - On smaller screens, the app uses bottom navigation, a swipe-through Week view with single-step settled paging and default Time Grid focus, press-held time-range task creation in Week, a refreshed Month task grid with direct vertical swipe navigation plus a quick jump-to-current-month action, and full-screen editing dialogs to keep controls touch-friendly. When a task dialog opens, the mobile bottom navigation hides until that task window closes.
 - The login page language switch uses the same bilingual copy system as the signed-in app, so authentication flows can be changed before sign-in.
 - Keep backend running before opening the frontend locally.

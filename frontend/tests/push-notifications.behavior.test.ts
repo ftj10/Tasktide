@@ -92,6 +92,52 @@ describe("pushNotifications behavior", () => {
     }));
   });
 
+  it("reuses an existing granted subscription without creating another PushManager subscription", async () => {
+    const existingSubscription = {
+      endpoint: "https://push.example/sub-existing",
+      expirationTime: null,
+      toJSON: () => ({
+        keys: {
+          p256dh: "existing-p256dh-key",
+          auth: "existing-auth-key",
+        },
+      }),
+    };
+    const subscribe = vi.fn();
+    const fetchMock = vi.mocked(fetch);
+
+    vi.stubGlobal("Notification", Object.assign(function Notification() {}, {
+      permission: "granted",
+      requestPermission: vi.fn(),
+    }));
+    Object.defineProperty(navigator, "serviceWorker", {
+      configurable: true,
+      value: {
+        register: vi.fn().mockResolvedValue({
+          pushManager: {
+            getSubscription: vi.fn().mockResolvedValue(existingSubscription),
+            subscribe,
+          },
+        }),
+      },
+    });
+    Object.defineProperty(window, "PushManager", {
+      configurable: true,
+      value: function PushManager() {},
+    });
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 200 }));
+
+    await syncPushSubscription("en");
+
+    expect(subscribe).not.toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledWith("/api/notifications/subscriptions", expect.objectContaining({
+      credentials: "include",
+      method: "POST",
+      body: expect.stringContaining("https://push.example/sub-existing"),
+    }));
+  });
+
   it("requests permission before subscribing a new device", async () => {
     const notificationApi = Object.assign(function Notification() {}, {
       permission: "default",
@@ -174,6 +220,7 @@ describe("pushNotifications behavior", () => {
     expect(fetchMock).toHaveBeenCalledWith("/api/notifications/subscriptions", expect.objectContaining({
       credentials: "include",
       method: "DELETE",
+      body: JSON.stringify({ endpoint: "https://push.example/sub-1" }),
     }));
     expect(unsubscribe).toHaveBeenCalledTimes(1);
   });
