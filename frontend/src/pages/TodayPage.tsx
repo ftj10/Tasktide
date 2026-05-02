@@ -70,19 +70,15 @@ export function TodayPage(props: {
   const urlDate = searchParams.get("date");
   const currentLanguage = i18n.resolvedLanguage?.startsWith("zh") ? "zh" : "en";
 
-  const [selectedDay, setSelectedDay] = useState<string>(urlDate || ymd(dayjs()));
+  const selectedDay = urlDate || ymd(dayjs());
 
-  useEffect(() => {
-    if (urlDate && urlDate !== selectedDay) {
-      setSelectedDay(urlDate);
-    }
-  }, [selectedDay, urlDate]);
-
-  useEffect(() => {
-    if (selectedDay !== urlDate) {
-      setSearchParams({ date: selectedDay });
-    }
-  }, [selectedDay, setSearchParams, urlDate]);
+  function updateSelectedDay(nextDay: string) {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set("date", nextDay);
+      return next;
+    });
+  }
 
   const title = useMemo(() => {
     return new Intl.DateTimeFormat(currentLanguage, {
@@ -325,14 +321,14 @@ export function TodayPage(props: {
         message:
           skippedCount > 0
             ? t("today.importSuccessWithSkipped", {
-                count: importedTasks.length,
-                skipped: skippedCount,
-                name: file.name,
-              })
+              count: importedTasks.length,
+              skipped: skippedCount,
+              name: file.name,
+            })
             : t("today.importSuccess", {
-                count: importedTasks.length,
-                name: file.name,
-              }),
+              count: importedTasks.length,
+              name: file.name,
+            }),
       });
     } catch {
       setImportStatus({
@@ -558,7 +554,7 @@ export function TodayPage(props: {
           <Stack direction="row" alignItems="center" spacing={1.25}>
             <IconButton
               aria-label={t("today.previousDay")}
-              onClick={() => setSelectedDay(ymd(dayjs(selectedDay).subtract(1, "day")))}
+              onClick={() => updateSelectedDay(ymd(dayjs(selectedDay).subtract(1, "day")))}
               sx={{
                 bgcolor: "rgba(255,255,255,0.7)",
                 border: "1px solid",
@@ -586,7 +582,7 @@ export function TodayPage(props: {
             </Box>
             <IconButton
               aria-label={t("today.nextDay")}
-              onClick={() => setSelectedDay(ymd(dayjs(selectedDay).add(1, "day")))}
+              onClick={() => updateSelectedDay(ymd(dayjs(selectedDay).add(1, "day")))}
               sx={{
                 bgcolor: "rgba(255,255,255,0.7)",
                 border: "1px solid",
@@ -602,7 +598,7 @@ export function TodayPage(props: {
             <Button
               variant="outlined"
               startIcon={<TodayRoundedIcon />}
-              onClick={() => setSelectedDay(ymd(dayjs()))}
+              onClick={() => updateSelectedDay(ymd(dayjs()))}
               sx={{ borderRadius: 2.5 }}
             >
               {t("today.goToToday")}
