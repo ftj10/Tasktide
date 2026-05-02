@@ -1,5 +1,22 @@
 # Release Notes
 
+## Version 1.19.4
+Version: 1.19.4
+Update Date: 2026-05-02
+
+Title: Version 1.19.4 – Update Released (2026-05-02)
+
+### What’s New
+- Added: Smarter offline task syncing for users who edit tasks while disconnected.
+
+### Improvements
+- Improved: Repeated offline edits to the same task now sync as the latest task update instead of replaying every older step.
+- Improved: TaskTide now checks whether a task changed online before replaying an offline edit.
+- Improved: Help Center now explains that offline edits can continue and sync later.
+
+### Fixes
+- Fixed: Older offline task changes are less likely to overwrite newer task updates from another device.
+
 ## Version 1.19.3
 Version: 1.19.3
 Update Date: 2026-05-02

@@ -14,6 +14,31 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-05-02-offline-sync-conflict-checks",
+    version: "v1.19.4",
+    releasedAt: "2026-05-02",
+    title: {
+      en: "Smarter offline task sync",
+      zh: "更智能的离线任务同步"
+    },
+    summary: {
+      en: "TaskTide now handles repeated offline task changes more carefully before syncing them back online.",
+      zh: "TaskTide 现在会更谨慎地处理重复的离线任务修改，再同步回线上。"
+    },
+    changes: {
+      en: [
+        "Improved offline editing so repeated changes to the same task sync as one latest update.",
+        "Improved multi-device safety by checking whether a task changed online before replaying an offline edit.",
+        "Fixed stale offline updates so they no longer silently overwrite newer server task changes."
+      ],
+      zh: [
+        "改进离线编辑，同一个任务的多次修改会作为最新一次更新同步。",
+        "改进多设备安全性，在重放离线修改前会检查任务是否已在线上变化。",
+        "修复过期离线更新，避免静默覆盖服务器上更新的任务。"
+      ]
+    }
+  },
+  {
     id: "2026-05-02-auth-input-validation",
     version: "v1.19.3",
     releasedAt: "2026-05-02",

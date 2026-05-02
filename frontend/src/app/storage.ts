@@ -15,8 +15,8 @@ const TASK_SYNC_QUEUE_KEY = "tasktide_tasks_sync_queue_v1";
 const API_URL = import.meta.env.VITE_API_URL || "/api";
 
 type PendingTaskSync =
-  | { type: "create" | "update"; task: Task }
-  | { type: "delete"; taskId: string };
+  | { type: "create" | "update"; task: Task; baseUpdatedAt?: string | null }
+  | { type: "delete"; taskId: string; baseUpdatedAt?: string | null };
 
 function hasSavedProfile() {
   return Boolean(getUsername());
@@ -53,11 +53,121 @@ function setPendingTaskSyncQueue(queue: PendingTaskSync[]) {
 }
 
 function enqueueTaskSync(entry: PendingTaskSync) {
-  setPendingTaskSyncQueue([...getPendingTaskSyncQueue(), entry]);
+  setPendingTaskSyncQueue(mergePendingTaskSync(getPendingTaskSyncQueue(), entry));
 }
 
 function clearPendingTaskSyncQueue() {
   localStorage.removeItem(TASK_SYNC_QUEUE_KEY);
+}
+
+function getPendingTaskId(entry: PendingTaskSync) {
+  return entry.type === "delete" ? entry.taskId : entry.task.id;
+}
+
+function normalizePendingTaskSync(entry: PendingTaskSync): PendingTaskSync {
+  if (entry.type === "delete") {
+    return entry;
+  }
+
+  return {
+    ...entry,
+    task: normalizeTasks([entry.task])[0],
+  };
+}
+
+function mergePendingTaskSync(queue: PendingTaskSync[], nextEntry: PendingTaskSync) {
+  const normalizedEntry = normalizePendingTaskSync(nextEntry);
+  const taskId = getPendingTaskId(normalizedEntry);
+  const existingIndex = queue.findIndex((entry) => getPendingTaskId(entry) === taskId);
+
+  if (existingIndex === -1) {
+    return [...queue, normalizedEntry];
+  }
+
+  const existingEntry = queue[existingIndex];
+  const mergedQueue = [...queue];
+
+  if (existingEntry.type === "create") {
+    if (normalizedEntry.type === "delete") {
+      mergedQueue.splice(existingIndex, 1);
+      return mergedQueue;
+    }
+
+    mergedQueue[existingIndex] = {
+      type: "create",
+      task: normalizedEntry.task,
+    };
+    return mergedQueue;
+  }
+
+  if (existingEntry.type === "update") {
+    if (normalizedEntry.type === "delete") {
+      mergedQueue[existingIndex] = {
+        type: "delete",
+        taskId,
+        baseUpdatedAt: existingEntry.baseUpdatedAt ?? normalizedEntry.baseUpdatedAt ?? null,
+      };
+      return mergedQueue;
+    }
+
+    mergedQueue[existingIndex] = {
+      type: "update",
+      task: normalizedEntry.task,
+      baseUpdatedAt: existingEntry.baseUpdatedAt ?? normalizedEntry.baseUpdatedAt ?? null,
+    };
+    return mergedQueue;
+  }
+
+  if (normalizedEntry.type === "delete") {
+    mergedQueue[existingIndex] = {
+      type: "delete",
+      taskId,
+      baseUpdatedAt: existingEntry.baseUpdatedAt ?? normalizedEntry.baseUpdatedAt ?? null,
+    };
+    return mergedQueue;
+  }
+
+  mergedQueue[existingIndex] = {
+    type: "update",
+    task: normalizedEntry.task,
+    baseUpdatedAt: existingEntry.baseUpdatedAt ?? normalizedEntry.baseUpdatedAt ?? null,
+  };
+  return mergedQueue;
+}
+
+function mergePendingTaskSyncQueue(queue: PendingTaskSync[]) {
+  return queue.reduce<PendingTaskSync[]>(
+    (mergedQueue, entry) => mergePendingTaskSync(mergedQueue, entry),
+    []
+  );
+}
+
+function needsTaskConflictSnapshot(queue: PendingTaskSync[]) {
+  return queue.some((entry) => entry.type !== "create" && Boolean(entry.baseUpdatedAt));
+}
+
+async function loadTaskConflictSnapshot(queue: PendingTaskSync[]) {
+  if (!needsTaskConflictSnapshot(queue)) {
+    return null;
+  }
+
+  const response = await authorizedRequest('/tasks');
+  if (!response) throw new Error("Authorized request unavailable");
+  if (!response.ok) throw new Error(await readErrorMessage(response, "Failed to load task conflict snapshot"));
+
+  const serverTasks = normalizeTasks((await response.json()) as Task[]);
+  return new Map(serverTasks.map((task) => [task.id, task]));
+}
+
+function assertPendingTaskSyncHasNoConflict(entry: PendingTaskSync, serverTasksById: Map<string, Task> | null) {
+  if (!serverTasksById || entry.type === "create" || !entry.baseUpdatedAt) {
+    return;
+  }
+
+  const serverTask = serverTasksById.get(getPendingTaskId(entry));
+  if (serverTask && serverTask.updatedAt !== entry.baseUpdatedAt) {
+    throw new Error("Task sync conflict");
+  }
 }
 
 // INPUT: task list
@@ -78,13 +188,17 @@ export function loadCachedTasks(): Task[] {
 // OUTPUT: backend sync completion
 // EFFECT: Replays offline task changes when the browser regains API access
 export async function flushPendingTaskSync() {
-  const queue = getPendingTaskSyncQueue();
+  const queue = mergePendingTaskSyncQueue(getPendingTaskSyncQueue());
   if (!queue.length) return;
 
   const remainingQueue = [...queue];
+  setPendingTaskSyncQueue(remainingQueue);
+  const serverTasksById = await loadTaskConflictSnapshot(remainingQueue);
 
   while (remainingQueue.length) {
     const entry = remainingQueue[0];
+    assertPendingTaskSyncHasNoConflict(entry, serverTasksById);
+
     if (entry.type === "create") {
       await requestOk('/tasks', {
         method: 'POST',
@@ -98,6 +212,11 @@ export async function flushPendingTaskSync() {
         body: JSON.stringify(entry.task),
       });
     } else if (entry.type === "delete") {
+      if (serverTasksById && !serverTasksById.has(entry.taskId)) {
+        remainingQueue.shift();
+        setPendingTaskSyncQueue(remainingQueue);
+        continue;
+      }
       await requestOk(`/tasks/${entry.taskId}`, {
         method: 'DELETE',
       });
@@ -278,7 +397,7 @@ export async function createTask(task: Task): Promise<void> {
 // INPUT: one task
 // OUTPUT: updated task record
 // EFFECT: Updates a task via the task CRUD API
-export async function updateTask(task: Task): Promise<void> {
+export async function updateTask(task: Task, previousTask?: Task): Promise<void> {
   try {
     await requestOk(`/tasks/${task.id}`, {
       method: 'PUT',
@@ -288,7 +407,7 @@ export async function updateTask(task: Task): Promise<void> {
       body: JSON.stringify(task),
     });
   } catch (error) {
-    enqueueTaskSync({ type: "update", task: normalizeTasks([task])[0] });
+    enqueueTaskSync({ type: "update", task: normalizeTasks([task])[0], baseUpdatedAt: previousTask?.updatedAt ?? null });
     console.error("Failed to update task", error);
   }
 }
@@ -296,13 +415,13 @@ export async function updateTask(task: Task): Promise<void> {
 // INPUT: task id
 // OUTPUT: delete completion
 // EFFECT: Deletes a task via the task CRUD API
-export async function deleteTask(taskId: string): Promise<void> {
+export async function deleteTask(taskId: string, previousTask?: Task): Promise<void> {
   try {
     await requestOk(`/tasks/${taskId}`, {
       method: 'DELETE',
     });
   } catch (error) {
-    enqueueTaskSync({ type: "delete", taskId });
+    enqueueTaskSync({ type: "delete", taskId, baseUpdatedAt: previousTask?.updatedAt ?? null });
     console.error("Failed to delete task", error);
   }
 }

@@ -11,6 +11,7 @@ import {
   loadTasks,
   saveCachedTasks,
   setAuth,
+  updateTask,
 } from "../src/app/storage";
 
 function buildTask(overrides: Partial<Task> = {}): Task {
@@ -66,5 +67,49 @@ describe("offline storage behavior", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(fetchMock.mock.calls[1][0]).toBe("/api/tasks");
     expect(fetchMock.mock.calls[1][1]).toMatchObject({ method: "POST" });
+  });
+
+  it("merges repeated offline task updates before replaying the latest task", async () => {
+    const originalTask = buildTask({ updatedAt: "2026-04-30T12:00:00.000Z" });
+    const firstEdit = buildTask({ title: "First offline edit", updatedAt: "2026-04-30T12:05:00.000Z" });
+    const secondEdit = buildTask({ title: "Second offline edit", updatedAt: "2026-04-30T12:10:00.000Z" });
+    const fetchMock = vi
+      .fn()
+      .mockRejectedValueOnce(new TypeError("offline"))
+      .mockRejectedValueOnce(new TypeError("offline"))
+      .mockResolvedValueOnce(new Response(JSON.stringify([originalTask]), { status: 200 }))
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(updateTask(firstEdit, originalTask)).resolves.toBeUndefined();
+    await expect(updateTask(secondEdit, originalTask)).resolves.toBeUndefined();
+    await expect(flushPendingTaskSync()).resolves.toBeUndefined();
+
+    expect(fetchMock).toHaveBeenCalledTimes(4);
+    expect(fetchMock.mock.calls[2][0]).toBe("/api/tasks");
+    expect(fetchMock.mock.calls[3][0]).toBe("/api/tasks/offline-task-1");
+    expect(fetchMock.mock.calls[3][1]).toMatchObject({ method: "PUT" });
+    expect(JSON.parse(String(fetchMock.mock.calls[3][1]?.body))).toMatchObject({
+      title: "Second offline edit",
+      updatedAt: "2026-04-30T12:10:00.000Z",
+    });
+  });
+
+  it("keeps a stale offline task update queued when the server task changed first", async () => {
+    const originalTask = buildTask({ updatedAt: "2026-04-30T12:00:00.000Z" });
+    const offlineEdit = buildTask({ title: "Offline edit", updatedAt: "2026-04-30T12:05:00.000Z" });
+    const serverEdit = buildTask({ title: "Server edit", updatedAt: "2026-04-30T12:03:00.000Z" });
+    const fetchMock = vi
+      .fn()
+      .mockRejectedValueOnce(new TypeError("offline"))
+      .mockResolvedValueOnce(new Response(JSON.stringify([serverEdit]), { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(updateTask(offlineEdit, originalTask)).resolves.toBeUndefined();
+    await expect(flushPendingTaskSync()).rejects.toThrow("Task sync conflict");
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls[1][0]).toBe("/api/tasks");
+    expect(localStorage.getItem("tasktide_tasks_sync_queue_v1")).toContain("Offline edit");
   });
 });

@@ -33,8 +33,8 @@ describe("ReleaseNotesCenter behavior", () => {
   it("shows the latest shipped version in the update dialog", () => {
     renderWithProviders(<ReleaseNotesCenter username="tom" />);
 
-    expect(screen.getByText("v1.19.3")).toBeInTheDocument();
-    expect(screen.getByText("Clearer account setup")).toBeInTheDocument();
+    expect(screen.getByText("v1.19.4")).toBeInTheDocument();
+    expect(screen.getByText("Smarter offline task sync")).toBeInTheDocument();
   });
 
   it("keeps the 1.18.3 and 1.18.4 coach-mark updates in history", async () => {

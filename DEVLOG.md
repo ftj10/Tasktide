@@ -1,5 +1,30 @@
 # Development Log
 
+## Version 1.19.4
+Version: 1.19.4
+Update Date: 2026-05-02
+
+### Technical Changes
+- `frontend/src/app/storage.ts`: Added task-id-based pending queue merging, base `updatedAt` tracking for offline update/delete operations, and conflict checks before replay.
+- `frontend/src/App.tsx`: Passed previous task records into task update/delete sync calls so offline queue entries know which server version they were based on.
+- `frontend/tests/offline-storage.behavior.test.ts`: Added coverage for merging repeated offline updates and blocking stale offline updates when the server task changed first.
+- `frontend/src/i18n.ts`: Updated Help Center core-flow guidance to explain offline editing and later sync.
+- `frontend/src/app/releaseNotes.ts`, `frontend/tests/release-notes.behavior.test.tsx`, `README.md`, and `RELEASENOTES.md`: Added the 1.19.4 offline sync update.
+- `package.json`, `frontend/package.json`, `frontend/package-lock.json`, `backend/package.json`, and `backend/package-lock.json`: Bumped package metadata to 1.19.4.
+
+### Design Decisions
+- Queue merging happens in browser storage so repeated offline edits collapse before replay and survive reloads.
+- Update/delete conflict checks compare the server task `updatedAt` against the local base `updatedAt` captured when the offline change was queued.
+- Creates do not require a conflict snapshot because a new client task id has no prior server version.
+
+### Edge Cases
+- Creating a task offline and deleting it before sync removes the pending create entirely.
+- Multiple offline updates preserve the first base timestamp and the latest task payload.
+- A queued delete is skipped if the server task is already gone when sync resumes.
+
+### Known Limitations
+- Conflict resolution currently stops the replay and keeps the queued edit for retry; it does not yet show a user-facing merge dialog.
+
 ## Version 1.19.3
 Version: 1.19.3
 Update Date: 2026-05-02

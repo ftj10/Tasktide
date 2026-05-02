@@ -182,8 +182,8 @@ export default function App() {
       .then(async () => {
         await Promise.all([
           ...createdTasks.map((task) => createTask(task)),
-          ...updatedTasks.map((task) => updateTask(task)),
-          ...deletedTaskIds.map((taskId) => deleteTask(taskId)),
+          ...updatedTasks.map((task) => updateTask(task, prevById.get(task.id))),
+          ...deletedTaskIds.map((taskId) => deleteTask(taskId, prevById.get(taskId))),
         ]);
       })
       .catch((error) => {
