@@ -14,6 +14,29 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-05-02-lint-quality-fix",
+    version: "v1.19.2",
+    releasedAt: "2026-05-02",
+    title: {
+      en: "Cleaner planner maintenance",
+      zh: "更清晰的计划器维护"
+    },
+    summary: {
+      en: "TaskTide is easier to maintain and verify before future updates reach users.",
+      zh: "TaskTide 现在更容易在后续更新发布前进行维护和检查。"
+    },
+    changes: {
+      en: [
+        "Improved update readiness by keeping the frontend lint check clean.",
+        "Fixed maintenance warnings that could hide future planner quality issues."
+      ],
+      zh: [
+        "改进更新准备流程，让前端代码检查保持干净。",
+        "修复可能掩盖后续计划器质量问题的维护警告。"
+      ]
+    }
+  },
+  {
     id: "2026-05-01-csrf-safe-session-writes",
     version: "v1.19.1",
     releasedAt: "2026-05-01",

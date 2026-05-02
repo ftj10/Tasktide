@@ -1,6 +1,6 @@
 # TaskTide Application
 
-Current version: `v1.19.1`
+Current version: `v1.19.2`
 
 TaskTide is a full-stack planner for daily tasks, weekly routines, reminders, shared help questions, and calendar-based scheduling.
 
@@ -50,6 +50,7 @@ Deployed Web: TaskTide
 - The shared service worker caches the TaskTide app shell so installed web-app sessions can start from cached files while offline.
 - Browsers without Web Push support still fall back to in-page notification timers while the planner tab stays open.
 - Consistent `INPUT` / `OUTPUT` / `EFFECT` code comments across source and test files for faster feature scanning during maintenance.
+- Frontend linting now runs cleanly with typed calendar-event data and stable hook dependency checks.
 
 ## Stack
 
@@ -101,6 +102,13 @@ Workspace tests:
 npm test
 ```
 
+Frontend quality checks:
+
+```bash
+npm --prefix frontend run lint
+npm --prefix frontend run build
+```
+
 ## Notes
 
 - Review [RELEASENOTES.md](RELEASENOTES.md) for repository-level changes.
@@ -111,6 +119,7 @@ npm test
 - Local development can skip manual VAPID setup because the backend generates `backend/.push-vapid.json` on first use. Production should provide `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `WEB_PUSH_SUBJECT`.
 - Use `Import ICS` on the Today page when you want to bring calendar events into the planner from a `.ics` export. The importer keeps titles, notes, locations, multi-day all-day ranges, timed events, and supported daily, weekly, monthly, and yearly recurrence rules.
 - The in-app Updates center mirrors the latest shipped release metadata from `frontend/src/app/releaseNotes.ts` and groups each release under `New Features`, `Improvements`, and `Bug Fixes`.
+- The frontend lint check is separate from `npm test`; run it before shipping UI changes so type, hook, and style issues are caught early.
 - Offline task access uses browser local storage for the latest task cache and a queued task mutation list. The queue replays task create, update, and delete operations when the browser fires `online` or the app next loads tasks successfully.
 - During `npm run dev`, the frontend unregisters the TaskTide app-shell service worker and background push service-worker registration stays disabled unless `VITE_ENABLE_DEV_SERVICE_WORKER=true` is set. This keeps Vite HMR and React Fast Refresh on a single fresh module graph.
 - Walkthrough GIF files can be added under `frontend/public/help-walkthroughs/` using the built-in filenames shown in each Help Center placeholder.

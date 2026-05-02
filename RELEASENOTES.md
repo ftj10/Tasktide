@@ -1,5 +1,21 @@
 # Release Notes
 
+## Version 1.19.2
+Version: 1.19.2
+Update Date: 2026-05-02
+
+Title: Version 1.19.2 – Update Released (2026-05-02)
+
+### What’s New
+- Added: A cleaner update-readiness check so TaskTide can be verified more confidently before new planner improvements are released.
+
+### Improvements
+- Improved: Help Center now gives beginners a clearer start-to-finish path for planning today, organizing the week, scanning the month, and finishing work.
+- Improved: Maintenance checks are now easier to run without unrelated warnings getting in the way.
+
+### Fixes
+- Fixed: Frontend lint warnings and errors that could make future quality issues harder to spot.
+
 ## Version 1.19.1
 Version: 1.19.1
 Update Date: 2026-05-01

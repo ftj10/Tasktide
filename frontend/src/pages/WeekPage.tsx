@@ -13,7 +13,7 @@ import {
   useTheme,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -26,7 +26,7 @@ import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
 
 import type { Task } from "../types";
-import { toCalendarEventsForRange } from "../app/taskLogic";
+import { toCalendarEventsForRange, type PlannerCalendarEvent } from "../app/taskLogic";
 import { TaskDialog } from "../components/TaskDialog";
 import { ConfirmDeleteDialog } from "../components/ConfirmDeleteDialog";
 import { weekStartMonday, ymd } from "../app/date";
@@ -43,6 +43,7 @@ export function WeekPage(props: {
   setTasks: (next: Task[]) => void;
   onTaskDialogVisibilityChange?: (open: boolean) => void;
 }) {
+  const { tasks, setTasks, onTaskDialogVisibilityChange } = props;
   const { t } = useTranslation();
   const navigate = useNavigate();
   const theme = useTheme();
@@ -74,13 +75,13 @@ export function WeekPage(props: {
   const mobileScrollSettleRef = useRef<number | null>(null);
 
   useEffect(() => {
-    props.onTaskDialogVisibilityChange?.(dialogOpen);
+    onTaskDialogVisibilityChange?.(dialogOpen);
     return () => {
-      props.onTaskDialogVisibilityChange?.(false);
+      onTaskDialogVisibilityChange?.(false);
     };
-  }, [dialogOpen, props.onTaskDialogVisibilityChange]);
+  }, [dialogOpen, onTaskDialogVisibilityChange]);
 
-  const taskById = useMemo(() => new Map(props.tasks.map((task) => [task.id, task])), [props.tasks]);
+  const taskById = useMemo(() => new Map(tasks.map((task) => [task.id, task])), [tasks]);
 
   function closeTaskEditor() {
     setDialogOpen(false);
@@ -91,17 +92,17 @@ export function WeekPage(props: {
     setDefaultEndTime(undefined);
   }
 
-  function buildEventsForRange(rangeStart: dayjs.Dayjs, rangeEnd: dayjs.Dayjs) {
+  const buildEventsForRange = useCallback((rangeStart: dayjs.Dayjs, rangeEnd: dayjs.Dayjs): PlannerCalendarEvent[] => {
     const baseEvents = toCalendarEventsForRange(
-      props.tasks,
+      tasks,
       rangeStart,
       rangeEnd
     );
 
-    return baseEvents.map((ev: any) => {
+    return baseEvents.map((ev) => {
       const sourceTask =
-        taskById.get(ev.extendedProps?.taskId as string) ?? (ev.extendedProps?.sourceTask as Task | undefined);
-      const occurrenceTask = ev.extendedProps?.task as Task | undefined;
+        taskById.get(ev.extendedProps.taskId) ?? ev.extendedProps.sourceTask;
+      const occurrenceTask = ev.extendedProps.task;
       const displayTask = occurrenceTask ?? sourceTask;
       const colors = getPriorityColors(displayTask);
 
@@ -144,16 +145,16 @@ export function WeekPage(props: {
         extendedProps: { ...ev.extendedProps, sourceTask, task: displayTask },
       };
     });
-  }
+  }, [taskById, tasks]);
 
   const desktopEvents = useMemo(
     () => buildEventsForRange(desktopVisibleRange.start, desktopVisibleRange.end),
-    [desktopVisibleRange.end, desktopVisibleRange.start, props.tasks]
+    [buildEventsForRange, desktopVisibleRange.end, desktopVisibleRange.start]
   );
 
   function upsert(task: Task, scope: TaskSaveScope = "series") {
-    props.setTasks(
-      saveTaskCollection(props.tasks, task, {
+    setTasks(
+      saveTaskCollection(tasks, task, {
         editingSourceTask,
         scope,
         occurrenceDateYmd: defaultDate,
@@ -163,8 +164,8 @@ export function WeekPage(props: {
   }
 
   function remove(taskId: string, scope: TaskSaveScope = "series", sourceTask?: Task, occurrenceDateYmd?: string) {
-    props.setTasks(
-      removeTaskFromCollection(props.tasks, taskId, {
+    setTasks(
+      removeTaskFromCollection(tasks, taskId, {
         editingSourceTask: sourceTask,
         scope,
         occurrenceDateYmd,
@@ -242,7 +243,7 @@ export function WeekPage(props: {
         ...page,
         events: buildEventsForRange(page.start, page.end),
       })),
-    [mobilePages, props.tasks]
+    [buildEventsForRange, mobilePages]
   );
 
   function scrollToMobilePage(pageIndex: number, behavior: ScrollBehavior = "auto") {
@@ -306,7 +307,7 @@ export function WeekPage(props: {
     setDialogOpen(true);
   }
 
-  function renderCalendar(events: any[], pageStart?: dayjs.Dayjs, pageEnd?: dayjs.Dayjs, pageKey?: string) {
+  function renderCalendar(events: PlannerCalendarEvent[], pageStart?: dayjs.Dayjs, pageEnd?: dayjs.Dayjs, pageKey?: string) {
     const isMobileSlice = !!pageStart && !!pageEnd && !!pageKey;
     const allowRangeCreate = isMobileSlice && viewMode === "timeGrid";
 
@@ -753,7 +754,7 @@ export function WeekPage(props: {
         onClose={closeTaskEditor}
         onSave={upsert}
         onDelete={(id, scope = "series") => {
-          const task = props.tasks.find((item) => item.id === id);
+          const task = tasks.find((item) => item.id === id);
           if (!task) return;
           setDeleteTask({
             task,

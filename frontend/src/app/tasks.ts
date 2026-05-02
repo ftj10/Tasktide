@@ -570,7 +570,7 @@ function listRecurringOccurrenceDates(task: Task, rangeStart: dayjs.Dayjs, range
     const firstCandidateBase = rangeStart.isAfter(start, "day") ? rangeStart : start;
     const initialCycle = Math.floor(firstCandidateBase.diff(start, "day") / 7);
     const cycleRemainder = initialCycle % interval;
-    let cycleIndex = cycleRemainder === 0 ? initialCycle : initialCycle + (interval - cycleRemainder);
+    const cycleIndex = cycleRemainder === 0 ? initialCycle : initialCycle + (interval - cycleRemainder);
 
     for (
       let cycleStart = start.add(cycleIndex * 7, "day");
@@ -598,7 +598,7 @@ function listRecurringOccurrenceDates(task: Task, rangeStart: dayjs.Dayjs, range
     const rangeMonthIndex = rangeStart.year() * 12 + rangeStart.month();
     const initialMonthDiff = Math.max(0, rangeMonthIndex - startMonthIndex);
     const monthRemainder = initialMonthDiff % interval;
-    let monthDiff = monthRemainder === 0 ? initialMonthDiff : initialMonthDiff + (interval - monthRemainder);
+    const monthDiff = monthRemainder === 0 ? initialMonthDiff : initialMonthDiff + (interval - monthRemainder);
 
     for (
       let currentMonth = start.startOf("month").add(monthDiff, "month");

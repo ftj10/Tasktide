@@ -33,8 +33,8 @@ describe("ReleaseNotesCenter behavior", () => {
   it("shows the latest shipped version in the update dialog", () => {
     renderWithProviders(<ReleaseNotesCenter username="tom" />);
 
-    expect(screen.getByText("v1.19.1")).toBeInTheDocument();
-    expect(screen.getByText("Safer session updates")).toBeInTheDocument();
+    expect(screen.getByText("v1.19.2")).toBeInTheDocument();
+    expect(screen.getByText("Cleaner planner maintenance")).toBeInTheDocument();
   });
 
   it("keeps the 1.18.3 and 1.18.4 coach-mark updates in history", async () => {

@@ -21,6 +21,23 @@ export type DailyProductivityStats = ProductivityStats & {
   dateYmd: string;
 };
 
+export type PlannerCalendarEvent = {
+  id: string;
+  title: string;
+  start: string;
+  end?: string;
+  allDay: boolean;
+  extendedProps: {
+    taskId: string;
+    occurrenceDate?: string;
+    task?: Task;
+    sourceTask?: Task;
+  };
+  backgroundColor: string;
+  borderColor: string;
+  textColor: string;
+};
+
 // INPUT: all tasks and selected date
 // OUTPUT: tasks visible on the selected day
 // EFFECT: Resolves which temporary and permanent tasks belong in the Today and Month views
@@ -112,7 +129,7 @@ export function toCalendarEventsForRange(
   rangeStart: dayjs.Dayjs,
   rangeEnd: dayjs.Dayjs
 ) {
-  const events: any[] = [];
+  const events: PlannerCalendarEvent[] = [];
   const normalizedTasks = all.map(normalizeTask);
 
   const permanentColorMap: { [level: number]: { bg: string; border: string; text: string } } = {

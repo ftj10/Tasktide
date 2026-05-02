@@ -1,5 +1,30 @@
 # Development Log
 
+## Version 1.19.2
+Version: 1.19.2
+Update Date: 2026-05-02
+
+### Technical Changes
+- `frontend/eslint.config.js`: Disabled `react-hooks/set-state-in-effect` because the project intentionally syncs dialog and route-derived state from props in controlled UI surfaces.
+- `frontend/src/app/taskLogic.ts`: Added a `PlannerCalendarEvent` type and removed the untyped calendar event array.
+- `frontend/src/pages/WeekPage.tsx` and `frontend/tests/week-page.behavior.test.tsx`: Replaced untyped calendar event handling with the shared planner event shape.
+- `frontend/src/pages/TodayPage.tsx`, `frontend/src/pages/WeekPage.tsx`, and `frontend/src/components/ReleaseNotesCenter.tsx`: Cleaned hook dependencies and removed stale release-note implementation comments.
+- `frontend/src/app/tasks.ts`: Converted stable recurrence counters from `let` to `const`.
+- `frontend/src/i18n.ts`: Improved the Help Center core workflow copy in English and Chinese.
+- `frontend/src/app/releaseNotes.ts`, `frontend/tests/release-notes.behavior.test.tsx`, `README.md`, and `RELEASENOTES.md`: Added the 1.19.2 release and updated public guidance.
+- `package.json`, `frontend/package.json`, `frontend/package-lock.json`, `backend/package.json`, and `backend/package-lock.json`: Bumped package metadata to 1.19.2.
+
+### Design Decisions
+- The React set-state-in-effect lint rule was disabled at the config level instead of rewriting controlled forms into less direct patterns, because these components need to reset local draft state when dialogs open with new task or reminder data.
+- Calendar event typing was centralized in task logic so Week view rendering and tests use the same event contract.
+
+### Edge Cases
+- Existing task, reminder, release-note, and walkthrough behavior is unchanged; the changes focus on keeping the quality gate clean.
+- Release-note visibility now uses the new 1.19.2 release id, so users can see the latest maintenance update once.
+
+### Known Limitations
+- `npm test` still runs backend and frontend tests only. Frontend lint and production build remain separate commands.
+
 ## Version 1.19.1
 Version: 1.19.1
 Update Date: 2026-05-01

@@ -7,7 +7,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, beforeEach, expect, it, vi } from "vitest";
 
 import i18n from "../src/i18n";
-import { tasksForDate } from "../src/app/taskLogic";
+import { tasksForDate, type PlannerCalendarEvent } from "../src/app/taskLogic";
 import { weekdayISO, weekStartMonday } from "../src/app/date";
 import type { Task } from "../src/types";
 import { WeekPage } from "../src/pages/WeekPage";
@@ -15,7 +15,37 @@ import { renderWithProviders } from "./test-utils";
 import { setScreenWidth } from "./setup";
 
 const navigateMock = vi.fn();
-const calendarRenderProps: any[] = [];
+
+type MockCalendarProps = {
+  events: PlannerCalendarEvent[];
+  initialView?: string;
+  visibleRange?: {
+    start: string;
+    end: string;
+  };
+  headerToolbar?: false | Record<string, string>;
+  selectable?: boolean;
+  navLinkDayClick?: (date: Date) => void;
+  dateClick?: (info: { dateStr: string }) => void;
+  select?: (info: {
+    startStr: string;
+    endStr: string;
+    allDay: boolean;
+    view: {
+      calendar: {
+        unselect: () => void;
+      };
+    };
+  }) => void;
+  eventClick: (info: {
+    event: {
+      extendedProps: PlannerCalendarEvent["extendedProps"];
+      startStr: string;
+    };
+  }) => void;
+};
+
+const calendarRenderProps: MockCalendarProps[] = [];
 
 vi.mock("react-router-dom", async () => {
   const actual = await vi.importActual<typeof import("react-router-dom")>("react-router-dom");
@@ -26,7 +56,7 @@ vi.mock("react-router-dom", async () => {
 });
 
 vi.mock("@fullcalendar/react", () => ({
-  default: (props: any) => {
+  default: (props: MockCalendarProps) => {
     calendarRenderProps.push(props);
     return (
       <div>
@@ -74,7 +104,7 @@ vi.mock("@fullcalendar/react", () => ({
             select-range-cross-day
           </button>
         ) : null}
-        {props.events.map((event: any) => (
+        {props.events.map((event) => (
           <button
             key={event.id}
             type="button"
@@ -207,7 +237,7 @@ describe("WeekPage behavior", () => {
   it("uses time grid as the default week view on desktop and mobile", () => {
     renderWithProviders(<WeekPage tasks={[]} setTasks={vi.fn()} />);
 
-    const latestDesktopCalendar = calendarRenderProps.at(-1);
+    const latestDesktopCalendar = calendarRenderProps.at(-1)!;
     expect(latestDesktopCalendar.initialView).toBe("timeGridWeek");
 
     calendarRenderProps.length = 0;
@@ -237,8 +267,8 @@ describe("WeekPage behavior", () => {
       />
     );
 
-    const latestDesktopCalendar = calendarRenderProps.at(-1);
-    const renderedEvent = latestDesktopCalendar.events.find((event: any) => event.id === "range-1");
+    const latestDesktopCalendar = calendarRenderProps.at(-1)!;
+    const renderedEvent = latestDesktopCalendar.events.find((event) => event.id === "range-1");
 
     expect(renderedEvent).toMatchObject({
       start: "2026-04-28",
@@ -254,17 +284,17 @@ describe("WeekPage behavior", () => {
 
     const latestCalendarProps = calendarRenderProps.slice(-3);
     const pageLengths = latestCalendarProps.map((item) =>
-      dayjs(item.visibleRange.end).diff(dayjs(item.visibleRange.start), "day")
+      dayjs(item.visibleRange!.end).diff(dayjs(item.visibleRange!.start), "day")
     );
 
     expect(latestCalendarProps).toHaveLength(3);
     expect(pageLengths.filter((length) => length === 3).length).toBeGreaterThanOrEqual(1);
     expect(pageLengths.filter((length) => length === 4).length).toBeGreaterThanOrEqual(1);
-    expect(latestCalendarProps[0].visibleRange.end).toBe(latestCalendarProps[1].visibleRange.start);
-    expect(latestCalendarProps[1].visibleRange.end).toBe(latestCalendarProps[2].visibleRange.start);
-    expect(latestCalendarProps[0].headerToolbar).toBe(false);
-    expect(latestCalendarProps[1].headerToolbar).toBe(false);
-    expect(latestCalendarProps[2].headerToolbar).toBe(false);
+    expect(latestCalendarProps[0]!.visibleRange!.end).toBe(latestCalendarProps[1]!.visibleRange!.start);
+    expect(latestCalendarProps[1]!.visibleRange!.end).toBe(latestCalendarProps[2]!.visibleRange!.start);
+    expect(latestCalendarProps[0]!.headerToolbar).toBe(false);
+    expect(latestCalendarProps[1]!.headerToolbar).toBe(false);
+    expect(latestCalendarProps[2]!.headerToolbar).toBe(false);
   });
 
   it("advances only one mobile page after a swipe settles", () => {
@@ -301,7 +331,7 @@ describe("WeekPage behavior", () => {
     });
 
     const latestCalendarProps = calendarRenderProps.slice(-3);
-    expect(latestCalendarProps[1].visibleRange).toMatchObject(initialCalendarProps[2].visibleRange);
+    expect(latestCalendarProps[1]!.visibleRange).toMatchObject(initialCalendarProps[2]!.visibleRange!);
   });
 
   it("replaces the mobile add button with time-range creation in the time grid", async () => {
@@ -378,8 +408,8 @@ describe("WeekPage behavior", () => {
 
     renderWithProviders(<WeekPage tasks={[recurringTask]} setTasks={vi.fn()} />);
 
-    const latestDesktopCalendar = calendarRenderProps.at(-1);
-    const event = latestDesktopCalendar.events.find((item: any) => item.id === `recurring-1::${occurrenceDate}`);
+    const latestDesktopCalendar = calendarRenderProps.at(-1)!;
+    const event = latestDesktopCalendar.events.find((item) => item.id === `recurring-1::${occurrenceDate}`)!;
 
     expect(event.title).toBe("Team sync - moved");
     expect(event.start).toBe(`${occurrenceDate}T14:30:00`);

@@ -64,6 +64,7 @@ export function TodayPage(props: {
   setTasks: (next: Task[]) => void;
   onTaskDialogVisibilityChange?: (open: boolean) => void;
 }) {
+  const { tasks, setTasks, onTaskDialogVisibilityChange } = props;
   const { t, i18n } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const urlDate = searchParams.get("date");
@@ -75,7 +76,7 @@ export function TodayPage(props: {
     if (urlDate && urlDate !== selectedDay) {
       setSelectedDay(urlDate);
     }
-  }, [urlDate]);
+  }, [selectedDay, urlDate]);
 
   useEffect(() => {
     if (selectedDay !== urlDate) {
@@ -94,7 +95,7 @@ export function TodayPage(props: {
   const isTodayView = selectedDay === ymd(dayjs());
 
   const { allDayTasks, timedTasks } = useMemo(() => {
-    const raw = tasksForDate(props.tasks, selectedDay);
+    const raw = tasksForDate(tasks, selectedDay);
     const allDay = raw
       .filter((t) => !t.startTime)
       .sort((a, b) => (a.emergency ?? 5) - (b.emergency ?? 5));
@@ -103,20 +104,20 @@ export function TodayPage(props: {
       .sort((a, b) => a.startTime!.localeCompare(b.startTime!));
 
     return { allDayTasks: allDay, timedTasks: timed };
-  }, [props.tasks, selectedDay]);
+  }, [tasks, selectedDay]);
 
-  const dayStats = useMemo(() => productivityStatsForDate(props.tasks, selectedDay), [props.tasks, selectedDay]);
+  const dayStats = useMemo(() => productivityStatsForDate(tasks, selectedDay), [tasks, selectedDay]);
   const sevenDayStats = useMemo(
-    () => productivityStatsForRollingWindow(props.tasks, selectedDay, 7),
-    [props.tasks, selectedDay]
+    () => productivityStatsForRollingWindow(tasks, selectedDay, 7),
+    [tasks, selectedDay]
   );
   const thirtyDayStats = useMemo(
-    () => productivityStatsForRollingWindow(props.tasks, selectedDay, 30),
-    [props.tasks, selectedDay]
+    () => productivityStatsForRollingWindow(tasks, selectedDay, 30),
+    [tasks, selectedDay]
   );
   const sevenDayTrend = useMemo(
-    () => productivityStatsSeries(props.tasks, selectedDay, 7),
-    [props.tasks, selectedDay]
+    () => productivityStatsSeries(tasks, selectedDay, 7),
+    [tasks, selectedDay]
   );
   const completedTaskCount = sevenDayTrend[sevenDayTrend.length - 1]?.completedCount ?? 0;
   const maxTrendTotal = useMemo(
@@ -143,11 +144,11 @@ export function TodayPage(props: {
   } | null>(null);
 
   useEffect(() => {
-    props.onTaskDialogVisibilityChange?.(dialogOpen);
+    onTaskDialogVisibilityChange?.(dialogOpen);
     return () => {
-      props.onTaskDialogVisibilityChange?.(false);
+      onTaskDialogVisibilityChange?.(false);
     };
-  }, [dialogOpen, props.onTaskDialogVisibilityChange]);
+  }, [dialogOpen, onTaskDialogVisibilityChange]);
 
   function closeTaskEditor() {
     setDialogOpen(false);
@@ -156,8 +157,8 @@ export function TodayPage(props: {
   }
 
   function upsert(task: Task, scope: TaskSaveScope = "series") {
-    props.setTasks(
-      saveTaskCollection(props.tasks, task, {
+    setTasks(
+      saveTaskCollection(tasks, task, {
         editingSourceTask,
         scope: editingSourceTask && isRecurringTask(editingSourceTask) ? scope : "series",
         occurrenceDateYmd: selectedDay,
@@ -167,8 +168,8 @@ export function TodayPage(props: {
   }
 
   function remove(taskId: string, scope: TaskSaveScope = "series", sourceTask?: Task, occurrenceDateYmd?: string) {
-    props.setTasks(
-      removeTaskFromCollection(props.tasks, taskId, {
+    setTasks(
+      removeTaskFromCollection(tasks, taskId, {
         editingSourceTask: sourceTask,
         scope,
         occurrenceDateYmd,
@@ -181,8 +182,8 @@ export function TodayPage(props: {
 
   function doMarkDone(task: Task) {
     const completedAt = new Date().toISOString();
-    props.setTasks(
-      completeTaskInCollection(props.tasks, task.id, {
+    setTasks(
+      completeTaskInCollection(tasks, task.id, {
         completedAt,
         occurrenceDateYmd: isRecurringTask(task) ? selectedDay : undefined,
         updatedAt: completedAt,
@@ -193,8 +194,8 @@ export function TodayPage(props: {
 
   function markAllDone() {
     const completionAt = new Date().toISOString();
-    const raw = tasksForDate(props.tasks, selectedDay);
-    let nextTasks = props.tasks;
+    const raw = tasksForDate(tasks, selectedDay);
+    let nextTasks = tasks;
 
     for (const task of raw) {
       nextTasks = completeTaskInCollection(nextTasks, task.id, {
@@ -204,7 +205,7 @@ export function TodayPage(props: {
       });
     }
 
-    props.setTasks(nextTasks);
+    setTasks(nextTasks);
     setAllDoneOpen(false);
   }
 
@@ -290,7 +291,7 @@ export function TodayPage(props: {
   };
 
   function openTaskEditor(task: Task) {
-    const sourceTask = props.tasks.find((item) => item.id === task.id);
+    const sourceTask = tasks.find((item) => item.id === task.id);
     if (!sourceTask) return;
     setEditingSourceTask(sourceTask);
     setEditing(getTaskOccurrence(sourceTask, selectedDay) ?? normalizeTask(sourceTask));
@@ -300,7 +301,7 @@ export function TodayPage(props: {
   function mergeImportedTasks(importedTasks: Task[]) {
     const importedById = new Map(importedTasks.map((task) => [task.id, task]));
     return [
-      ...props.tasks.filter((task) => !importedById.has(task.id)),
+      ...tasks.filter((task) => !importedById.has(task.id)),
       ...importedTasks,
     ];
   }
@@ -318,7 +319,7 @@ export function TodayPage(props: {
         return;
       }
 
-      props.setTasks(mergeImportedTasks(importedTasks));
+      setTasks(mergeImportedTasks(importedTasks));
       setImportStatus({
         severity: "success",
         message:
@@ -995,7 +996,7 @@ export function TodayPage(props: {
         }}
         onSave={upsert}
         onDelete={(id, scope = "series") => {
-          const task = props.tasks.find((item) => item.id === id);
+          const task = tasks.find((item) => item.id === id);
           if (!task) return;
           setDeleteTask({
             task,
