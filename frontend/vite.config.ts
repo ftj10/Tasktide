@@ -14,6 +14,17 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return;
+          if (id.includes("@mui") || id.includes("@emotion")) return "mui-vendor";
+          if (id.includes("@fullcalendar")) return "calendar-vendor";
+        },
+      },
+    },
+  },
   test: {
     environment: "jsdom",
     setupFiles: "./tests/setup.ts",

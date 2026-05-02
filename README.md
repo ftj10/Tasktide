@@ -1,6 +1,6 @@
 # TaskTide Application
 
-Current version: `v1.19.4`
+Current version: `v1.20.0`
 
 TaskTide is a full-stack planner for daily tasks, weekly routines, reminders, shared help questions, and calendar-based scheduling.
 
@@ -17,6 +17,7 @@ Deployed Web: TaskTide
 - Project, web-app, install, notification, storage, and backup identifiers now use the TaskTide name.
 - Login and registration screens support an `EN` / `中文` switch before authentication.
 - Today, Week, and Month planning views for one-time and recurring tasks.
+- Week, Month, Help Center, Reminders, and Updates are loaded only when needed so the first app screen downloads less JavaScript.
 - Today reschedule shortcuts now follow the selected day in the header, so moving a one-time task to `Today` or `Tomorrow` works correctly even while you are browsing future dates.
 - Today can now import `.ics` calendar files into planner tasks, including multi-day all-day events, timed events, and supported daily, weekly, monthly, and yearly repeats.
 - Task completion now uses retained `completedAt` timestamps: completed tasks disappear from active planner views immediately, stay retained for 30 days, and continue feeding shared completion analytics and cleanup rules.
@@ -57,6 +58,7 @@ Deployed Web: TaskTide
 ## Stack
 
 - Frontend: React 18, TypeScript, Vite, MUI, FullCalendar, Day.js, React Router.
+- Frontend routing uses lazy-loaded page chunks plus separate MUI and FullCalendar vendor chunks to keep the app shell smaller.
 - Backend: Node.js, Express, MongoDB with Mongoose, JWT, bcryptjs.
 
 ## Setup
@@ -122,6 +124,7 @@ npm --prefix frontend run build
 - Use `Import ICS` on the Today page when you want to bring calendar events into the planner from a `.ics` export. The importer keeps titles, notes, locations, multi-day all-day ranges, timed events, and supported daily, weekly, monthly, and yearly recurrence rules.
 - The in-app Updates center mirrors the latest shipped release metadata from `frontend/src/app/releaseNotes.ts` and groups each release under `New Features`, `Improvements`, and `Bug Fixes`.
 - The frontend lint check is separate from `npm test`; run it before shipping UI changes so type, hook, and style issues are caught early.
+- Production builds split heavy planner views and vendor libraries into cacheable chunks; watch the Vite output if a future feature grows the entry bundle again.
 - Offline task access uses browser local storage for the latest task cache and a queued task mutation list. The queue merges repeated operations for the same task, replays task create, update, and delete operations when the browser fires `online` or the app next loads tasks successfully, and uses task `updatedAt` values to avoid overwriting newer server changes.
 - During `npm run dev`, the frontend unregisters the TaskTide app-shell service worker and background push service-worker registration stays disabled unless `VITE_ENABLE_DEV_SERVICE_WORKER=true` is set. This keeps Vite HMR and React Fast Refresh on a single fresh module graph.
 - Walkthrough GIF files can be added under `frontend/public/help-walkthroughs/` using the built-in filenames shown in each Help Center placeholder.

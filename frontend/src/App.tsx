@@ -18,7 +18,7 @@ import {
   Typography,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import { useEffect, useState, useRef } from "react";
+import { lazy, Suspense, useEffect, useState, useRef } from "react";
 import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
 import NotificationsActiveOutlinedIcon from "@mui/icons-material/NotificationsActiveOutlined";
@@ -63,14 +63,25 @@ import {
 import { areTasksEqual } from "./app/tasks";
 
 import { TodayPage } from "./pages/TodayPage";
-import { WeekPage } from "./pages/WeekPage";
 import { LoginPage } from "./pages/LoginPage";
-import { ReminderPage } from "./pages/ReminderPage";
-import { MonthPage } from "./pages/MonthPage";
-import { ReleaseNotesCenter } from "./components/ReleaseNotesCenter";
-import { HelpPage } from "./pages/HelpPage";
 import { OnboardingTooltip } from "./components/OnboardingTooltip";
 import { getOnboardingSteps, ONBOARDING_STORAGE_KEY } from "./app/helpCenter";
+
+const ReminderPage = lazy(() =>
+  import("./pages/ReminderPage").then((module) => ({ default: module.ReminderPage }))
+);
+const WeekPage = lazy(() =>
+  import("./pages/WeekPage").then((module) => ({ default: module.WeekPage }))
+);
+const MonthPage = lazy(() =>
+  import("./pages/MonthPage").then((module) => ({ default: module.MonthPage }))
+);
+const HelpPage = lazy(() =>
+  import("./pages/HelpPage").then((module) => ({ default: module.HelpPage }))
+);
+const ReleaseNotesCenter = lazy(() =>
+  import("./components/ReleaseNotesCenter").then((module) => ({ default: module.ReleaseNotesCenter }))
+);
 
 function areRemindersEqual(source: Reminder, target: Reminder) {
   return (
@@ -81,6 +92,28 @@ function areRemindersEqual(source: Reminder, target: Reminder) {
     source.done === target.done &&
     source.createdAt === target.createdAt &&
     source.updatedAt === target.updatedAt
+  );
+}
+
+function PageLoadingFallback() {
+  const { t } = useTranslation();
+
+  return (
+    <Stack alignItems="center" justifyContent="center" spacing={2} sx={{ minHeight: 320 }}>
+      <Avatar
+        sx={{
+          width: 44,
+          height: 44,
+          background: "linear-gradient(135deg, #4f46e5, #0ea5e9)",
+          boxShadow: "0 10px 24px rgba(79, 70, 229, 0.24)",
+        }}
+      >
+        <TaskAltRoundedIcon fontSize="small" />
+      </Avatar>
+      <Typography variant="body1" color="text.secondary">
+        {t("app.loading")}
+      </Typography>
+    </Stack>
   );
 }
 
@@ -522,7 +555,11 @@ export default function App() {
               {t("nav.greeting", { name: username })}
             </Typography>
           </Box>
-          {username ? <ReleaseNotesCenter username={username} suppressAutoOpen={shouldSuppressReleaseNotes} /> : null}
+          {username ? (
+            <Suspense fallback={null}>
+              <ReleaseNotesCenter username={username} suppressAutoOpen={shouldSuppressReleaseNotes} />
+            </Suspense>
+          ) : null}
           <Tooltip title={t("nav.switchLanguage")}>
             <IconButton id="language-switch-mobile" color="inherit" onClick={handleLanguageToggle} size="small">
               <LanguageRoundedIcon />
@@ -647,7 +684,11 @@ export default function App() {
               <Box sx={{ height: 1, bgcolor: "divider" }} />
 
               <Stack spacing={1}>
-                {username ? <ReleaseNotesCenter username={username} suppressAutoOpen={shouldSuppressReleaseNotes} /> : null}
+                {username ? (
+                  <Suspense fallback={null}>
+                    <ReleaseNotesCenter username={username} suppressAutoOpen={shouldSuppressReleaseNotes} />
+                  </Suspense>
+                ) : null}
                 <Button
                   id="install-web-app-desktop"
                   component={Link}
@@ -685,39 +726,41 @@ export default function App() {
           <Box sx={{ width: "100%", minWidth: 0, pb: { xs: taskDialogOpen ? 0 : 12, md: 0 } }}>
             <Container maxWidth={false} disableGutters>
               <Box sx={{ py: { xs: 2, md: 0 } }}>
-                <Routes>
-                  <Route
-                    path="/reminders"
-                    element={
-                      <ReminderPage reminders={reminders} setReminders={handleSetReminders} />
-                    }
-                  />
-                  <Route
-                    path="/"
-                    element={
-                      <TodayPage
-                        tasks={tasks}
-                        setTasks={handleSetTasks}
-                        onTaskDialogVisibilityChange={handleTaskDialogVisibilityChange}
-                      />
-                    }
-                  />
-                  <Route
-                    path="/week"
-                    element={
-                      <WeekPage
-                        tasks={tasks}
-                        setTasks={handleSetTasks}
-                        onTaskDialogVisibilityChange={handleTaskDialogVisibilityChange}
-                      />
-                    }
-                  />
-                  <Route
-                    path="/month"
-                    element={<MonthPage tasks={tasks} />}
-                  />
-                  <Route path="/help" element={<HelpPage />} />
-                </Routes>
+                <Suspense fallback={<PageLoadingFallback />}>
+                  <Routes>
+                    <Route
+                      path="/reminders"
+                      element={
+                        <ReminderPage reminders={reminders} setReminders={handleSetReminders} />
+                      }
+                    />
+                    <Route
+                      path="/"
+                      element={
+                        <TodayPage
+                          tasks={tasks}
+                          setTasks={handleSetTasks}
+                          onTaskDialogVisibilityChange={handleTaskDialogVisibilityChange}
+                        />
+                      }
+                    />
+                    <Route
+                      path="/week"
+                      element={
+                        <WeekPage
+                          tasks={tasks}
+                          setTasks={handleSetTasks}
+                          onTaskDialogVisibilityChange={handleTaskDialogVisibilityChange}
+                        />
+                      }
+                    />
+                    <Route
+                      path="/month"
+                      element={<MonthPage tasks={tasks} />}
+                    />
+                    <Route path="/help" element={<HelpPage />} />
+                  </Routes>
+                </Suspense>
               </Box>
             </Container>
           </Box>

@@ -1,5 +1,28 @@
 # Development Log
 
+## Version 1.20.0
+Version: 1.20.0
+Update Date: 2026-05-02
+
+### Technical Changes
+- `frontend/src/App.tsx`: Converted Reminders, Week, Month, Help Center, and Release Notes to `React.lazy` modules behind `Suspense` boundaries while keeping Today eager for the default route and onboarding targets.
+- `frontend/vite.config.ts`: Added Rollup manual chunks for MUI/Emotion and FullCalendar dependencies.
+- `frontend/src/i18n.ts`: Updated Help Center core-flow copy to mention on-demand loading for heavier planner areas.
+- `frontend/src/app/releaseNotes.ts`, `frontend/tests/release-notes.behavior.test.tsx`, `README.md`, and `RELEASENOTES.md`: Added the 1.20.0 first-load performance update.
+- `package.json`, `frontend/package.json`, `frontend/package-lock.json`, `backend/package.json`, and `backend/package-lock.json`: Bumped package metadata to 1.20.0.
+
+### Design Decisions
+- Today remains eagerly loaded because it is the default signed-in route and the onboarding guide needs Today targets immediately.
+- FullCalendar is isolated behind the Week route and calendar vendor chunk so users do not download it before opening Week.
+- MUI remains required by the app shell but is separated into a stable vendor chunk for browser caching.
+
+### Edge Cases
+- Release Notes are lazy-loaded in both mobile and desktop shells with a null fallback so navigation layout does not shift while the Updates button loads.
+- Route pages use a shared in-app loading fallback while their chunks download.
+
+### Known Limitations
+- First-time visits still download the MUI vendor chunk because the app shell uses MUI components.
+
 ## Version 1.19.4
 Version: 1.19.4
 Update Date: 2026-05-02

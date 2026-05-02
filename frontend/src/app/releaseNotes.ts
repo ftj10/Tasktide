@@ -14,6 +14,31 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-05-02-lazy-loaded-planner-pages",
+    version: "v1.20.0",
+    releasedAt: "2026-05-02",
+    title: {
+      en: "Faster first app load",
+      zh: "更快的首次加载"
+    },
+    summary: {
+      en: "TaskTide now downloads less code for the first screen and loads heavier planner areas only when you open them.",
+      zh: "TaskTide 现在首次打开时下载更少代码，并在打开较重的计划区域时再加载它们。"
+    },
+    changes: {
+      en: [
+        "Added on-demand loading for Week, Month, Help Center, Reminders, and Updates.",
+        "Improved first-load performance by splitting MUI and calendar code into cacheable bundles.",
+        "Fixed the oversized main app bundle so the production build no longer reports a large-entry warning."
+      ],
+      zh: [
+        "新增 Week、Month、Help Center、Reminders 和 Updates 的按需加载。",
+        "改进首次加载性能，将 MUI 和日历代码拆分成可缓存的包。",
+        "修复主应用包过大的问题，生产构建不再报告大型入口警告。"
+      ]
+    }
+  },
+  {
     id: "2026-05-02-offline-sync-conflict-checks",
     version: "v1.19.4",
     releasedAt: "2026-05-02",

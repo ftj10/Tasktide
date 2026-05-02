@@ -231,8 +231,8 @@ const resources = {
           step5Mobile: "On mobile, use the bottom navigation to move between the main pages and the top install button to learn how to add TaskTide to your device.",
           step6Desktop: "If you want TaskTide to open like an app, choose Install app and follow the walkthrough for your browser.",
           step6Mobile: "If you want TaskTide on your home screen, choose Install app and follow the mobile steps for your browser.",
-          step7Desktop: "If your connection drops, keep editing tasks normally. TaskTide will merge repeated offline edits and sync them when the server is available again. Visit Help whenever you want guided walkthroughs, common answers, or a place to send a question.",
-          step7Mobile: "If your connection drops, keep editing tasks normally. TaskTide will merge repeated offline edits and sync them when the server is available again. Visit Help whenever you want guided walkthroughs, common answers, or a place to send a question."
+          step7Desktop: "If your connection drops, keep editing tasks normally. TaskTide will merge repeated offline edits and sync them when the server is available again. Heavier areas such as Week, Month, Help, and Updates load when you open them, so the first screen can start sooner.",
+          step7Mobile: "If your connection drops, keep editing tasks normally. TaskTide will merge repeated offline edits and sync them when the server is available again. Heavier areas such as Week, Month, Help, and Updates load when you open them, so the first screen can start sooner."
         },
         faq: {
           title: "Common Q&A",
@@ -616,8 +616,8 @@ const resources = {
           step5Mobile: "手机端可以用底部导航切换主要页面，也可以用顶部安装按钮学习如何把 TaskTide 加到设备上。",
           step6Desktop: "如果希望 TaskTide 像应用一样打开，请选择“安装应用”，然后按浏览器演示操作。",
           step6Mobile: "如果希望 TaskTide 出现在主屏幕，请选择“安装应用”，然后按手机浏览器步骤操作。",
-          step7Desktop: "如果连接中断，可以继续正常编辑任务。TaskTide 会合并重复的离线修改，并在服务器恢复后同步。需要演示、常见答案或提交问题时，随时打开 Help。",
-          step7Mobile: "如果连接中断，可以继续正常编辑任务。TaskTide 会合并重复的离线修改，并在服务器恢复后同步。需要演示、常见答案或提交问题时，随时打开 Help。"
+          step7Desktop: "如果连接中断，可以继续正常编辑任务。TaskTide 会合并重复的离线修改，并在服务器恢复后同步。Week、Month、Help 和 Updates 等较重区域会在打开时加载，让首次进入更快。",
+          step7Mobile: "如果连接中断，可以继续正常编辑任务。TaskTide 会合并重复的离线修改，并在服务器恢复后同步。Week、Month、Help 和 Updates 等较重区域会在打开时加载，让首次进入更快。"
         },
         faq: {
           title: "常见问答",

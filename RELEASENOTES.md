@@ -1,5 +1,22 @@
 # Release Notes
 
+## Version 1.20.0
+Version: 1.20.0
+Update Date: 2026-05-02
+
+Title: Version 1.20.0 – Update Released (2026-05-02)
+
+### What’s New
+- Added: Faster first app loading by opening heavier planner areas only when users visit them.
+- Added: Separate loading for Week, Month, Help Center, Reminders, and Updates.
+
+### Improvements
+- Improved: The first screen now downloads much less app code before users can start planning.
+- Improved: Calendar and interface libraries are split into cacheable downloads for smoother repeat visits.
+
+### Fixes
+- Fixed: The production build no longer reports an oversized main app bundle.
+
 ## Version 1.19.4
 Version: 1.19.4
 Update Date: 2026-05-02
