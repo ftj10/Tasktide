@@ -14,6 +14,31 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-05-03-tooltip-mobile-polish",
+    version: "v1.22.1",
+    releasedAt: "2026-05-03",
+    title: {
+      en: "Polished Tooltips",
+      zh: "提示样式优化"
+    },
+    summary: {
+      en: "Tooltips now look great on every screen and respond better to touch on mobile.",
+      zh: "提示气泡现在在任何屏幕上都更美观，并更好地响应移动端触摸操作。"
+    },
+    changes: {
+      en: [
+        "Improved: Tooltips now display with a polished dark design, directional arrow, and soft blur effect.",
+        "Improved: Tooltips on mobile respond to long-press more quickly and stay visible for 2 seconds after you lift your finger.",
+        "Improved: Top navigation bar tooltips now always open downward so they are never cut off on small screens."
+      ],
+      zh: [
+        "改进：提示气泡现在采用精致的深色设计，带有方向箭头和柔和的模糊效果。",
+        "改进：移动端提示现在对长按响应更快，松开手指后会保持显示 2 秒。",
+        "改进：顶部导航栏的提示始终向下弹出，不再在小屏幕上被截断。"
+      ]
+    }
+  },
+  {
     id: "2026-05-03-onboarding-tour-redesign",
     version: "v1.22.0",
     releasedAt: "2026-05-03",

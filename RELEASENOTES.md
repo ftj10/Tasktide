@@ -1,5 +1,12 @@
 # Release Notes
 
+## Version 1.22.1 – Update Released (2026-05-03)
+
+### Improvements
+- Improved: Tooltips throughout the app now have a polished dark design with a directional arrow and subtle blur, making them easier to read on any background.
+- Improved: Tooltips on mobile now appear more quickly when you long-press an icon and stay visible long enough to read comfortably.
+- Improved: Tooltips in the top navigation bar now always open downward so they are never cut off at the top of the screen on phones.
+
 ## Version 1.22.0 – Update Released (2026-05-03)
 
 ### What's New

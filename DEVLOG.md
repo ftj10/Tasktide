@@ -1,5 +1,29 @@
 # Development Log
 
+## Version 1.22.1
+Version: 1.22.1
+Update Date: 2026-05-03
+
+### Changes
+
+**`frontend/src/main.tsx`**
+- Added `MuiTooltip` to the theme `components` block with `defaultProps` (`arrow: true`, `enterTouchDelay: 500`, `leaveTouchDelay: 2000`, `enterDelay: 300`) and `styleOverrides` for `tooltip` and `arrow` sub-components. Styling uses `rgba(15, 23, 42, 0.9)` background with `backdropFilter: blur(8px)`, 8px border radius, and a shadow to match the app's design language.
+
+**`frontend/src/App.tsx`**
+- Added `placement="bottom"` to the three MUI Tooltip components wrapping the mobile AppBar icon buttons (language switch, install app, logout). These tooltips are at the top of the screen; without explicit placement the arrow may point incorrectly or clip the viewport edge on short phones.
+
+**`frontend/package.json`, `package.json`**
+- Bumped version from 1.22.0 → 1.22.1.
+
+**`RELEASENOTES.md`, `frontend/src/app/releaseNotes.ts`**
+- Added v1.22.1 release entry with bilingual (en/zh) content.
+
+### Design Decisions
+- `enterTouchDelay` was lowered to 500ms (from the 700ms MUI default) as a balance between intentional long-press and responsiveness; 0ms would conflict with tap actions that fire on touchend.
+- `leaveTouchDelay` was raised to 2000ms so users on touch screens have enough time to read the tooltip label before it fades.
+- `enterDelay: 300` on hover prevents tooltips from flashing during rapid cursor movements across the navigation area.
+- `placement="bottom"` is set only on the mobile AppBar tooltips (top of screen); the desktop sidebar tooltip keeps the default since it has ample vertical space above and below.
+
 ## Version 1.22.0
 Version: 1.22.0
 Update Date: 2026-05-03

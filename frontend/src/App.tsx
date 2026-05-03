@@ -542,17 +542,17 @@ export default function App() {
               <ReleaseNotesCenter username={username} suppressAutoOpen={shouldSuppressReleaseNotes} />
             </Suspense>
           ) : null}
-          <Tooltip title={t("nav.switchLanguage")}>
+          <Tooltip title={t("nav.switchLanguage")} placement="bottom">
             <IconButton id="language-switch-mobile" data-onboarding="language-switch-button" color="inherit" onClick={handleLanguageToggle} size="small">
               <LanguageRoundedIcon />
             </IconButton>
           </Tooltip>
-          <Tooltip title={t("nav.installApp")}>
+          <Tooltip title={t("nav.installApp")} placement="bottom">
             <IconButton id="install-web-app-mobile" data-onboarding="download-app-button" component={Link} to="/help?topic=open-web-app-pc" color="inherit" size="small">
               <DownloadRoundedIcon />
             </IconButton>
           </Tooltip>
-          <Tooltip title={t("nav.logout")}>
+          <Tooltip title={t("nav.logout")} placement="bottom">
             <IconButton color="inherit" onClick={handleLogout} size="small">
               <LogoutRoundedIcon />
             </IconButton>

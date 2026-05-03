@@ -160,6 +160,30 @@ const theme = createTheme({
         },
       },
     },
+    MuiTooltip: {
+      defaultProps: {
+        arrow: true,
+        enterTouchDelay: 500,
+        leaveTouchDelay: 2000,
+        enterDelay: 300,
+      },
+      styleOverrides: {
+        tooltip: {
+          backgroundColor: "rgba(15, 23, 42, 0.9)",
+          backdropFilter: "blur(8px)",
+          color: "#f8fafc",
+          fontSize: "0.78rem",
+          fontWeight: 500,
+          padding: "6px 12px",
+          borderRadius: 8,
+          maxWidth: 200,
+          boxShadow: "0 4px 14px rgba(15, 23, 42, 0.18)",
+        },
+        arrow: {
+          color: "rgba(15, 23, 42, 0.9)",
+        },
+      },
+    },
   },
 });
 
