@@ -95,24 +95,18 @@ describe("App behavior", () => {
 
     expect(screen.queryByText("What's New")).not.toBeInTheDocument();
     expect(await screen.findByRole("dialog", { name: "Quick tour" })).toBeInTheDocument();
-    expect(screen.getByText("Use this button to switch between English and Chinese.")).toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: "Next" }));
-    expect(screen.getByText("Open Help Center for walkthroughs, common answers, and question support.")).toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: "Next" }));
-    expect(screen.getByText("Use Install app to learn how to add TaskTide to your device.")).toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: "Next" }));
-    expect(screen.getByText("Tap here to add a task.")).toBeInTheDocument();
+    expect(screen.getByText("Tap here to create your first task for today.")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Next" }));
     expect(screen.getByText("Your tasks appear here after you save.")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Next" }));
-    expect(screen.getByText("Open Week to plan tasks by time.")).toBeInTheDocument();
+    expect(screen.getByText("Change the app language between English and Chinese.")).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Done" }));
+    await user.click(screen.getByRole("button", { name: "Next" }));
+    expect(screen.getByText("Install TaskTide for quicker access from your home screen.")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Skip" }));
 
     await waitFor(() => {
       expect(screen.queryByRole("dialog", { name: "Quick tour" })).not.toBeInTheDocument();

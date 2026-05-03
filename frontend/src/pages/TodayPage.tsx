@@ -623,6 +623,7 @@ export function TodayPage(props: {
             </Button>
             <Button
               id="today-add-task-button"
+              data-onboarding="add-task-button"
               variant="contained"
               startIcon={<AddRoundedIcon />}
               onClick={() => {
@@ -900,6 +901,7 @@ export function TodayPage(props: {
       {allDayTasks.length === 0 && timedTasks.length === 0 ? (
         <Paper
           id="today-empty-state"
+          data-onboarding="task-list"
           elevation={0}
           sx={{
             mt: 4,
@@ -916,6 +918,7 @@ export function TodayPage(props: {
           </Typography>
           <Button
             id="today-empty-add-task-button"
+            data-onboarding="add-task-button"
             variant="contained"
             startIcon={<AddRoundedIcon />}
             onClick={() => {
@@ -929,7 +932,7 @@ export function TodayPage(props: {
           </Button>
         </Paper>
       ) : (
-        <Box id="today-task-list">
+        <Box id="today-task-list" data-onboarding="task-list">
           <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 1 }}>
             <Button
               size="small"

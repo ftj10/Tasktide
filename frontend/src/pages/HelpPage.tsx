@@ -108,6 +108,7 @@ export function HelpPage() {
       { question: t("help.faq.q13.question"), answer: t("help.faq.q13.answer"), audience: "mobile" },
       { question: t("help.faq.q14.question"), answer: t("help.faq.q14.answer"), audience: "mobile" },
       { question: t("help.faq.q16.question"), answer: t("help.faq.q16.answer"), audience: "all" },
+      { question: t("help.faq.q17.question"), answer: t("help.faq.q17.answer"), audience: "all" },
     ],
     [t]
   ).filter((item) => item.audience === "all" || item.audience === deviceAudience);
@@ -396,7 +397,7 @@ export function HelpPage() {
                   {notificationMessage}
                 </Alert>
               ) : null}
-              <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
+              <Stack data-onboarding="notification-toggle-button" direction={{ xs: "column", sm: "row" }} spacing={1.5}>
                 <Button
                   variant="contained"
                   onClick={handleOpenNotificationDialog}

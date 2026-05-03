@@ -1,5 +1,48 @@
 # Development Log
 
+## Version 1.22.0
+Version: 1.22.0
+Update Date: 2026-05-03
+
+### Changes
+
+**`frontend/src/app/helpCenter.ts`**
+- Extended `OnboardingTooltipStep` type with `title: string`, `forceAction?: boolean`, `expectedAction?: string`.
+- Rewrote `getOnboardingSteps` with 7 steps in new order: add-task, task-list, language-switch, download-app, open-week (forceAction, expectedAction: "open-week-page"), open-help (forceAction, expectedAction: "open-help-center"), notification-toggle.
+- All step targets include both `[data-onboarding='...']` selectors and legacy `#id` selectors for backward compatibility.
+
+**`frontend/src/components/OnboardingTooltip.tsx`**
+- Added `forceAdvanceSignal?: string | null` prop; when the value matches the current forced-action step's `expectedAction`, the step auto-advances.
+- Replaced `useLayoutEffect` + fixed positioning with a `useEffect` that scrolls the target into view with `scrollIntoView({ behavior: "smooth" })`, retries up to 30 frames if the element isn't in the DOM yet (handles lazy-loaded Help Center), then measures `getBoundingClientRect` after a 350ms settle delay.
+- Tooltip width is now `min(320px, 100vw - 24px)` — responsive, never overflows viewport.
+- Placement logic prefers below-target; falls back to above-target if insufficient space below; clamps horizontally to viewport padding.
+- For `forceAction` steps, the Next button is hidden entirely, leaving only the Skip button. This forces real navigation.
+- Step title and text displayed separately as `subtitle2` + `body2`, replacing the single bold `body1`.
+
+**`frontend/src/App.tsx`**
+- Added `onboardingForceSignal` state (`string | null`).
+- Added `useEffect` on `location.pathname`: sets signal to `"open-week-page"` when on `/week`, `"open-help-center"` when on `/help`, `null` otherwise.
+- Added `dataOnboarding` field to `navigationItems` (`"week-page-button"` for week, `"help-center-button"` for help).
+- Added `data-onboarding` props to: desktop nav buttons, mobile `BottomNavigationAction`, mobile language-switch `IconButton`, mobile install-app `IconButton`, desktop install-app `Button`, desktop language-switch `Button`.
+- Passes `forceAdvanceSignal={onboardingForceSignal}` to `<OnboardingTooltip>`.
+
+**`frontend/src/pages/TodayPage.tsx`**
+- Added `data-onboarding="add-task-button"` to both `#today-add-task-button` and `#today-empty-add-task-button`.
+- Added `data-onboarding="task-list"` to both `#today-empty-state` (Paper) and `#today-task-list` (Box).
+
+**`frontend/src/pages/HelpPage.tsx`**
+- Added `data-onboarding="notification-toggle-button"` to the `<Stack>` containing the Enable/Disable notification buttons.
+
+**`frontend/src/i18n.ts`**
+- Replaced flat `onboarding.steps.*` strings with nested `{ title, text }` objects for all 7 steps in both `en` and `zh`.
+- New keys: `addTask`, `taskList`, `languageSwitch`, `downloadApp`, `openWeek`, `openHelp`, `notificationToggle` — each with `.title` and `.text`.
+
+### Design Decisions
+- `forceAdvanceSignal` is a `string | null` prop rather than a callback to keep `OnboardingTooltip` mostly self-contained. App.tsx resets the signal to `null` when the user leaves `/week` or `/help`, preventing stale re-triggers on subsequent location changes to unrelated paths.
+- Retry loop (30 rAF frames) in `OnboardingTooltip` handles the Help Center being lazy-loaded: the notification toggle element isn't in the DOM until after the Suspense boundary resolves.
+- `data-onboarding` attributes coexist with existing `id` attributes; neither is removed, so any existing tooling or tests targeting `#today-add-task-button` etc. still work.
+- The ONBOARDING_STORAGE_KEY is intentionally unchanged (`tasktide:onboarding:v1.18.4`) to avoid re-triggering onboarding for users who already completed it.
+
 ## Version 1.21.0
 Version: 1.21.0
 Update Date: 2026-05-02

@@ -218,3 +218,30 @@ VAPID_PRIVATE_KEY=...
 WEB_PUSH_SUBJECT=mailto:...
 ADMIN_USERNAMES=user1,user2   # Comma-separated
 ```
+
+## Permissions & Autonomy
+
+Claude has full permission to:
+- Read any file in this project
+- Write, edit, and delete any file in this project
+- Run any bash/shell commands needed to complete tasks
+- Install dependencies (npm, pip, etc.)
+- Execute scripts, builds, lints, tests
+
+**Never ask for confirmation before running commands or editing files.
+Just do it, then report what was done.**
+
+The only exception: never read or modify `backend/.env`
+
+## When to Ask vs. Act
+
+**Just do it (no confirmation needed):**
+- Reading files, grepping, searching
+- Editing source files
+- Running dev commands (build, lint, test, format)
+- Installing packages
+
+**Stop and ask first:**
+- Deleting more than one file at a time
+- Making changes outside this project directory
+- Anything involving git push or deployment

@@ -133,9 +133,20 @@ export default function App() {
   const lastNotificationCheckRef = useRef<number | null>(null);
   const currentLanguage = i18n.resolvedLanguage?.startsWith("zh") ? "zh" : "en";
   const mobileNavZIndex = 1700;
+  const [onboardingForceSignal, setOnboardingForceSignal] = useState<string | null>(null);
   const canUseBackgroundPush = supportsPushNotifications();
   const onboardingSteps = getOnboardingSteps(t);
   const shouldSuppressReleaseNotes = !localStorage.getItem(ONBOARDING_STORAGE_KEY);
+
+  useEffect(() => {
+    if (location.pathname === "/week") {
+      setOnboardingForceSignal("open-week-page");
+    } else if (location.pathname === "/help") {
+      setOnboardingForceSignal("open-help-center");
+    } else {
+      setOnboardingForceSignal(null);
+    }
+  }, [location.pathname]);
 
   useEffect(() => {
     let cancelled = false;
@@ -480,11 +491,11 @@ export default function App() {
   }
 
   const navigationItems = [
-    { to: "/reminders", label: t("nav.reminders"), icon: <NotificationsActiveOutlinedIcon />, id: "nav-reminders" },
-    { to: "/", label: t("nav.today"), icon: <TodayOutlinedIcon />, id: "nav-today" },
-    { to: "/week", label: t("nav.week"), icon: <ViewWeekOutlinedIcon />, id: "nav-week" },
-    { to: "/month", label: t("nav.month"), icon: <CalendarMonthOutlinedIcon />, id: "nav-month" },
-    { to: "/help", label: t("nav.help"), icon: <HelpOutlineIcon />, id: "nav-help" },
+    { to: "/reminders", label: t("nav.reminders"), icon: <NotificationsActiveOutlinedIcon />, id: "nav-reminders", dataOnboarding: undefined as string | undefined },
+    { to: "/", label: t("nav.today"), icon: <TodayOutlinedIcon />, id: "nav-today", dataOnboarding: undefined as string | undefined },
+    { to: "/week", label: t("nav.week"), icon: <ViewWeekOutlinedIcon />, id: "nav-week", dataOnboarding: "week-page-button" },
+    { to: "/month", label: t("nav.month"), icon: <CalendarMonthOutlinedIcon />, id: "nav-month", dataOnboarding: undefined as string | undefined },
+    { to: "/help", label: t("nav.help"), icon: <HelpOutlineIcon />, id: "nav-help", dataOnboarding: "help-center-button" },
   ];
 
   const activePath = navigationItems.some((item) => item.to === location.pathname)
@@ -532,12 +543,12 @@ export default function App() {
             </Suspense>
           ) : null}
           <Tooltip title={t("nav.switchLanguage")}>
-            <IconButton id="language-switch-mobile" color="inherit" onClick={handleLanguageToggle} size="small">
+            <IconButton id="language-switch-mobile" data-onboarding="language-switch-button" color="inherit" onClick={handleLanguageToggle} size="small">
               <LanguageRoundedIcon />
             </IconButton>
           </Tooltip>
           <Tooltip title={t("nav.installApp")}>
-            <IconButton id="install-web-app-mobile" component={Link} to="/help?topic=open-web-app-pc" color="inherit" size="small">
+            <IconButton id="install-web-app-mobile" data-onboarding="download-app-button" component={Link} to="/help?topic=open-web-app-pc" color="inherit" size="small">
               <DownloadRoundedIcon />
             </IconButton>
           </Tooltip>
@@ -615,6 +626,7 @@ export default function App() {
                     <Button
                       key={item.to}
                       id={`${item.id}-desktop`}
+                      data-onboarding={item.dataOnboarding}
                       component={Link}
                       to={item.to}
                       startIcon={item.icon}
@@ -662,6 +674,7 @@ export default function App() {
                 ) : null}
                 <Button
                   id="install-web-app-desktop"
+                  data-onboarding="download-app-button"
                   component={Link}
                   to="/help?topic=open-web-app-pc"
                   variant="outlined"
@@ -673,6 +686,7 @@ export default function App() {
                 <Tooltip title={t("nav.switchLanguage")}>
                   <Button
                     id="language-switch-desktop"
+                    data-onboarding="language-switch-button"
                     variant="outlined"
                     startIcon={<LanguageRoundedIcon />}
                     onClick={handleLanguageToggle}
@@ -772,6 +786,7 @@ export default function App() {
             <BottomNavigationAction
               key={item.to}
               id={`${item.id}-mobile`}
+              data-onboarding={item.dataOnboarding}
               component={Link}
               to={item.to}
               value={item.to}
@@ -786,7 +801,7 @@ export default function App() {
           ))}
         </BottomNavigation>
       </Paper>
-      <OnboardingTooltip steps={onboardingSteps} storageKey={ONBOARDING_STORAGE_KEY} />
+      <OnboardingTooltip steps={onboardingSteps} storageKey={ONBOARDING_STORAGE_KEY} forceAdvanceSignal={onboardingForceSignal} />
     </Box>
   );
 }

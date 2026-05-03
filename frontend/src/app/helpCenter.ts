@@ -8,7 +8,10 @@ export const ONBOARDING_STORAGE_KEY = "tasktide:onboarding:v1.18.4";
 export type OnboardingTooltipStep = {
   id: string;
   targets: string[];
+  title: string;
   text: string;
+  forceAction?: boolean;
+  expectedAction?: string;
 };
 
 export type HelpWalkthroughStep = {
@@ -30,34 +33,50 @@ export type HelpCenterItem = {
 export function getOnboardingSteps(t: TFunction): OnboardingTooltipStep[] {
   return [
     {
-      id: "language-switch",
-      targets: ["#language-switch-desktop", "#language-switch-mobile"],
-      text: t("onboarding.steps.languageSwitch"),
-    },
-    {
-      id: "help-center",
-      targets: ["#nav-help-desktop", "#nav-help-mobile"],
-      text: t("onboarding.steps.helpCenter"),
-    },
-    {
-      id: "install-web-app",
-      targets: ["#install-web-app-desktop", "#install-web-app-mobile"],
-      text: t("onboarding.steps.installWebApp"),
-    },
-    {
       id: "add-task",
-      targets: ["#today-add-task-button", "#today-empty-add-task-button"],
-      text: t("onboarding.steps.addTask"),
+      targets: ["[data-onboarding='add-task-button']", "#today-add-task-button", "#today-empty-add-task-button"],
+      title: t("onboarding.steps.addTask.title"),
+      text: t("onboarding.steps.addTask.text"),
     },
     {
       id: "task-list",
-      targets: ["#today-empty-state", "#today-task-list"],
-      text: t("onboarding.steps.taskList"),
+      targets: ["[data-onboarding='task-list']", "#today-empty-state", "#today-task-list"],
+      title: t("onboarding.steps.taskList.title"),
+      text: t("onboarding.steps.taskList.text"),
     },
     {
-      id: "week-view",
-      targets: ["#nav-week-desktop", "#nav-week-mobile", "#week-help-button"],
-      text: t("onboarding.steps.weekView"),
+      id: "language-switch",
+      targets: ["[data-onboarding='language-switch-button']", "#language-switch-desktop", "#language-switch-mobile"],
+      title: t("onboarding.steps.languageSwitch.title"),
+      text: t("onboarding.steps.languageSwitch.text"),
+    },
+    {
+      id: "download-app",
+      targets: ["[data-onboarding='download-app-button']", "#install-web-app-desktop", "#install-web-app-mobile"],
+      title: t("onboarding.steps.downloadApp.title"),
+      text: t("onboarding.steps.downloadApp.text"),
+    },
+    {
+      id: "open-week",
+      targets: ["[data-onboarding='week-page-button']", "#nav-week-desktop", "#nav-week-mobile"],
+      title: t("onboarding.steps.openWeek.title"),
+      text: t("onboarding.steps.openWeek.text"),
+      forceAction: true,
+      expectedAction: "open-week-page",
+    },
+    {
+      id: "open-help",
+      targets: ["[data-onboarding='help-center-button']", "#nav-help-desktop", "#nav-help-mobile"],
+      title: t("onboarding.steps.openHelp.title"),
+      text: t("onboarding.steps.openHelp.text"),
+      forceAction: true,
+      expectedAction: "open-help-center",
+    },
+    {
+      id: "notification-toggle",
+      targets: ["[data-onboarding='notification-toggle-button']"],
+      title: t("onboarding.steps.notificationToggle.title"),
+      text: t("onboarding.steps.notificationToggle.text"),
     },
   ];
 }

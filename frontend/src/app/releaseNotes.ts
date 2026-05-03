@@ -14,6 +14,35 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-05-03-onboarding-tour-redesign",
+    version: "v1.22.0",
+    releasedAt: "2026-05-03",
+    title: {
+      en: "Redesigned App Tour",
+      zh: "全新应用引导流程"
+    },
+    summary: {
+      en: "The first-time tour now walks you through TaskTide in the order you use it, with interactive navigation steps and a notification setup tip.",
+      zh: "新手引导现在按使用顺序带你了解 TaskTide，包含互动导航步骤和通知设置提示。"
+    },
+    changes: {
+      en: [
+        "Added: Reordered tour starting with adding a task, then language, download, Week view, Help Center, and notifications.",
+        "Added: Week and Help Center steps require you to tap the real button, so you learn by doing.",
+        "Added: Final tour step highlights the notification toggle inside Help Center.",
+        "Improved: Tour tooltips now show a title and description, fit mobile screens, and scroll targets into view automatically.",
+        "Fixed: Notification step waits for Help Center to fully load before highlighting the button."
+      ],
+      zh: [
+        "新增：引导顺序调整为：添加任务、切换语言、下载应用、周视图、帮助中心、通知设置。",
+        "新增：周视图和帮助中心步骤需要你点击真实按钮，边做边学。",
+        "新增：最后一步高亮帮助中心内的通知开关。",
+        "改进：引导提示现在显示标题和说明，适配移动端，并自动将目标滚动到可见区域。",
+        "修复：通知步骤会等待帮助中心完全加载后再高亮按钮。"
+      ]
+    }
+  },
+  {
     id: "2026-05-02-explicit-task-notifications",
     version: "v1.21.0",
     releasedAt: "2026-05-02",

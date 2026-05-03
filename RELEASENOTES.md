@@ -1,5 +1,20 @@
 # Release Notes
 
+## Version 1.22.0 – Update Released (2026-05-03)
+
+### What's New
+- Added: The app tour now walks you through each part of TaskTide in the order you actually use it, starting with adding a task on Today.
+- Added: The tour now asks you to tap Week to open the weekly view and tap Help to open the Help Center, so you learn by doing.
+- Added: After opening Help Center, the tour points you to the notification toggle so you know exactly where to turn task alerts on or off.
+
+### Improvements
+- Improved: Each tour step now shows a clear title and a short explanation, making it easier to follow on any screen size.
+- Improved: Tour tooltips now fit small mobile screens without overflowing, and reposition above or below the target based on available space.
+- Improved: Tour targets scroll into view automatically before each step, so you always see what is being highlighted.
+
+### Fixes
+- Fixed: Tour no longer skips the notification step when the Help Center page loads after a delay.
+
 ## Version 1.21.0
 Version: 1.21.0
 Update Date: 2026-05-02

@@ -311,6 +311,10 @@ const resources = {
             question: "Can I use tasks offline in the installed web app?",
             answer: "Yes, after you sign in once while online. Install TaskTide, open it while online so your tasks are cached, then you can reopen cached tasks, add tasks, edit tasks, mark tasks done, and delete tasks while offline. Task changes sync when the app can reach the server again."
           },
+          q17: {
+            question: "How do I restart or skip the app tour?",
+            answer: "The tour runs once for new users. To skip it mid-tour, tap Skip in the tour tooltip. The tour will not appear again on that browser. Two steps—opening Week view and opening Help Center—require you to tap the real button rather than clicking Next, so you discover each section by doing."
+          },
           q11: {
             question: "What does the ICS importer support?",
             answer: "Import ICS on Today to turn calendar events into tasks. It supports titles, notes, locations, timed events, multi-day events, and common repeat rules."
@@ -396,12 +400,34 @@ const resources = {
         skip: "Skip",
         done: "Done",
         steps: {
-          languageSwitch: "Use this button to switch between English and Chinese.",
-          helpCenter: "Open Help Center for walkthroughs, common answers, and question support.",
-          installWebApp: "Use Install app to learn how to add TaskTide to your device.",
-          addTask: "Tap here to add a task.",
-          taskList: "Your tasks appear here after you save.",
-          weekView: "Open Week to plan tasks by time."
+          addTask: {
+            title: "Add a task",
+            text: "Tap here to create your first task for today."
+          },
+          taskList: {
+            title: "Your tasks",
+            text: "Your tasks appear here after you save."
+          },
+          languageSwitch: {
+            title: "Switch language",
+            text: "Change the app language between English and Chinese."
+          },
+          downloadApp: {
+            title: "Download app",
+            text: "Install TaskTide for quicker access from your home screen."
+          },
+          openWeek: {
+            title: "Open Week view",
+            text: "Tap Week to see and plan your tasks across the week."
+          },
+          openHelp: {
+            title: "Open Help Center",
+            text: "Tap Help to find guides, walkthroughs, and answers."
+          },
+          notificationToggle: {
+            title: "Task notifications",
+            text: "Turn task notifications on or off here. Availability depends on your browser."
+          }
         }
       }
     }
@@ -711,6 +737,10 @@ const resources = {
             question: "安装后的网页应用可以离线使用任务吗？",
             answer: "可以，但需要先在线登录一次。安装 TaskTide，并在线打开一次让任务完成缓存后，你可以在离线时重新打开缓存任务、添加任务、编辑任务、完成任务和删除任务。应用重新连接服务器后会同步这些任务修改。"
           },
+          q17: {
+            question: "如何重新开始或跳过应用引导？",
+            answer: "引导只在新用户首次使用时出现。如需中途跳过，点击引导提示中的「跳过」即可，同一浏览器上将不再显示。其中打开「周视图」和「帮助中心」这两步需要你点击真实按钮才能继续，目的是帮你亲自发现每个功能区域。"
+          },
           q11: {
             question: "ICS 导入功能支持什么？",
             answer: "你可以在 Today 导入 ICS，把日历事件变成任务。支持标题、备注、地点、定时事件、跨天事件和常见重复规则。"
@@ -796,12 +826,34 @@ const resources = {
         skip: "跳过",
         done: "完成",
         steps: {
-          languageSwitch: "用这个按钮在英文和中文之间切换。",
-          helpCenter: "打开帮助中心，查看演示、常见答案和问题支持。",
-          installWebApp: "使用“安装应用”学习如何把 TaskTide 加到你的设备上。",
-          addTask: "点这里添加任务。",
-          taskList: "保存后，任务会显示在这里。",
-          weekView: "打开 Week 按时间安排任务。"
+          addTask: {
+            title: "添加任务",
+            text: "点这里创建今天的第一个任务。"
+          },
+          taskList: {
+            title: "你的任务",
+            text: "保存后，任务会显示在这里。"
+          },
+          languageSwitch: {
+            title: "切换语言",
+            text: "在这里切换英文和中文。"
+          },
+          downloadApp: {
+            title: "下载应用",
+            text: "将 TaskTide 安装到主屏幕，访问更便捷。"
+          },
+          openWeek: {
+            title: "打开周视图",
+            text: "点击「周视图」查看和安排一周的任务。"
+          },
+          openHelp: {
+            title: "打开帮助中心",
+            text: "点击「帮助」查看演示、向导和常见问题。"
+          },
+          notificationToggle: {
+            title: "任务通知",
+            text: "在这里开启或关闭任务通知。是否可用取决于你的浏览器。"
+          }
         }
       }
     }
