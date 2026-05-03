@@ -1,6 +1,6 @@
-// INPUT: raw ICS calendar text
-// OUTPUT: normalized planner tasks plus skipped-entry metadata
-// EFFECT: Converts VEVENT records and supported recurrence rules into task records the planner can save and render
+// INPUT: raw ICS calendar text or planner tasks
+// OUTPUT: normalized planner tasks or RFC 5545 ICS calendar string
+// EFFECT: Converts between ICS VEVENT records and planner task records
 import dayjs from "dayjs";
 
 import type { RepeatFrequency, Task, TaskOccurrenceOverride, TaskRecurrence } from "../types";
@@ -40,6 +40,235 @@ const WEEKDAY_MAP: Record<string, number> = {
   SA: 6,
   SU: 7,
 };
+
+const REVERSE_WEEKDAY_MAP: Record<number, string> = {
+  1: "MO",
+  2: "TU",
+  3: "WE",
+  4: "TH",
+  5: "FR",
+  6: "SA",
+  7: "SU",
+};
+
+export type IcsExportFilter =
+  | { type: "all" }
+  | { type: "incomplete" }
+  | { type: "dateRange"; startDate: string; endDate: string };
+
+// INPUT: planner tasks and optional export filter
+// OUTPUT: RFC 5545 ICS calendar string
+// EFFECT: Generates a downloadable calendar file from filtered task list
+export function tasksToIcs(tasks: Task[], filter: IcsExportFilter = { type: "all" }): string {
+  const filtered = filterTasksForExport(tasks, filter);
+  const dtstamp = buildDtstamp(new Date());
+  const vevents: string[] = [];
+
+  for (const task of filtered) {
+    const masterDate = task.date ?? task.beginDate;
+    if (!masterDate) continue;
+    vevents.push(...buildMasterVEvent(task, dtstamp, masterDate));
+    if (
+      task.recurrence?.frequency &&
+      task.recurrence.frequency !== "NONE" &&
+      task.occurrenceOverrides
+    ) {
+      for (const [dateYmd, override] of Object.entries(task.occurrenceOverrides)) {
+        if (override.deleted) continue;
+        vevents.push(...buildOverrideVEvent(task, dateYmd, override, dtstamp));
+      }
+    }
+  }
+
+  return [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//TaskTide//TaskTide Planner//EN",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH",
+    ...vevents,
+    "END:VCALENDAR",
+  ].join("\r\n");
+}
+
+function filterTasksForExport(tasks: Task[], filter: IcsExportFilter): Task[] {
+  if (filter.type === "all") return tasks;
+  if (filter.type === "incomplete") return tasks.filter((t) => !t.completedAt);
+  const { startDate, endDate } = filter;
+  return tasks.filter((t) => {
+    const taskStart = t.date ?? t.beginDate;
+    if (!taskStart) return false;
+    const taskEnd = t.recurrence?.until ?? t.endDate ?? taskStart;
+    return taskStart <= endDate && taskEnd >= startDate;
+  });
+}
+
+function buildMasterVEvent(task: Task, dtstamp: string, masterDate: string): string[] {
+  const isAllDay = !task.startTime;
+  const lines = [
+    "BEGIN:VEVENT",
+    foldIcsLine(`UID:${task.id}`),
+    foldIcsLine(`DTSTAMP:${dtstamp}`),
+    foldIcsLine(`SUMMARY:${encodeIcsText(task.title)}`),
+  ];
+
+  if (isAllDay) {
+    lines.push(foldIcsLine(`DTSTART;VALUE=DATE:${toIcsDate(masterDate)}`));
+    const exclusiveEnd = task.endDate
+      ? dayjs(task.endDate).add(1, "day").format("YYYYMMDD")
+      : dayjs(masterDate).add(1, "day").format("YYYYMMDD");
+    lines.push(foldIcsLine(`DTEND;VALUE=DATE:${exclusiveEnd}`));
+  } else {
+    lines.push(foldIcsLine(`DTSTART:${toIcsDateTime(masterDate, task.startTime!)}`));
+    const endTime = task.endTime && task.endTime > task.startTime! ? task.endTime : task.startTime!;
+    lines.push(foldIcsLine(`DTEND:${toIcsDateTime(masterDate, endTime)}`));
+  }
+
+  lines.push(foldIcsLine(`STATUS:${task.completedAt ? "COMPLETED" : "NEEDS-ACTION"}`));
+
+  if (task.description) {
+    lines.push(foldIcsLine(`DESCRIPTION:${encodeIcsText(task.description)}`));
+  }
+  if (task.location) {
+    lines.push(foldIcsLine(`LOCATION:${encodeIcsText(task.location)}`));
+  }
+  if (task.emergency) {
+    lines.push(foldIcsLine(`PRIORITY:${mapEmergencyToIcsPriority(task.emergency)}`));
+  }
+
+  if (task.recurrence?.frequency && task.recurrence.frequency !== "NONE") {
+    const rrule = buildRrule(task.recurrence);
+    if (rrule) lines.push(foldIcsLine(`RRULE:${rrule}`));
+
+    if (task.occurrenceOverrides) {
+      const deletedDates = Object.entries(task.occurrenceOverrides)
+        .filter(([, ov]) => ov.deleted)
+        .map(([d]) => d);
+      if (deletedDates.length > 0) {
+        if (isAllDay) {
+          lines.push(foldIcsLine(`EXDATE;VALUE=DATE:${deletedDates.map(toIcsDate).join(",")}`));
+        } else {
+          lines.push(
+            foldIcsLine(`EXDATE:${deletedDates.map((d) => toIcsDateTime(d, task.startTime!)).join(",")}`)
+          );
+        }
+      }
+    }
+  }
+
+  lines.push("END:VEVENT");
+  return lines;
+}
+
+function buildOverrideVEvent(
+  task: Task,
+  dateYmd: string,
+  override: TaskOccurrenceOverride,
+  dtstamp: string
+): string[] {
+  const title = override.title ?? task.title;
+  const startTime = override.startTime ?? task.startTime;
+  const endTime = override.endTime ?? task.endTime;
+  const isAllDay = !startTime;
+  const lines = [
+    "BEGIN:VEVENT",
+    foldIcsLine(`UID:${task.id}`),
+    foldIcsLine(`DTSTAMP:${dtstamp}`),
+    foldIcsLine(`SUMMARY:${encodeIcsText(title)}`),
+  ];
+
+  if (isAllDay) {
+    lines.push(foldIcsLine(`RECURRENCE-ID;VALUE=DATE:${toIcsDate(dateYmd)}`));
+    lines.push(foldIcsLine(`DTSTART;VALUE=DATE:${toIcsDate(dateYmd)}`));
+    lines.push(foldIcsLine(`DTEND;VALUE=DATE:${dayjs(dateYmd).add(1, "day").format("YYYYMMDD")}`));
+  } else {
+    lines.push(foldIcsLine(`RECURRENCE-ID:${toIcsDateTime(dateYmd, startTime!)}`));
+    lines.push(foldIcsLine(`DTSTART:${toIcsDateTime(dateYmd, startTime!)}`));
+    const resolvedEnd = endTime && endTime > startTime! ? endTime : startTime!;
+    lines.push(foldIcsLine(`DTEND:${toIcsDateTime(dateYmd, resolvedEnd)}`));
+  }
+
+  const completedAt =
+    override.completedAt !== undefined ? override.completedAt : task.completedAt;
+  lines.push(foldIcsLine(`STATUS:${completedAt ? "COMPLETED" : "NEEDS-ACTION"}`));
+
+  const description = override.description ?? task.description;
+  if (description) lines.push(foldIcsLine(`DESCRIPTION:${encodeIcsText(description)}`));
+
+  const location = override.location ?? task.location;
+  if (location) lines.push(foldIcsLine(`LOCATION:${encodeIcsText(location)}`));
+
+  const emergency = override.emergency ?? task.emergency;
+  if (emergency) lines.push(foldIcsLine(`PRIORITY:${mapEmergencyToIcsPriority(emergency)}`));
+
+  lines.push("END:VEVENT");
+  return lines;
+}
+
+function buildRrule(recurrence: TaskRecurrence): string | undefined {
+  if (!recurrence.frequency || recurrence.frequency === "NONE") return undefined;
+  const parts = [`FREQ=${recurrence.frequency}`];
+  const interval = recurrence.interval ?? 1;
+  if (interval > 1) parts.push(`INTERVAL=${interval}`);
+  if (recurrence.frequency === "WEEKLY" && recurrence.weekdays?.length) {
+    const byday = recurrence.weekdays
+      .map((d) => REVERSE_WEEKDAY_MAP[d])
+      .filter(Boolean)
+      .join(",");
+    if (byday) parts.push(`BYDAY=${byday}`);
+  }
+  if (recurrence.frequency === "MONTHLY" && recurrence.monthDays?.length) {
+    parts.push(`BYMONTHDAY=${recurrence.monthDays.join(",")}`);
+  }
+  if (recurrence.until) {
+    parts.push(`UNTIL=${toIcsDate(recurrence.until)}`);
+  }
+  return parts.join(";");
+}
+
+function buildDtstamp(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return (
+    `${date.getUTCFullYear()}${pad(date.getUTCMonth() + 1)}${pad(date.getUTCDate())}` +
+    `T${pad(date.getUTCHours())}${pad(date.getUTCMinutes())}${pad(date.getUTCSeconds())}Z`
+  );
+}
+
+function toIcsDate(dateYmd: string): string {
+  return dateYmd.replace(/-/g, "");
+}
+
+function toIcsDateTime(dateYmd: string, time: string): string {
+  const [h, m] = time.split(":").map((s) => s.padStart(2, "0"));
+  return `${dateYmd.replace(/-/g, "")}T${h}${m}00`;
+}
+
+function encodeIcsText(text: string): string {
+  return text
+    .replace(/\\/g, "\\\\")
+    .replace(/,/g, "\\,")
+    .replace(/;/g, "\\;")
+    .replace(/\n/g, "\\n");
+}
+
+function foldIcsLine(line: string): string {
+  if (line.length <= 75) return line;
+  const chunks: string[] = [line.slice(0, 75)];
+  let pos = 75;
+  while (pos < line.length) {
+    chunks.push(` ${line.slice(pos, pos + 74)}`);
+    pos += 74;
+  }
+  return chunks.join("\r\n");
+}
+
+function mapEmergencyToIcsPriority(emergency: number): number {
+  if (emergency <= 1) return 1;
+  if (emergency === 2) return 3;
+  if (emergency === 3) return 5;
+  if (emergency === 4) return 6;
+  return 9;
+}
 
 // INPUT: ICS calendar file contents
 // OUTPUT: normalized planner tasks plus a skipped-event count

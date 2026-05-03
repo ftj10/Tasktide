@@ -205,6 +205,86 @@ export function toCalendarEventsForRange(
   return events;
 }
 
+export type PeriodStats = {
+  completedCount: number;
+  totalCount: number;
+  completionRate: number;
+  createdCount: number;
+  overdueCount: number;
+};
+
+export type WeekdayStats = {
+  weekday: number;
+  completedCount: number;
+  totalCount: number;
+  completionRate: number;
+};
+
+// INPUT: all tasks, inclusive end date, and number of days in the window
+// OUTPUT: aggregated productivity and creation metrics for that period
+// EFFECT: Powers the Stats page period summary and comparison cards
+export function periodStatsForWindow(all: Task[], endDateYmd: string, windowDays: number): PeriodStats {
+  const safeWindowDays = Math.max(1, windowDays);
+  const today = dayjs().format("YYYY-MM-DD");
+  const startDateYmd = dayjs(endDateYmd).subtract(safeWindowDays - 1, "day").format("YYYY-MM-DD");
+
+  let completedCount = 0;
+  let totalCount = 0;
+  let overdueCount = 0;
+
+  for (let offset = 0; offset < safeWindowDays; offset++) {
+    const dateYmd = dayjs(endDateYmd).subtract(offset, "day").format("YYYY-MM-DD");
+    const dayStats = productivityStatsForDate(all, dateYmd);
+    completedCount += dayStats.completedCount;
+    totalCount += dayStats.totalCount;
+    if (dateYmd < today) {
+      overdueCount += tasksForDate(all, dateYmd).length;
+    }
+  }
+
+  const createdCount = all.filter((task) => {
+    const d = task.createdAt.slice(0, 10);
+    return d >= startDateYmd && d <= endDateYmd;
+  }).length;
+
+  return {
+    completedCount,
+    totalCount,
+    completionRate: totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0,
+    createdCount,
+    overdueCount,
+  };
+}
+
+// INPUT: all tasks, inclusive end date, and number of days to look back
+// OUTPUT: per-weekday productivity totals (Sunday=0 … Saturday=6)
+// EFFECT: Identifies most and least productive days for Stats page insights
+export function weekdayProductivitySeries(all: Task[], endDateYmd: string, windowDays: number): WeekdayStats[] {
+  const safeWindowDays = Math.max(1, windowDays);
+  const counts = new Map<number, { completed: number; total: number }>();
+
+  for (let offset = 0; offset < safeWindowDays; offset++) {
+    const dateYmd = dayjs(endDateYmd).subtract(offset, "day").format("YYYY-MM-DD");
+    const dow = dayjs(dateYmd).day();
+    const dayStats = productivityStatsForDate(all, dateYmd);
+    const prev = counts.get(dow) ?? { completed: 0, total: 0 };
+    counts.set(dow, {
+      completed: prev.completed + dayStats.completedCount,
+      total: prev.total + dayStats.totalCount,
+    });
+  }
+
+  return [0, 1, 2, 3, 4, 5, 6].map((weekday) => {
+    const { completed = 0, total = 0 } = counts.get(weekday) ?? {};
+    return {
+      weekday,
+      completedCount: completed,
+      totalCount: total,
+      completionRate: total > 0 ? Math.round((completed / total) * 100) : 0,
+    };
+  });
+}
+
 function buildProductivityStats(completedCount: number, totalCount: number): ProductivityStats {
   return {
     completedCount,

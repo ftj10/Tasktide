@@ -1,6 +1,6 @@
 # TaskTide Application
 
-Current version: `v1.23.0`
+Current version: `v1.25.0`
 
 TaskTide is a full-stack planner for daily tasks, weekly routines, reminders, shared help questions, and calendar-based scheduling.
 
@@ -21,8 +21,9 @@ Deployed Web: TaskTide
 - Week, Month, Help Center, Reminders, and Updates are loaded only when needed so the first app screen downloads less JavaScript.
 - Today reschedule shortcuts now follow the selected day in the header, so moving a one-time task to `Today` or `Tomorrow` works correctly even while you are browsing future dates.
 - Today can now import `.ics` calendar files into planner tasks, including multi-day all-day events, timed events, and supported daily, weekly, monthly, and yearly repeats.
+- Today can now export tasks as a `.ics` calendar file compatible with Apple Calendar, Google Calendar, Outlook, and any standard calendar app. Export options include all tasks, incomplete tasks only, or tasks within a specified date range. The file is generated entirely in the browser with no backend request.
 - Task completion now uses retained `completedAt` timestamps: completed tasks disappear from active planner views immediately, stay retained for 30 days, and continue feeding shared completion analytics and cleanup rules.
-- Today now opens with a compact productivity pitch and expands into selected-day, 7-day, and 30-day completion statistics plus a 7-day bar chart when you choose `View Stats and Visualization`.
+- A dedicated Stats page (`/stats`) shows 30-day task analytics: completed, created, overdue, and completion rate summary cards; a 30-day daily trend bar chart; period-over-period comparison against the previous 30 days; behaviour insights; and a Details section with best/worst day and daily averages.
 - First-time users get a seven-step in-app onboarding tour: add a task, view the task area, switch language, download the app, open Week view (forced navigation), open Help Center (forced navigation), and enable or disable notifications.
 - Single-day edits for repeating tasks now save through the shared planner collection flow more reliably.
 - Repeating tasks now use the same shared delete logic in Today and Week, including a `This day only` versus `Entire series` choice from the shared task editor.

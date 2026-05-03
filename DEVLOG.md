@@ -1,5 +1,107 @@
 # Development Log
 
+## Version 1.25.0
+Version: 1.25.0
+Update Date: 2026-05-03
+
+### Changes
+
+**`frontend/src/app/taskLogic.ts`**
+- Added `PeriodStats` type: `{ completedCount, totalCount, completionRate, createdCount, overdueCount }`.
+- Added `WeekdayStats` type: `{ weekday, completedCount, totalCount, completionRate }`.
+- Added `periodStatsForWindow(all, endDateYmd, windowDays)`: aggregates completed/total counts via `productivityStatsForDate` for each day in the window, counts overdue slots (active tasks on past days that remain incomplete), and counts created tasks by `createdAt` date within the window.
+- Added `weekdayProductivitySeries(all, endDateYmd, windowDays)`: groups `productivityStatsForDate` results by weekday (0=Sunday … 6=Saturday) and returns a 7-element array of `WeekdayStats`.
+
+**`frontend/src/pages/StatsPage.tsx`** (new file)
+- Lazy-loaded analytics page at route `/stats`.
+- Accepts `tasks: Task[]` prop; all stats are computed client-side from existing task data.
+- Computes `currentStats` (last 30 days) and `prevStats` (days 31–60) using `periodStatsForWindow`.
+- Computes `trendSeries` (30-day daily series) using `productivityStatsSeries`.
+- Computes `weekdayStats` using `weekdayProductivitySeries`; derives `bestDay` and `worstDay` from days with `totalCount > 0`.
+- Empty state shown when `currentStats.totalCount < 5` to avoid meaningless charts.
+- Section 1: four summary cards (Completed, Created, Completion Rate, Overdue) using a 2×2 flex grid.
+- Section 2: 30-day horizontal-scroll bar chart; each bar is 28 px wide with a rotated date label; uses the same green/gray encoding as the old TodayPage chart.
+- Section 3: four comparison rows (Completed, Created, Completion Rate, Overdue) with directional trend badges; overdue comparison is intentionally inverted (fewer overdue = positive).
+- Section 4: behaviour insights generated from comparisons — only rendered when supporting data exists; no fake data.
+- Section 5: details table (avg daily, best/worst day, backlog change).
+- Period date range chips in the footer confirm exactly which dates each period covers.
+
+**`frontend/src/pages/TodayPage.tsx`**
+- Removed entire stats Paper section (collapsible productivity panel, 7-day chart, stat cards).
+- Removed `statsExpanded` state, `formatStatsLabel`, `formatTrendDay`, `formatTrendDate` helpers.
+- Removed `productivityStatsForRollingWindow`, `productivityStatsSeries`, `QueryStatsRoundedIcon`, `Collapse` imports.
+- Replaced multi-step `completedTaskCount` derivation (via `sevenDayTrend`) with a single `productivityStatsForDate(tasks, selectedDay).completedCount` memo.
+- TodayPage now renders only the date navigation header, active/completed chips, task list, and dialogs.
+
+**`frontend/src/App.tsx`**
+- Added `StatsPage` lazy import.
+- Added `BarChartRoundedIcon` import.
+- Added `/stats` route: `<StatsPage tasks={tasks} />`.
+- Added `{ to: "/stats", label: t("nav.stats"), icon: <BarChartRoundedIcon />, id: "nav-stats" }` to `navigationItems` (between Month and Help), visible in both desktop sidebar and mobile bottom navigation.
+
+**`frontend/src/i18n.ts`**
+- Added `nav.stats` key (`"Stats"` / `"统计"`).
+- Added full `stats` namespace (48 keys) in English and Chinese covering all StatsPage copy: title, subtitle, empty state, card labels, trend chart, comparison section, insights, and details.
+- Added `help.faq.q19` (Stats page FAQ entry) in English and Chinese.
+- Updated `help.guides.step5Desktop` and `step5Mobile` to mention the Stats page.
+
+**`frontend/src/pages/HelpPage.tsx`**
+- Added `q18` and `q19` FAQ entries to the explicit FAQ item list.
+
+**`frontend/src/app/releaseNotes.ts`**
+- Prepended v1.25.0 entry.
+
+### Design decisions
+- No charting library added: the existing MUI Box-based bar rendering is sufficient for 30 bars with horizontal scroll; adding Recharts/Chart.js would increase bundle size with no UX gain for this simple bar chart.
+- Stats are computed entirely on the frontend from the existing task collection. No new backend endpoint is needed — the task data already includes `createdAt`, `completedAt`, and occurrence overrides, which is everything `periodStatsForWindow` needs.
+- The 30-day cleanup rule in `taskRetention.js` means analytics naturally cover up to 30 days of history, which aligns exactly with the feature scope.
+- "Overdue" is defined as active (incomplete) task slots on past days. A daily recurring task that goes uncompleted for a week counts as 7 overdue slots — this is intentional and consistent with how the rest of the app counts tasks-per-day.
+- Comparison inverts the delta direction for overdue (fewer overdue = positive/green), different from the other three metrics.
+
+## Version 1.24.0
+Version: 1.24.0
+Update Date: 2026-05-03
+
+### Changes
+
+**`frontend/src/app/ics.ts`**
+- Added `REVERSE_WEEKDAY_MAP` (inverse of the existing `WEEKDAY_MAP`) for weekday number → ICS day-name conversion.
+- Added exported `IcsExportFilter` type: union of `{ type: "all" }`, `{ type: "incomplete" }`, and `{ type: "dateRange"; startDate: string; endDate: string }`.
+- Added exported `tasksToIcs(tasks, filter?)` function: iterates filtered tasks, calls `buildMasterVEvent` per task, and calls `buildOverrideVEvent` for each non-deleted occurrence override on recurring tasks. Returns a CRLF-joined VCALENDAR string.
+- Added `filterTasksForExport`: passes all tasks, filters by `completedAt`, or filters by date overlap using `task.date ?? task.beginDate` vs `task.recurrence.until ?? task.endDate ?? taskStart`.
+- Added `buildMasterVEvent`: emits VEVENT with UID, DTSTAMP, SUMMARY, DTSTART/DTEND (DATE for all-day, datetime for timed), STATUS (COMPLETED or NEEDS-ACTION), DESCRIPTION, LOCATION, PRIORITY, RRULE (via `buildRrule`), and EXDATE for deleted occurrences.
+- Added `buildOverrideVEvent`: emits a VEVENT with RECURRENCE-ID for each non-deleted occurrence override in a recurring task.
+- Added `buildRrule`: converts `TaskRecurrence` → RRULE string (FREQ, INTERVAL, BYDAY, BYMONTHDAY, UNTIL).
+- Added `buildDtstamp`: formats current UTC time as `YYYYMMDDTHHmmssZ` using `Date.getUTC*` methods (no extra dayjs plugin needed).
+- Added `toIcsDate`, `toIcsDateTime`: format `YYYY-MM-DD` and `HH:mm` into ICS date/datetime strings.
+- Added `encodeIcsText`: escapes `\`, `,`, `;`, and newlines per RFC 5545.
+- Added `foldIcsLine`: folds lines longer than 75 characters with CRLF+space continuation.
+- Added `mapEmergencyToIcsPriority`: maps emergency 1–5 to ICS priority 1/3/5/6/9.
+
+**`frontend/src/components/ExportIcsDialog.tsx`** (new file)
+- MUI Dialog with RadioGroup filter selector (all / incomplete / dateRange) and two TextField date inputs that appear only when dateRange is selected.
+- Validates that startDate ≤ endDate; shows a caption error and disables the Export button if invalid.
+- On Export: calls `tasksToIcs`, creates a Blob, creates a temporary anchor, triggers `click()` for the download, then revokes the object URL and closes the dialog.
+
+**`frontend/src/pages/TodayPage.tsx`**
+- Added `FileDownloadRoundedIcon` to MUI icon imports.
+- Added `ExportIcsDialog` import.
+- Added `exportDialogOpen` state (boolean, default false).
+- Added Export ICS button (outlined variant, `FileDownloadRoundedIcon`, `borderRadius: 2.5`) between the Import ICS button and the Add Task button.
+- Added `<ExportIcsDialog>` to the render, wired to `exportDialogOpen` state and `tasks` prop.
+
+**`frontend/src/i18n.ts`**
+- Added `today.exportIcs`, `today.exportDialogTitle`, `today.exportFilterLabel`, `today.exportAll`, `today.exportIncomplete`, `today.exportDateRange`, `today.exportStartDate`, `today.exportEndDate`, `today.exportDownload`, `today.exportDateRangeError` in both `en` and `zh`.
+- Added `help.walkthroughs.exportIcs` (question, title, text) in both `en` and `zh`.
+- Added `help.faq.q18` (ICS export FAQ) in both `en` and `zh`.
+
+**`frontend/src/app/helpCenter.ts`**
+- Added `export-ics` walkthrough entry to `getHelpCenterData` (audience: "all"), referencing the `exportIcs` translation keys.
+
+**`frontend/tests/ics.behavior.test.ts`**
+- Imported `tasksToIcs` and `Task` type.
+- Added `ICS export behavior` describe block with 9 tests covering: VCALENDAR wrapper, VEVENT field mapping, COMPLETED status, all-day DATE format, RRULE generation, EXDATE for deleted occurrences, incomplete filter, date range filter, and text escaping.
+
 ## Version 1.23.0
 Version: 1.23.0
 Update Date: 2026-05-03

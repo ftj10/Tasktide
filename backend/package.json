@@ -1,6 +1,6 @@
 {
   "name": "tasktide-backend",
-  "version": "1.21.0",
+  "version": "1.23.0",
   "main": "index.js",
   "scripts": {
     "backup:dataset": "node backup-cli.js once",

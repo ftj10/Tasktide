@@ -11,7 +11,6 @@ import {
   Card,
   CardContent,
   Chip,
-  Collapse,
   IconButton,
   Paper,
   Stack,
@@ -27,17 +26,15 @@ import MapIcon from "@mui/icons-material/Map";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import UploadFileRoundedIcon from "@mui/icons-material/UploadFileRounded";
+import FileDownloadRoundedIcon from "@mui/icons-material/FileDownloadRounded";
 import TodayRoundedIcon from "@mui/icons-material/TodayRounded";
 import DoneAllRoundedIcon from "@mui/icons-material/DoneAllRounded";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
-import QueryStatsRoundedIcon from "@mui/icons-material/QueryStatsRounded";
 import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlineRounded";
 
 import type { Task } from "../types";
 import {
   productivityStatsForDate,
-  productivityStatsForRollingWindow,
-  productivityStatsSeries,
   tasksForDate,
 } from "../app/taskLogic";
 import { ymd } from "../app/date";
@@ -58,6 +55,7 @@ import {
 } from "../app/tasks";
 import { getPriorityAccent } from "../app/priorities";
 import { parseIcsTasks } from "../app/ics";
+import { ExportIcsDialog } from "../components/ExportIcsDialog";
 
 export function TodayPage(props: {
   tasks: Task[];
@@ -103,23 +101,9 @@ export function TodayPage(props: {
     return { allDayTasks: allDay, timedTasks: timed };
   }, [tasks, selectedDay]);
 
-  const dayStats = useMemo(() => productivityStatsForDate(tasks, selectedDay), [tasks, selectedDay]);
-  const sevenDayStats = useMemo(
-    () => productivityStatsForRollingWindow(tasks, selectedDay, 7),
+  const completedTaskCount = useMemo(
+    () => productivityStatsForDate(tasks, selectedDay).completedCount,
     [tasks, selectedDay]
-  );
-  const thirtyDayStats = useMemo(
-    () => productivityStatsForRollingWindow(tasks, selectedDay, 30),
-    [tasks, selectedDay]
-  );
-  const sevenDayTrend = useMemo(
-    () => productivityStatsSeries(tasks, selectedDay, 7),
-    [tasks, selectedDay]
-  );
-  const completedTaskCount = sevenDayTrend[sevenDayTrend.length - 1]?.completedCount ?? 0;
-  const maxTrendTotal = useMemo(
-    () => Math.max(...sevenDayTrend.map((item) => item.totalCount), 1),
-    [sevenDayTrend]
   );
 
   const totalTasks = allDayTasks.length + timedTasks.length;
@@ -134,7 +118,7 @@ export function TodayPage(props: {
     occurrenceDateYmd?: string;
   } | undefined>();
   const [allDoneOpen, setAllDoneOpen] = useState(false);
-  const [statsExpanded, setStatsExpanded] = useState(false);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
 
   useEffect(() => {
     onTaskDialogVisibilityChange?.(dialogOpen);
@@ -248,32 +232,11 @@ export function TodayPage(props: {
     return t("today.taskTypes.once");
   }
 
-  function formatStatsLabel(completedCount: number, totalCount: number, completionRate: number) {
-    return t("today.statsValue", {
-      completed: completedCount,
-      total: totalCount,
-      percent: completionRate,
-    });
-  }
-
   function formatTaskTime(value: string) {
     return new Intl.DateTimeFormat(currentLanguage, {
       hour: "numeric",
       minute: "2-digit",
     }).format(new Date(`2000-01-01T${value}`));
-  }
-
-  function formatTrendDay(dateYmd: string) {
-    return new Intl.DateTimeFormat(currentLanguage, {
-      weekday: "short",
-    }).format(dayjs(dateYmd).toDate());
-  }
-
-  function formatTrendDate(dateYmd: string) {
-    return new Intl.DateTimeFormat(currentLanguage, {
-      month: "numeric",
-      day: "numeric",
-    }).format(dayjs(dateYmd).toDate());
   }
 
   const openMap = (task: Task) => {
@@ -621,6 +584,14 @@ export function TodayPage(props: {
               />
             </Button>
             <Button
+              variant="outlined"
+              startIcon={<FileDownloadRoundedIcon />}
+              onClick={() => setExportDialogOpen(true)}
+              sx={{ borderRadius: 2.5 }}
+            >
+              {t("today.exportIcs")}
+            </Button>
+            <Button
               id="today-add-task-button"
               data-onboarding="add-task-button"
               variant="contained"
@@ -660,271 +631,6 @@ export function TodayPage(props: {
           }}
         />
       </Stack>
-
-      <Paper
-        elevation={0}
-        sx={{
-          mb: 2.5,
-          p: { xs: 1.5, sm: 2 },
-          borderRadius: 4,
-          border: "1px solid",
-          borderColor: alpha("#0ea5e9", 0.14),
-          background: "linear-gradient(135deg, rgba(14, 165, 233, 0.07), rgba(255,255,255,0.94))",
-        }}
-      >
-        <Stack spacing={1.5}>
-          <Stack
-            direction={{ xs: "column", md: "row" }}
-            justifyContent="space-between"
-            alignItems={{ xs: "flex-start", md: "center" }}
-            spacing={1}
-          >
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25} alignItems={{ xs: "flex-start", sm: "center" }}>
-              <Box
-                sx={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 3,
-                  display: "grid",
-                  placeItems: "center",
-                  bgcolor: alpha("#0ea5e9", 0.12),
-                  color: "#0369a1",
-                }}
-              >
-                <QueryStatsRoundedIcon />
-              </Box>
-              <Box>
-                <Typography variant="subtitle1" fontWeight={800}>
-                  {t("today.productivityTitle")}
-                </Typography>
-                <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap sx={{ mt: 0.5 }}>
-                  <Chip
-                    size="small"
-                    label={`${dayStats.completedCount}/${dayStats.totalCount} ${t("today.productivityToday").toLowerCase()}`}
-                    sx={{
-                      bgcolor: alpha("#10b981", 0.1),
-                      color: "#10b981",
-                      fontWeight: 700,
-                      fontSize: "0.7rem",
-                      height: 22,
-                    }}
-                  />
-                  <Chip
-                    size="small"
-                    label={`${sevenDayStats.completionRate}% ${t("today.productivityLast7Days").toLowerCase()}`}
-                    sx={{
-                      bgcolor: alpha("#4f46e5", 0.1),
-                      color: "primary.main",
-                      fontWeight: 700,
-                      fontSize: "0.7rem",
-                      height: 22,
-                    }}
-                  />
-                </Stack>
-              </Box>
-            </Stack>
-            <Stack direction="row" spacing={1.25} useFlexGap flexWrap="wrap">
-              <Button
-                variant={statsExpanded ? "contained" : "outlined"}
-                onClick={() => setStatsExpanded((value) => !value)}
-                sx={{ borderRadius: 999 }}
-              >
-                {statsExpanded ? t("today.hideProductivityDetails") : t("today.viewProductivityDetails")}
-              </Button>
-              <Stack direction="row" spacing={0.75} alignItems="center">
-                <Box
-                  sx={{
-                    width: 10,
-                    height: 10,
-                    borderRadius: 999,
-                    bgcolor: "#22c55e",
-                  }}
-                />
-                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>
-                  {t("today.productivityLegendCompleted")}
-                </Typography>
-              </Stack>
-              <Stack direction="row" spacing={0.75} alignItems="center">
-                <Box
-                  sx={{
-                    width: 10,
-                    height: 10,
-                    borderRadius: 999,
-                    bgcolor: alpha("#94a3b8", 0.48),
-                  }}
-                />
-                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>
-                  {t("today.productivityLegendRemaining")}
-                </Typography>
-              </Stack>
-            </Stack>
-          </Stack>
-          <Collapse in={statsExpanded} unmountOnExit>
-            <Stack spacing={1.5}>
-              <Stack direction={{ xs: "column", md: "row" }} spacing={1.25}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 1.5,
-                    flex: 1,
-                    borderRadius: 3,
-                    border: "1px solid",
-                    borderColor: alpha("#0f172a", 0.08),
-                    background: "rgba(255,255,255,0.82)",
-                  }}
-                >
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                    {t("today.productivityToday")}
-                  </Typography>
-                  <Typography variant="h6" fontWeight={800}>
-                    {formatStatsLabel(dayStats.completedCount, dayStats.totalCount, dayStats.completionRate)}
-                  </Typography>
-                </Paper>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 1.5,
-                    flex: 1,
-                    borderRadius: 3,
-                    border: "1px solid",
-                    borderColor: alpha("#0f172a", 0.08),
-                    background: "rgba(255,255,255,0.82)",
-                  }}
-                >
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                    {t("today.productivityLast7Days")}
-                  </Typography>
-                  <Typography variant="h6" fontWeight={800}>
-                    {formatStatsLabel(
-                      sevenDayStats.completedCount,
-                      sevenDayStats.totalCount,
-                      sevenDayStats.completionRate
-                    )}
-                  </Typography>
-                </Paper>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 1.5,
-                    flex: 1,
-                    borderRadius: 3,
-                    border: "1px solid",
-                    borderColor: alpha("#0f172a", 0.08),
-                    background: "rgba(255,255,255,0.82)",
-                  }}
-                >
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                    {t("today.productivityLast30Days")}
-                  </Typography>
-                  <Typography variant="h6" fontWeight={800}>
-                    {formatStatsLabel(
-                      thirtyDayStats.completedCount,
-                      thirtyDayStats.totalCount,
-                      thirtyDayStats.completionRate
-                    )}
-                  </Typography>
-                </Paper>
-              </Stack>
-              <Paper
-                elevation={0}
-                aria-label={t("today.productivityTrendTitle")}
-                sx={{
-                  p: { xs: 1.25, sm: 1.5 },
-                  borderRadius: 3,
-                  border: "1px solid",
-                  borderColor: alpha("#0f172a", 0.08),
-                  background: "rgba(255,255,255,0.82)",
-                }}
-              >
-                <Stack spacing={0.5} sx={{ mb: 1.25 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    {t("today.productivityTrendTitle")}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {t("today.productivityTrendHint")}
-                  </Typography>
-                </Stack>
-                <Stack
-                  direction="row"
-                  spacing={{ xs: 0.75, sm: 1.25 }}
-                  alignItems="flex-end"
-                  justifyContent="space-between"
-                  sx={{ minHeight: 180 }}
-                >
-                  {sevenDayTrend.map((item) => {
-                    const barHeight = item.totalCount > 0 ? Math.max((item.totalCount / maxTrendTotal) * 100, 14) : 6;
-                    const completedHeight = item.totalCount > 0 ? (item.completedCount / item.totalCount) * 100 : 0;
-                    const remainingHeight = item.totalCount > 0 ? 100 - completedHeight : 0;
-
-                    return (
-                      <Stack
-                        key={item.dateYmd}
-                        spacing={0.75}
-                        alignItems="center"
-                        sx={{ flex: 1, minWidth: 0 }}
-                      >
-                        <Typography variant="caption" sx={{ fontWeight: 700 }}>
-                          {item.completedCount}/{item.totalCount}
-                        </Typography>
-                        <Box
-                          sx={{
-                            width: "100%",
-                            maxWidth: 48,
-                            height: 116,
-                            display: "flex",
-                            alignItems: "flex-end",
-                            justifyContent: "center",
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              width: "100%",
-                              height: `${barHeight}%`,
-                              minHeight: item.totalCount > 0 ? 16 : 6,
-                              display: "flex",
-                              flexDirection: "column",
-                              justifyContent: "flex-end",
-                              overflow: "hidden",
-                              borderRadius: 999,
-                              border: "1px solid",
-                              borderColor: alpha("#0f172a", 0.08),
-                              bgcolor: alpha("#e2e8f0", 0.7),
-                              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.75)",
-                            }}
-                          >
-                            {remainingHeight > 0 ? (
-                              <Box
-                                sx={{
-                                  height: `${remainingHeight}%`,
-                                  bgcolor: alpha("#94a3b8", 0.48),
-                                }}
-                              />
-                            ) : null}
-                            {completedHeight > 0 ? (
-                              <Box
-                                sx={{
-                                  height: `${completedHeight}%`,
-                                  bgcolor: "#22c55e",
-                                }}
-                              />
-                            ) : null}
-                          </Box>
-                        </Box>
-                        <Typography variant="caption" sx={{ fontWeight: 700, lineHeight: 1.1 }}>
-                          {formatTrendDay(item.dateYmd)}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.1 }}>
-                          {formatTrendDate(item.dateYmd)}
-                        </Typography>
-                      </Stack>
-                    );
-                  })}
-                </Stack>
-              </Paper>
-            </Stack>
-          </Collapse>
-        </Stack>
-      </Paper>
 
       {allDayTasks.length === 0 && timedTasks.length === 0 ? (
         <Paper
@@ -1078,6 +784,11 @@ export function TodayPage(props: {
         open={allDoneOpen}
         onCancel={() => setAllDoneOpen(false)}
         onConfirm={markAllDone}
+      />
+      <ExportIcsDialog
+        open={exportDialogOpen}
+        onClose={() => setExportDialogOpen(false)}
+        tasks={tasks}
       />
     </Box>
   );

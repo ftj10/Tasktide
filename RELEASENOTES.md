@@ -1,5 +1,23 @@
 # Release Notes
 
+## Version 1.25.0 – Update Released (2026-05-03)
+
+### What's New
+- Added: A dedicated Stats page shows your task activity for the past 30 days, including how many tasks you completed, created, and left overdue, plus your overall completion rate.
+- Added: A 30-day daily trend chart lets you see at a glance how your completed task count changed day by day.
+- Added: The Stats page compares your current 30 days against the previous 30 days so you can see whether you are improving.
+- Added: Behaviour insights appear automatically when the data supports them — for example, your most productive day, whether your backlog is growing or shrinking, and how much your completion rate changed versus last period.
+- Added: A Details section shows your average daily completions, your best and worst day of the week, and your backlog change for the period.
+
+### Improvements
+- Improved: Today page is now focused only on your daily tasks. The statistics and graphs section has moved to the new Stats page.
+
+## Version 1.24.0 – Update Released (2026-05-03)
+
+### What's New
+- Added: You can now export your tasks as a calendar file (.ics) and open them in any calendar app such as Apple Calendar, Google Calendar, or Outlook.
+- Added: When exporting, choose whether to include all tasks, only incomplete tasks, or tasks within a specific date range.
+
 ## Version 1.23.0 – Update Released (2026-05-03)
 
 ### What's New

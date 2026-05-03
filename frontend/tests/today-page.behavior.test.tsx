@@ -68,9 +68,7 @@ describe("TodayPage behavior", () => {
     expect(screen.queryByRole("button", { name: "Show Completed History" })).not.toBeInTheDocument();
   });
 
-  it("keeps productivity details collapsed until the user expands the stats panel", async () => {
-    const user = userEvent.setup();
-
+  it("does not render the productivity stats panel (moved to Stats page)", () => {
     renderWithProviders(
       <TodayPage
         tasks={[
@@ -83,46 +81,15 @@ describe("TodayPage behavior", () => {
             createdAt: "2026-04-22T08:00:00.000Z",
             updatedAt: "2026-04-22T08:00:00.000Z",
           },
-          {
-            id: "completed-1",
-            title: "Completed task",
-            type: "ONCE",
-            beginDate: "2026-04-22",
-            date: "2026-04-22",
-            completedAt: "2026-04-22T12:00:00.000Z",
-            createdAt: "2026-04-22T08:00:00.000Z",
-            updatedAt: "2026-04-22T12:00:00.000Z",
-          },
-          {
-            id: "completed-2",
-            title: "Completed older task",
-            type: "ONCE",
-            beginDate: "2026-04-21",
-            date: "2026-04-21",
-            completedAt: "2026-04-21T16:00:00.000Z",
-            createdAt: "2026-04-21T08:00:00.000Z",
-            updatedAt: "2026-04-21T16:00:00.000Z",
-          },
         ]}
         setTasks={vi.fn()}
       />,
       "/?date=2026-04-22"
     );
 
-    expect(screen.getByText("Productivity Stats")).toBeInTheDocument();
-    expect(screen.getByText("67% last 7 days")).toBeInTheDocument();
+    expect(screen.queryByText("Productivity Stats")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "View Stats and Visualization" })).not.toBeInTheDocument();
     expect(screen.queryByLabelText("7-Day Completion Trend")).not.toBeInTheDocument();
-    expect(screen.queryByText("Selected Day")).not.toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: "View Stats and Visualization" }));
-
-    expect(screen.getByLabelText("7-Day Completion Trend")).toBeInTheDocument();
-    expect(screen.getByText("Selected Day")).toBeInTheDocument();
-    expect(screen.getByText("1 / 2 completed (50%)")).toBeInTheDocument();
-    expect(screen.getAllByText("2 / 3 completed (67%)")).toHaveLength(2);
-    expect(screen.getByText("1/2")).toBeInTheDocument();
-    expect(screen.getByText("1/1")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Hide Stats and Visualization" })).toBeInTheDocument();
   });
 
   it("imports tasks from an ICS file and reports the imported count", async () => {

@@ -161,5 +161,18 @@ export function getHelpCenterData(t: TFunction): HelpCenterItem[] {
         },
       ],
     },
+    {
+      id: "export-ics",
+      audience: "all",
+      question: t("help.walkthroughs.exportIcs.question"),
+      steps: [
+        {
+          mediaSrc: "/help-walkthroughs/how to export tasks as ics calendar file.gif",
+          mediaAlt: t("help.walkthroughs.exportIcs.title"),
+          title: t("help.walkthroughs.exportIcs.title"),
+          text: t("help.walkthroughs.exportIcs.text"),
+        },
+      ],
+    },
   ];
 }

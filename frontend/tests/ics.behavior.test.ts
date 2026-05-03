@@ -1,9 +1,10 @@
-// INPUT: representative ICS calendar exports
-// OUTPUT: behavior coverage for task import parsing
-// EFFECT: Verifies ICS events convert into planner tasks with retained recurrence and exception details
+// INPUT: representative ICS calendar exports and planner task arrays
+// OUTPUT: behavior coverage for task import and export
+// EFFECT: Verifies ICS events convert into planner tasks and planner tasks produce valid ICS output
 import { describe, expect, it } from "vitest";
 
-import { parseIcsTasks } from "../src/app/ics";
+import { parseIcsTasks, tasksToIcs } from "../src/app/ics";
+import type { Task } from "../src/types";
 
 describe("ICS import behavior", () => {
   it("converts one-time timed events into one-time tasks", () => {
@@ -97,5 +98,121 @@ END:VCALENDAR`);
       endDate: "2026-05-03",
       description: "Example event description",
     });
+  });
+});
+
+describe("ICS export behavior", () => {
+  const baseTask: Task = {
+    id: "task-abc123",
+    title: "Team standup",
+    type: "ONCE",
+    date: "2026-05-10",
+    beginDate: "2026-05-10",
+    startTime: "09:00",
+    endTime: "09:30",
+    description: "Daily sync",
+    location: "Zoom",
+    emergency: 2,
+    completedAt: null,
+    createdAt: "2026-05-01T00:00:00.000Z",
+    updatedAt: "2026-05-01T00:00:00.000Z",
+  };
+
+  it("produces a valid VCALENDAR wrapper", () => {
+    const ics = tasksToIcs([baseTask]);
+    expect(ics).toContain("BEGIN:VCALENDAR");
+    expect(ics).toContain("END:VCALENDAR");
+    expect(ics).toContain("VERSION:2.0");
+  });
+
+  it("maps task fields to VEVENT properties", () => {
+    const ics = tasksToIcs([baseTask]);
+    expect(ics).toContain("BEGIN:VEVENT");
+    expect(ics).toContain("END:VEVENT");
+    expect(ics).toContain("UID:task-abc123");
+    expect(ics).toContain("SUMMARY:Team standup");
+    expect(ics).toContain("DESCRIPTION:Daily sync");
+    expect(ics).toContain("LOCATION:Zoom");
+    expect(ics).toContain("DTSTART:20260510T090000");
+    expect(ics).toContain("DTEND:20260510T093000");
+    expect(ics).toContain("STATUS:NEEDS-ACTION");
+    expect(ics).toContain("PRIORITY:3");
+  });
+
+  it("sets STATUS:COMPLETED for completed tasks", () => {
+    const completed: Task = { ...baseTask, completedAt: "2026-05-10T10:00:00.000Z" };
+    const ics = tasksToIcs([completed]);
+    expect(ics).toContain("STATUS:COMPLETED");
+  });
+
+  it("uses DATE format for all-day tasks", () => {
+    const allDay: Task = {
+      ...baseTask,
+      startTime: undefined,
+      endTime: undefined,
+      date: "2026-05-15",
+      beginDate: "2026-05-15",
+    };
+    const ics = tasksToIcs([allDay]);
+    expect(ics).toContain("DTSTART;VALUE=DATE:20260515");
+    expect(ics).toContain("DTEND;VALUE=DATE:20260516");
+  });
+
+  it("emits RRULE for recurring tasks", () => {
+    const recurring: Task = {
+      ...baseTask,
+      id: "task-recurring",
+      type: "RECURRING",
+      date: undefined,
+      beginDate: "2026-05-01",
+      recurrence: { frequency: "WEEKLY", interval: 1, weekdays: [1, 3], until: "2026-07-31" },
+    };
+    const ics = tasksToIcs([recurring]);
+    expect(ics).toContain("RRULE:FREQ=WEEKLY;BYDAY=MO,WE;UNTIL=20260731");
+  });
+
+  it("emits EXDATE for deleted occurrences", () => {
+    const withDeleted: Task = {
+      ...baseTask,
+      id: "task-exdate",
+      type: "RECURRING",
+      date: undefined,
+      beginDate: "2026-05-01",
+      recurrence: { frequency: "DAILY", interval: 1 },
+      occurrenceOverrides: { "2026-05-05": { deleted: true } },
+    };
+    const ics = tasksToIcs([withDeleted]);
+    expect(ics).toContain("EXDATE:20260505T090000");
+  });
+
+  it("filters out completed tasks when filter is incomplete", () => {
+    const completed: Task = { ...baseTask, id: "done", completedAt: "2026-05-10T10:00:00.000Z" };
+    const active: Task = { ...baseTask, id: "active", completedAt: null };
+    const ics = tasksToIcs([completed, active], { type: "incomplete" });
+    expect(ics).toContain("UID:active");
+    expect(ics).not.toContain("UID:done");
+  });
+
+  it("filters tasks by date range", () => {
+    const inRange: Task = { ...baseTask, id: "in-range", date: "2026-06-15", beginDate: "2026-06-15" };
+    const outOfRange: Task = { ...baseTask, id: "out", date: "2026-08-01", beginDate: "2026-08-01" };
+    const ics = tasksToIcs([inRange, outOfRange], {
+      type: "dateRange",
+      startDate: "2026-06-01",
+      endDate: "2026-06-30",
+    });
+    expect(ics).toContain("UID:in-range");
+    expect(ics).not.toContain("UID:out");
+  });
+
+  it("escapes special characters in text fields", () => {
+    const special: Task = {
+      ...baseTask,
+      title: "Task, with; special\\chars",
+      description: "Line one\nLine two",
+    };
+    const ics = tasksToIcs([special]);
+    expect(ics).toContain("SUMMARY:Task\\, with\\; special\\\\chars");
+    expect(ics).toContain("DESCRIPTION:Line one\\nLine two");
   });
 });

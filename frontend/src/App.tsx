@@ -28,6 +28,7 @@ import TodayOutlinedIcon from "@mui/icons-material/TodayOutlined";
 import ViewWeekOutlinedIcon from "@mui/icons-material/ViewWeekOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import BarChartRoundedIcon from "@mui/icons-material/BarChartRounded";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import LanguageRoundedIcon from "@mui/icons-material/LanguageRounded";
 import TaskAltRoundedIcon from "@mui/icons-material/TaskAltRounded";
@@ -79,6 +80,9 @@ const MonthPage = lazy(() =>
 );
 const HelpPage = lazy(() =>
   import("./pages/HelpPage").then((module) => ({ default: module.HelpPage }))
+);
+const StatsPage = lazy(() =>
+  import("./pages/StatsPage").then((module) => ({ default: module.StatsPage }))
 );
 const ReleaseNotesCenter = lazy(() =>
   import("./components/ReleaseNotesCenter").then((module) => ({ default: module.ReleaseNotesCenter }))
@@ -509,6 +513,7 @@ export default function App() {
     { to: "/", label: t("nav.today"), icon: <TodayOutlinedIcon />, id: "nav-today", dataOnboarding: undefined as string | undefined },
     { to: "/week", label: t("nav.week"), icon: <ViewWeekOutlinedIcon />, id: "nav-week", dataOnboarding: "week-page-button" },
     { to: "/month", label: t("nav.month"), icon: <CalendarMonthOutlinedIcon />, id: "nav-month", dataOnboarding: undefined as string | undefined },
+    { to: "/stats", label: t("nav.stats"), icon: <BarChartRoundedIcon />, id: "nav-stats", dataOnboarding: undefined as string | undefined },
     { to: "/help", label: t("nav.help"), icon: <HelpOutlineIcon />, id: "nav-help", dataOnboarding: "help-center-button" },
   ];
 
@@ -758,6 +763,7 @@ export default function App() {
                       path="/month"
                       element={<MonthPage tasks={tasks} />}
                     />
+                    <Route path="/stats" element={<StatsPage tasks={tasks} />} />
                     <Route path="/help" element={<HelpPage />} />
                   </Routes>
                 </Suspense>

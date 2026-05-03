@@ -14,6 +14,62 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-05-03-stats-page",
+    version: "v1.25.0",
+    releasedAt: "2026-05-03",
+    title: {
+      en: "Dedicated Analytics Page",
+      zh: "专属数据分析页面"
+    },
+    summary: {
+      en: "Statistics and graphs have moved to their own dedicated Stats page, giving you a focused 30-day view of your task behaviour.",
+      zh: "统计与图表已移至专属的 Stats 页面，为你提供更清晰的 30 天任务行为分析。"
+    },
+    changes: {
+      en: [
+        "Added: New Stats page showing your task activity over the past 30 days.",
+        "Added: Summary cards for completed tasks, created tasks, completion rate, and overdue tasks.",
+        "Added: 30-day daily trend bar chart with completed vs remaining tasks.",
+        "Added: Side-by-side comparison of the current 30 days versus the previous 30 days.",
+        "Added: Behaviour insights that highlight patterns such as your most productive day, backlog trends, and period-over-period changes.",
+        "Added: Details section showing average daily completions, best and worst days, and backlog change.",
+        "Improved: Today page is now focused only on daily tasks — statistics and graphs have moved to Stats."
+      ],
+      zh: [
+        "新增：Stats 页面，展示过去 30 天的任务活动情况。",
+        "新增：汇总卡片，包含已完成任务数、已创建任务数、完成率和逾期任务数。",
+        "新增：30 天每日趋势柱状图，显示已完成与未完成任务对比。",
+        "新增：当前 30 天与前 30 天的对比卡片。",
+        "新增：行为洞察，自动提示效率最高的日期、积压变化趋势及周期对比。",
+        "新增：详情区域，显示日均完成数、最佳与最差日期及积压变化。",
+        "改进：Today 页面现在专注于当日任务，统计图表已移至 Stats 页面。"
+      ]
+    }
+  },
+  {
+    id: "2026-05-03-ics-export",
+    version: "v1.24.0",
+    releasedAt: "2026-05-03",
+    title: {
+      en: "Export Tasks to Calendar",
+      zh: "导出任务到日历"
+    },
+    summary: {
+      en: "You can now download your tasks as a .ics file and import them into any calendar app.",
+      zh: "您现在可以将任务下载为 .ics 文件，并导入到任意日历应用中。"
+    },
+    changes: {
+      en: [
+        "Added: Export your tasks as a .ics calendar file compatible with Apple Calendar, Google Calendar, Outlook, and more.",
+        "Added: Choose to export all tasks, incomplete tasks only, or tasks within a date range before downloading."
+      ],
+      zh: [
+        "新增：将任务导出为 .ics 日历文件，兼容 Apple 日历、Google 日历、Outlook 等应用。",
+        "新增：导出前可选择包含所有任务、仅未完成任务，或指定日期范围内的任务。"
+      ]
+    }
+  },
+  {
     id: "2026-05-03-ui-improvements",
     version: "v1.23.0",
     releasedAt: "2026-05-03",

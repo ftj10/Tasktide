@@ -41,6 +41,7 @@ const resources = {
         today: "Today",
         week: "Week",
         month: "Month",
+        stats: "Stats",
         help: "Help",
         mobileNavigation: "Mobile navigation",
         logout: "Logout",
@@ -119,6 +120,16 @@ const resources = {
         map: "Map",
         previousDay: "Previous day",
         nextDay: "Next day",
+        exportIcs: "Export ICS",
+        exportDialogTitle: "Export to Calendar",
+        exportFilterLabel: "Include",
+        exportAll: "All tasks",
+        exportIncomplete: "Incomplete tasks only",
+        exportDateRange: "Tasks in date range",
+        exportStartDate: "Start date",
+        exportEndDate: "End date",
+        exportDownload: "Download .ics",
+        exportDateRangeError: "Start date must be on or before end date.",
         taskTypes: {
           once: "Once",
           daily: "Daily",
@@ -227,6 +238,11 @@ const resources = {
             question: "Enable or reset Task Notifications",
             title: "how to reset:enable notification in pc.gif",
             text: "This GIF shows enabling Task Notifications from Help or fixing browser notification settings."
+          },
+          exportIcs: {
+            question: "Export tasks as a calendar file (.ics)",
+            title: "how to export tasks as ics calendar file.gif",
+            text: "This GIF shows clicking Export ICS on Today, choosing a filter, and downloading the .ics file to open in a calendar app."
           }
         },
         taskNotifications: {
@@ -251,8 +267,8 @@ const resources = {
           step2: "When you need to organize the whole week, open Week. Place tasks into time slots, compare busy days, and adjust your plan before the work happens.",
           step3: "Use Month when you want to scan a larger schedule, choose a future date, or jump back into Today for a specific day.",
           step4: "Use Reminders for notes that are not tied to one schedule slot but should stay easy to find until you complete them.",
-          step5Desktop: "On desktop, use the left sidebar to move between Reminders, Today, Week, Month, Help, and the install guide.",
-          step5Mobile: "On mobile, use the bottom navigation to move between the main pages and the top install button to learn how to add TaskTide to your device.",
+          step5Desktop: "On desktop, use the left sidebar to move between Reminders, Today, Week, Month, Stats, Help, and the install guide.",
+          step5Mobile: "On mobile, use the bottom navigation to move between the main pages — including Stats for your 30-day productivity overview — and the top install button to learn how to add TaskTide to your device.",
           step6Desktop: "If you want TaskTide to open like an app, choose Install app and follow the walkthrough for your browser. If you want task alerts, task start reminders, and daily task check-ins, open Help and choose Enable Task Notifications.",
           step6Mobile: "If you want TaskTide on your home screen, choose Install app and follow the mobile steps for your browser. Then open Help and choose Enable Task Notifications if you want task alerts, task start reminders, and daily task check-ins.",
           step7Desktop: "If your connection drops, keep editing tasks normally. TaskTide will merge repeated offline edits and sync them when the server is available again. Heavier areas such as Week, Month, Help, and Updates load when you open them, so the first screen can start sooner.",
@@ -327,6 +343,14 @@ const resources = {
           q11: {
             question: "What does the ICS importer support?",
             answer: "Import ICS on Today to turn calendar events into tasks. It supports titles, notes, locations, timed events, multi-day events, and common repeat rules."
+          },
+          q18: {
+            question: "How do I export my tasks to a calendar app?",
+            answer: "On Today, click Export ICS. Choose whether to include all tasks, incomplete tasks only, or tasks within a date range, then click Download .ics. Open the downloaded file in Apple Calendar, Google Calendar, Outlook, or any app that supports the ICS format."
+          },
+          q19: {
+            question: "What does the Stats page show?",
+            answer: "Stats shows your task activity for the past 30 days. You can see how many tasks you completed, created, and left overdue, your overall completion rate, and how these compare with the previous 30 days. The page also shows daily trend bars, behaviour insights, and your most and least productive days of the week."
           }
         },
         ask: {
@@ -404,6 +428,53 @@ const resources = {
           baidu: "Baidu Maps"
         }
       },
+      stats: {
+        title: "Analytics",
+        subtitle: "Your task activity over the past 30 days",
+        emptyTitle: "Not enough activity yet",
+        emptySubtitle: "Complete more tasks and your 30-day statistics will appear here.",
+        completed: "Completed",
+        created: "Created",
+        completionRate: "Completion Rate",
+        overdue: "Overdue",
+        outOf: "of {{total}} scheduled",
+        tasksAdded: "tasks added",
+        ofScheduledTasks: "of scheduled tasks",
+        incompletePastDays: "incomplete on past days",
+        currentPeriod: "Last 30 Days",
+        previousPeriod: "Previous 30 Days",
+        comparisonTitle: "Compared With Previous 30 Days",
+        vsLabel: "vs",
+        same: "Similar",
+        better: "+{{value}} more",
+        worse: "−{{value}} fewer",
+        betterRate: "+{{value}}%",
+        worseRate: "−{{value}}%",
+        trendTitle: "30-Day Completion Trend",
+        trendSubtitle: "Each bar shows tasks completed (green) vs remaining (gray) that day",
+        legendCompleted: "Completed",
+        legendRemaining: "Remaining",
+        insightsTitle: "Behaviour Insights",
+        insightMoreCompleted: "You completed {{percent}}% more tasks than the previous 30 days.",
+        insightFewerCompleted: "You completed {{percent}}% fewer tasks than the previous 30 days.",
+        insightOverdueDown: "Overdue tasks decreased compared with the previous period.",
+        insightOverdueUp: "Overdue tasks increased compared with the previous period.",
+        insightBacklogGrowing: "You created more tasks than you completed, so your task backlog may be growing.",
+        insightBacklogShrinking: "You completed more tasks than you created — great progress on your backlog.",
+        insightMostProductiveDay: "Your most productive day was {{day}}.",
+        insightLeastProductiveDay: "Your least productive day was {{day}}.",
+        detailsTitle: "Details",
+        bestDay: "Most Productive Day",
+        worstDay: "Least Productive Day",
+        avgDaily: "Avg. Completed Per Day",
+        tasksPerDay: "tasks/day",
+        backlogChange: "Backlog Change",
+        backlogGrowing: "+{{count}} (growing)",
+        backlogShrinking: "−{{count}} (shrinking)",
+        backlogNeutral: "Neutral",
+        currentPeriodRange: "Current: {{start}} – {{end}}",
+        previousPeriodRange: "Previous: {{start}} – {{end}}"
+      },
       onboarding: {
         title: "Quick tour",
         skip: "Skip",
@@ -476,6 +547,7 @@ const resources = {
         today: "今天",
         week: "周视图",
         month: "月视图",
+        stats: "统计",
         help: "帮助",
         mobileNavigation: "移动端导航",
         logout: "退出登录",
@@ -554,6 +626,16 @@ const resources = {
         map: "地图",
         previousDay: "前一天",
         nextDay: "后一天",
+        exportIcs: "导出 ICS",
+        exportDialogTitle: "导出到日历",
+        exportFilterLabel: "包含",
+        exportAll: "所有任务",
+        exportIncomplete: "仅未完成任务",
+        exportDateRange: "指定日期范围内的任务",
+        exportStartDate: "开始日期",
+        exportEndDate: "结束日期",
+        exportDownload: "下载 .ics",
+        exportDateRangeError: "开始日期不能晚于结束日期。",
         taskTypes: {
           once: "一次",
           daily: "每天",
@@ -662,6 +744,11 @@ const resources = {
             question: "开启或重置 Task Notifications",
             title: "how to reset:enable notification in pc.gif",
             text: "这个 GIF 会演示从 Help 开启 Task Notifications，或修复浏览器通知设置。"
+          },
+          exportIcs: {
+            question: "将任务导出为日历文件（.ics）",
+            title: "how to export tasks as ics calendar file.gif",
+            text: "这个 GIF 会演示在 Today 点击导出 ICS、选择筛选条件，以及下载 .ics 文件并在日历应用中打开的完整流程。"
           }
         },
         taskNotifications: {
@@ -686,8 +773,8 @@ const resources = {
           step2: "需要整理整周安排时，打开 Week。把任务放进时间段，比较哪些天更忙，并在开始前调整计划。",
           step3: "想查看更大范围、选择未来日期，或进入某一天的 Today 时，使用 Month。",
           step4: "Reminders 适合记录不绑定具体时间段、但需要一直容易找到直到完成的事项。",
-          step5Desktop: "桌面端可以用左侧边栏切换 Reminders、Today、Week、Month、Help，并打开安装指引。",
-          step5Mobile: "手机端可以用底部导航切换主要页面，也可以用顶部安装按钮学习如何把 TaskTide 加到设备上。",
+          step5Desktop: "桌面端可以用左侧边栏切换 Reminders、Today、Week、Month、Stats、Help，并打开安装指引。",
+          step5Mobile: "手机端可以用底部导航切换主要页面（包括查看 30 天效率概览的 Stats 页），也可以用顶部安装按钮学习如何把 TaskTide 加到设备上。",
           step6Desktop: "如果希望 TaskTide 像应用一样打开，请选择“安装应用”，然后按浏览器演示操作。如果希望收到 task alerts、task start reminders 和 daily task check-ins，请打开 Help 并选择 Enable Task Notifications。",
           step6Mobile: "如果希望 TaskTide 出现在主屏幕，请选择“安装应用”，然后按手机浏览器步骤操作。之后如果希望收到 task alerts、task start reminders 和 daily task check-ins，请打开 Help 并选择 Enable Task Notifications。",
           step7Desktop: "如果连接中断，可以继续正常编辑任务。TaskTide 会合并重复的离线修改，并在服务器恢复后同步。Week、Month、Help 和 Updates 等较重区域会在打开时加载，让首次进入更快。",
@@ -762,6 +849,14 @@ const resources = {
           q11: {
             question: "ICS 导入功能支持什么？",
             answer: "你可以在 Today 导入 ICS，把日历事件变成任务。支持标题、备注、地点、定时事件、跨天事件和常见重复规则。"
+          },
+          q18: {
+            question: "如何把任务导出到日历应用？",
+            answer: "在 Today 点击「导出 ICS」，选择导出所有任务、仅未完成任务或指定日期范围内的任务，然后点击「下载 .ics」。用 Apple 日历、Google 日历、Outlook 或任何支持 ICS 格式的应用打开下载的文件即可。"
+          },
+          q19: {
+            question: "统计页面（Stats）显示什么？",
+            answer: "Stats 页面展示你过去 30 天的任务活动情况，包括已完成、已创建和逾期的任务数量，以及整体完成率，并与前 30 天进行对比。页面还包含每日趋势柱状图、行为洞察，以及一周中效率最高和最低的日期。"
           }
         },
         ask: {
@@ -838,6 +933,53 @@ const resources = {
           apple: "苹果地图",
           baidu: "百度地图"
         }
+      },
+      stats: {
+        title: "数据分析",
+        subtitle: "过去 30 天的任务活动情况",
+        emptyTitle: "暂无足够数据",
+        emptySubtitle: "完成更多任务后，你的 30 天统计数据将显示在这里。",
+        completed: "已完成",
+        created: "已创建",
+        completionRate: "完成率",
+        overdue: "逾期",
+        outOf: "共 {{total}} 个任务",
+        tasksAdded: "个任务已添加",
+        ofScheduledTasks: "已安排任务",
+        incompletePastDays: "过去天数未完成",
+        currentPeriod: "最近 30 天",
+        previousPeriod: "前 30 天",
+        comparisonTitle: "与前 30 天对比",
+        vsLabel: "对比",
+        same: "相近",
+        better: "+{{value}} 个",
+        worse: "−{{value}} 个",
+        betterRate: "+{{value}}%",
+        worseRate: "−{{value}}%",
+        trendTitle: "30 天完成趋势",
+        trendSubtitle: "每条柱表示当天已完成（绿色）与未完成（灰色）任务",
+        legendCompleted: "已完成",
+        legendRemaining: "未完成",
+        insightsTitle: "行为洞察",
+        insightMoreCompleted: "你比前 30 天多完成了 {{percent}}% 的任务。",
+        insightFewerCompleted: "你比前 30 天少完成了 {{percent}}% 的任务。",
+        insightOverdueDown: "与上一周期相比，逾期任务有所减少。",
+        insightOverdueUp: "与上一周期相比，逾期任务有所增加。",
+        insightBacklogGrowing: "你创建的任务多于完成的任务，任务积压可能在增加。",
+        insightBacklogShrinking: "你完成的任务多于创建的任务，积压在减少，保持下去！",
+        insightMostProductiveDay: "你效率最高的一天是{{day}}。",
+        insightLeastProductiveDay: "你效率最低的一天是{{day}}。",
+        detailsTitle: "详情",
+        bestDay: "效率最高的一天",
+        worstDay: "效率最低的一天",
+        avgDaily: "日均完成任务数",
+        tasksPerDay: "个/天",
+        backlogChange: "积压变化",
+        backlogGrowing: "+{{count}}（在增加）",
+        backlogShrinking: "−{{count}}（在减少）",
+        backlogNeutral: "基本持平",
+        currentPeriodRange: "当前：{{start}} – {{end}}",
+        previousPeriodRange: "前期：{{start}} – {{end}}"
       },
       onboarding: {
         title: "快速引导",
