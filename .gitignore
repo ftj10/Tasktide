@@ -26,3 +26,4 @@ dist-ssr
 backend/backups/
 backend/test files
 backend/.push-vapid.json
+.claude/settings.local.json

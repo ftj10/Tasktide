@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Edit",
+      "Write"
+    ],
+    "deny": [
+      "Read(backend/.env)",
+      "Edit(backend/.env)",
+      "Write(backend/.env)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq --rawfile contents .claude/settings.json -n '{\"hookSpecificOutput\": {\"hookEventName\": \"SessionStart\", \"additionalContext\": (\".claude/settings.json:\\n\" + $contents)}}'",
+            "statusMessage": "Loading settings.json into context..."
+          }
+        ]
+      }
+    ]
+  }
+}
