@@ -163,6 +163,15 @@ const resources = {
         notesOptional: "Notes (Optional)",
         emergencyField: "Emergency (1=Highest, 5=Lowest)"
       },
+      toast: {
+        taskCreated: "Task created",
+        taskUpdated: "Task updated",
+        taskDeleted: "Task deleted",
+        taskDone: "Task marked as done",
+        allTasksDone: "All tasks marked as done",
+        reminderCreated: "Reminder created",
+        reminderUpdated: "Reminder updated"
+      },
       release: {
         toolbar: "Updates",
         dialogTitle: "What's New",
@@ -238,7 +247,7 @@ const resources = {
         guides: {
           title: "How To Use This Website",
           step0: "TaskTide is for planning a week of work from start to finish. Create a clean account, add what you need to do, arrange it by day or time, then mark work complete as your week moves forward.",
-          step1: "If you want to plan today, start on Today. Add tasks, import calendar events from an ICS file if you have one, and use the list as your daily work plan.",
+          step1: "If you want to plan today, start on Today. Add tasks, import calendar events from an ICS file if you have one, and use the list as your daily work plan. Every action — create, edit, complete, delete — confirms with a brief message at the bottom of the screen.",
           step2: "When you need to organize the whole week, open Week. Place tasks into time slots, compare busy days, and adjust your plan before the work happens.",
           step3: "Use Month when you want to scan a larger schedule, choose a future date, or jump back into Today for a specific day.",
           step4: "Use Reminders for notes that are not tied to one schedule slot but should stay easy to find until you complete them.",
@@ -589,6 +598,15 @@ const resources = {
         notesOptional: "备注（可选）",
         emergencyField: "紧急程度（1=最高，5=最低）"
       },
+      toast: {
+        taskCreated: "任务已创建",
+        taskUpdated: "任务已更新",
+        taskDeleted: "任务已删除",
+        taskDone: "任务已完成",
+        allTasksDone: "所有任务已完成",
+        reminderCreated: "提醒已创建",
+        reminderUpdated: "提醒已更新"
+      },
       release: {
         toolbar: "更新",
         dialogTitle: "最新更新",
@@ -664,7 +682,7 @@ const resources = {
         guides: {
           title: "网站使用说明",
           step0: "TaskTide 用来从开始到完成规划一周的工作。先创建清晰账号，再添加要做的事，按日期或时间安排，然后随着一周推进把事项标记为完成。",
-          step1: "如果要规划今天，就从 Today 开始。添加任务，有 ICS 文件时可以导入日历事件，并把列表当作当天的执行计划。",
+          step1: "如果要规划今天，就从 Today 开始。添加任务，有 ICS 文件时可以导入日历事件，并把列表当作当天的执行计划。每次创建、编辑、完成或删除操作后，屏幕底部都会显示简短的确认提示。",
           step2: "需要整理整周安排时，打开 Week。把任务放进时间段，比较哪些天更忙，并在开始前调整计划。",
           step3: "想查看更大范围、选择未来日期，或进入某一天的 Today 时，使用 Month。",
           step4: "Reminders 适合记录不绑定具体时间段、但需要一直容易找到直到完成的事项。",

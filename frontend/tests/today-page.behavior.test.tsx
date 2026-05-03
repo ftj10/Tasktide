@@ -110,7 +110,7 @@ describe("TodayPage behavior", () => {
     );
 
     expect(screen.getByText("Productivity Stats")).toBeInTheDocument();
-    expect(screen.getByText("See your recent completion pattern at a glance. Last 7 days: 2 / 3 completed (67%).")).toBeInTheDocument();
+    expect(screen.getByText("67% last 7 days")).toBeInTheDocument();
     expect(screen.queryByLabelText("7-Day Completion Trend")).not.toBeInTheDocument();
     expect(screen.queryByText("Selected Day")).not.toBeInTheDocument();
 
@@ -173,7 +173,6 @@ END:VCALENDAR`,
       startTime: "13:00",
       endTime: "14:00",
     });
-    expect(await screen.findByText("Imported 1 tasks from planner.ics.")).toBeInTheDocument();
   });
 
   it("imports a multi-day all-day ICS event as one ranged task", async () => {
@@ -210,7 +209,6 @@ END:VCALENDAR`,
       beginDate: "2026-05-01",
       endDate: "2026-05-03",
     });
-    expect(await screen.findByText("Imported 1 tasks from three-day.ics.")).toBeInTheDocument();
   });
 
   it("moves a one-time task to the next selected day instead of the next real day", async () => {

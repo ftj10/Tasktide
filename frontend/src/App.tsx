@@ -3,6 +3,7 @@
 // EFFECT: Coordinates login state, initial data hydration, autosave, localization, and browser notification features
 import { Link, Route, Routes, useLocation } from "react-router-dom";
 import {
+  Alert,
   AppBar,
   Avatar,
   BottomNavigation,
@@ -12,13 +13,14 @@ import {
   Container,
   IconButton,
   Paper,
+  Snackbar,
   Stack,
   Toolbar,
   Tooltip,
   Typography,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import { lazy, Suspense, useEffect, useState, useRef } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState, useRef } from "react";
 import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
 import NotificationsActiveOutlinedIcon from "@mui/icons-material/NotificationsActiveOutlined";
@@ -134,6 +136,18 @@ export default function App() {
   const currentLanguage = i18n.resolvedLanguage?.startsWith("zh") ? "zh" : "en";
   const mobileNavZIndex = 1700;
   const [onboardingForceSignal, setOnboardingForceSignal] = useState<string | null>(null);
+  const [toast, setToast] = useState<{
+    open: boolean;
+    message: string;
+    severity: "success" | "error" | "info" | "warning";
+  }>({ open: false, message: "", severity: "success" });
+
+  const showToast = useCallback(
+    (message: string, severity: "success" | "error" | "info" | "warning" = "success") => {
+      setToast({ open: true, message, severity });
+    },
+    []
+  );
   const canUseBackgroundPush = supportsPushNotifications();
   const onboardingSteps = getOnboardingSteps(t);
   const shouldSuppressReleaseNotes = !localStorage.getItem(ONBOARDING_STORAGE_KEY);
@@ -716,7 +730,7 @@ export default function App() {
                     <Route
                       path="/reminders"
                       element={
-                        <ReminderPage reminders={reminders} setReminders={handleSetReminders} />
+                        <ReminderPage reminders={reminders} setReminders={handleSetReminders} showToast={showToast} />
                       }
                     />
                     <Route
@@ -726,6 +740,7 @@ export default function App() {
                           tasks={tasks}
                           setTasks={handleSetTasks}
                           onTaskDialogVisibilityChange={handleTaskDialogVisibilityChange}
+                          showToast={showToast}
                         />
                       }
                     />
@@ -802,6 +817,21 @@ export default function App() {
         </BottomNavigation>
       </Paper>
       <OnboardingTooltip steps={onboardingSteps} storageKey={ONBOARDING_STORAGE_KEY} forceAdvanceSignal={onboardingForceSignal} />
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={3000}
+        onClose={() => setToast((prev) => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        sx={{ mb: { xs: 9, md: 2 } }}
+      >
+        <Alert
+          severity={toast.severity}
+          onClose={() => setToast((prev) => ({ ...prev, open: false }))}
+          sx={{ width: "100%", borderRadius: 2.5, boxShadow: "0 8px 24px rgba(15, 23, 42, 0.14)" }}
+        >
+          {toast.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

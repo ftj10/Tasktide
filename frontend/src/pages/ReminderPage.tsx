@@ -26,8 +26,10 @@ import { getPriorityAccent } from "../app/priorities";
 export function ReminderPage(props: {
   reminders: Reminder[];
   setReminders: (next: Reminder[]) => void;
+  showToast?: (message: string, severity?: "success" | "error" | "info" | "warning") => void;
 }) {
   const { t } = useTranslation();
+  const { showToast } = props;
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Reminder | undefined>();
 
@@ -36,8 +38,10 @@ export function ReminderPage(props: {
     .sort((a, b) => (a.emergency ?? 5) - (b.emergency ?? 5));
 
   function upsert(reminder: Reminder) {
+    const isEditing = !!editing;
     props.setReminders([...props.reminders.filter((r) => r.id !== reminder.id), reminder]);
     setDialogOpen(false);
+    showToast?.(isEditing ? t("toast.reminderUpdated") : t("toast.reminderCreated"));
   }
 
   function doMarkDone(reminder: Reminder) {
@@ -129,9 +133,23 @@ export function ReminderPage(props: {
             bgcolor: "rgba(255,255,255,0.6)",
           }}
         >
-          <Typography color="text.secondary" sx={{ fontWeight: 600 }}>
+          <Box sx={{ color: "text.disabled", mb: 1.5, display: "flex", justifyContent: "center" }}>
+            <NotificationsActiveOutlinedIcon sx={{ fontSize: 48 }} />
+          </Box>
+          <Typography color="text.secondary" sx={{ fontWeight: 600, mb: 2 }}>
             {t("reminder.empty")}
           </Typography>
+          <Button
+            variant="outlined"
+            startIcon={<AddRoundedIcon />}
+            onClick={() => {
+              setEditing(undefined);
+              setDialogOpen(true);
+            }}
+            sx={{ borderRadius: 2.5 }}
+          >
+            {t("reminder.addReminder")}
+          </Button>
         </Paper>
       ) : (
         <Box>

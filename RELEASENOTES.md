@@ -1,5 +1,19 @@
 # Release Notes
 
+## Version 1.23.0 – Update Released (2026-05-03)
+
+### What's New
+- Added: Every task action — creating, updating, completing, and deleting — now shows a brief confirmation message at the bottom of the screen so you always know what happened.
+- Added: Reminders also confirm when you create or update one.
+- Added: ICS calendar import now shows its result the same way, instead of leaving a message banner on the page.
+
+### Improvements
+- Improved: The Reminders page now shows an Add Reminder button right inside the empty state, so it is easier to get started.
+- Improved: The Today page section headers for All-Day Tasks and Scheduled Tasks are now cleaner, with a color accent bar, a task count, and a visual separator.
+- Improved: The Productivity Stats header now shows your today and 7-day completion as compact color-coded chips instead of a line of text.
+- Improved: The Active and Completed task count pills on Today now use color to reinforce what each number means.
+- Improved: The empty state on Today now shows an icon above the message to make the screen feel more welcoming.
+
 ## Version 1.22.1 – Update Released (2026-05-03)
 
 ### Improvements

@@ -14,6 +14,41 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-05-03-ui-improvements",
+    version: "v1.23.0",
+    releasedAt: "2026-05-03",
+    title: {
+      en: "Smarter Feedback & Polished UI",
+      zh: "操作反馈与界面优化"
+    },
+    summary: {
+      en: "Task and reminder actions now confirm with a brief toast message, and the Today page got a visual refresh with cleaner section headers and stat chips.",
+      zh: "任务和提醒操作现在会显示简短的确认提示，Today 页面的区块标题和统计数据也焕然一新。"
+    },
+    changes: {
+      en: [
+        "Added: Creating, updating, completing, or deleting a task now shows a brief confirmation toast.",
+        "Added: Creating or updating a reminder also confirms with a toast.",
+        "Added: ICS import result is now shown as a toast instead of a banner.",
+        "Improved: Reminders empty state now includes an Add Reminder button.",
+        "Improved: Today section headers now show a color accent bar, task count, and divider line.",
+        "Improved: Productivity Stats header replaced its text description with compact color-coded stat chips.",
+        "Improved: Active and Completed task count badges now use color to distinguish at a glance.",
+        "Improved: Today empty state now shows a welcoming icon above the message."
+      ],
+      zh: [
+        "新增：创建、更新、完成或删除任务后，现在会显示简短的确认提示。",
+        "新增：创建或更新提醒时也会显示提示。",
+        "新增：ICS 导入结果现在以提示方式显示，不再留横幅。",
+        "改进：提醒空状态页面现在包含「添加提醒」按钮。",
+        "改进：Today 区块标题现在带有颜色标记、任务数量和分隔线。",
+        "改进：效率统计标题栏用简洁的彩色标签替换了文字描述。",
+        "改进：进行中与已完成任务计数徽章现在用颜色加以区分。",
+        "改进：Today 空状态页面现在在提示文字上方显示一个欢迎图标。"
+      ]
+    }
+  },
+  {
     id: "2026-05-03-tooltip-mobile-polish",
     version: "v1.22.1",
     releasedAt: "2026-05-03",

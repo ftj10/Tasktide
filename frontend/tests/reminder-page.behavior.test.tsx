@@ -47,7 +47,7 @@ describe("ReminderPage behavior", () => {
 
     renderWithProviders(<ReminderPage reminders={[]} setReminders={vi.fn()} />);
 
-    await user.click(screen.getByRole("button", { name: "Add Reminder" }));
+    await user.click(screen.getAllByRole("button", { name: "Add Reminder" })[0]);
 
     expect(screen.getByRole("dialog")).toHaveClass("MuiDialog-paperFullScreen");
   });

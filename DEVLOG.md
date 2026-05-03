@@ -1,5 +1,55 @@
 # Development Log
 
+## Version 1.23.0
+Version: 1.23.0
+Update Date: 2026-05-03
+
+### Changes
+
+**`frontend/src/i18n.ts`**
+- Added `toast` namespace under both `en` and `zh` translations with keys: `taskCreated`, `taskUpdated`, `taskDeleted`, `taskDone`, `allTasksDone`, `reminderCreated`, `reminderUpdated`.
+- Updated `help.guides.step1` (en + zh) to mention the new per-action confirmation feedback.
+
+**`frontend/src/App.tsx`**
+- Added `Alert` and `Snackbar` to MUI imports.
+- Added `useCallback` to React imports.
+- Added `toast` state `{ open, message, severity }` and `showToast` callback (memoized with `useCallback`).
+- Passed `showToast` as a new optional prop to `TodayPage` and `ReminderPage` routes.
+- Rendered a `Snackbar` + `Alert` pair at the root level with `anchorOrigin: bottom/center`, `autoHideDuration: 3000`. Bottom margin is `mb: 9` on mobile (above the bottom nav bar) and `mb: 2` on desktop. Alert styled with `borderRadius: 2.5` and a subtle shadow.
+
+**`frontend/src/pages/TodayPage.tsx`**
+- Added `showToast` optional prop to the component signature.
+- Removed `Alert` from MUI imports (no longer used inline); added `CheckCircleOutlineRoundedIcon` import.
+- Removed the `importStatus` state (`{ severity, message } | null`).
+- `importIcsFile` now calls `showToast?.(msg, severity)` instead of `setImportStatus`.
+- Added `handleTaskSave` wrapper around `upsert` that distinguishes create vs. edit (via `!!editing`) and calls `showToast` with the appropriate key. `TaskDialog.onSave` now receives `handleTaskSave` instead of `upsert` directly — `moveTemporaryToToday`/`moveTemporaryToTomorrow` still call `upsert` directly and show no toast (move is not a create/update action).
+- `remove` calls `showToast?.(t("toast.taskDeleted"), "info")` after updating state.
+- `doMarkDone` calls `showToast?.(t("toast.taskDone"))` after updating state.
+- `markAllDone` calls `showToast?.(t("toast.allTasksDone"))` after updating state.
+- **Task count chips**: Both chips now have explicit `bgcolor`, `color`, `border`, and `borderColor` matching the app theme — indigo tint for active, green tint for completed.
+- **Stats section header**: Replaced the `body2` `productivityPitch` typography with two inline `Chip` components (height: 22, fontSize: 0.7rem): a green chip showing today's completion fraction and a primary-colored chip showing 7-day completion rate. The existing `productivityPitch` i18n key is no longer rendered but kept in i18n for potential future use.
+- **Task section headers**: Replaced the plain uppercase `Typography subtitle1` for both "All-Day Tasks" and "Scheduled Tasks" with a flex row containing: a 3×14px rounded color accent bar (`primary.light` for all-day, `secondary.main` for scheduled), the label text as `caption`, a `flex: 1` 1px divider line, and a numeric count badge.
+- **Empty state**: Added `CheckCircleOutlineRoundedIcon` at fontSize 48 with `text.disabled` color above the existing text and button.
+
+**`frontend/src/pages/ReminderPage.tsx`**
+- Added `showToast` optional prop; destructured from `props`.
+- `upsert` now detects create vs. edit mode (via `!!editing` captured before the state update) and calls `showToast?.(t("toast.reminderCreated/reminderUpdated"))`.
+- **Empty state**: Added `NotificationsActiveOutlinedIcon` at fontSize 48 above the text. Added an outlined "+ Add Reminder" `Button` below the text, wired to open the dialog with `editing: undefined`.
+
+**`frontend/package.json`**
+- Bumped version from 1.22.1 → 1.23.0.
+
+**`RELEASENOTES.md`, `frontend/src/app/releaseNotes.ts`**
+- Added v1.23.0 release entry with bilingual (en/zh) content.
+
+### Design Decisions
+- The `Snackbar` is rendered at the App root (not inside individual pages) to avoid it unmounting mid-display if the user navigates during the 3-second window. A single toast state at the top level is simpler than a context provider for this use case.
+- `showToast` is typed as optional (`?`) on each page so pages can be rendered in tests or in isolation without providing it.
+- `moveTemporaryToToday` and `moveTemporaryToTomorrow` intentionally skip the toast — they call `upsert` directly. Showing "Task updated" for a move could confuse users who expect that message only for edits.
+- The Snackbar `mb` offset on mobile (`mb: 9`, ~72px) ensures the toast clears the 68px bottom navigation bar.
+- Section header accent bars use `primary.light` and `secondary.main` to visually distinguish the two groups without adding heavy UI elements.
+- Stats mini chips cap at height 22 to stay visually compact; font-size 0.7rem matches the existing priority chip sizing already used throughout the task cards.
+
 ## Version 1.22.1
 Version: 1.22.1
 Update Date: 2026-05-03

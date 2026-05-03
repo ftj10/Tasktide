@@ -6,7 +6,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
-  Alert,
   Box,
   Button,
   Card,
@@ -32,6 +31,7 @@ import TodayRoundedIcon from "@mui/icons-material/TodayRounded";
 import DoneAllRoundedIcon from "@mui/icons-material/DoneAllRounded";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import QueryStatsRoundedIcon from "@mui/icons-material/QueryStatsRounded";
+import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlineRounded";
 
 import type { Task } from "../types";
 import {
@@ -63,8 +63,9 @@ export function TodayPage(props: {
   tasks: Task[];
   setTasks: (next: Task[]) => void;
   onTaskDialogVisibilityChange?: (open: boolean) => void;
+  showToast?: (message: string, severity?: "success" | "error" | "info" | "warning") => void;
 }) {
-  const { tasks, setTasks, onTaskDialogVisibilityChange } = props;
+  const { tasks, setTasks, onTaskDialogVisibilityChange, showToast } = props;
   const { t, i18n } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const urlDate = searchParams.get("date");
@@ -134,10 +135,6 @@ export function TodayPage(props: {
   } | undefined>();
   const [allDoneOpen, setAllDoneOpen] = useState(false);
   const [statsExpanded, setStatsExpanded] = useState(false);
-  const [importStatus, setImportStatus] = useState<{
-    severity: "success" | "error";
-    message: string;
-  } | null>(null);
 
   useEffect(() => {
     onTaskDialogVisibilityChange?.(dialogOpen);
@@ -163,6 +160,12 @@ export function TodayPage(props: {
     closeTaskEditor();
   }
 
+  function handleTaskSave(task: Task, scope: TaskSaveScope = "series") {
+    const isEditing = !!editing;
+    upsert(task, scope);
+    showToast?.(isEditing ? t("toast.taskUpdated") : t("toast.taskCreated"));
+  }
+
   function remove(taskId: string, scope: TaskSaveScope = "series", sourceTask?: Task, occurrenceDateYmd?: string) {
     setTasks(
       removeTaskFromCollection(tasks, taskId, {
@@ -174,6 +177,7 @@ export function TodayPage(props: {
     );
     setDeleteTask(undefined);
     closeTaskEditor();
+    showToast?.(t("toast.taskDeleted"), "info");
   }
 
   function doMarkDone(task: Task) {
@@ -186,6 +190,7 @@ export function TodayPage(props: {
       })
     );
     setMarkDoneTask(undefined);
+    showToast?.(t("toast.taskDone"));
   }
 
   function markAllDone() {
@@ -203,6 +208,7 @@ export function TodayPage(props: {
 
     setTasks(nextTasks);
     setAllDoneOpen(false);
+    showToast?.(t("toast.allTasksDone"));
   }
 
   function moveTemporaryToToday(task: Task) {
@@ -308,33 +314,26 @@ export function TodayPage(props: {
     try {
       const { tasks: importedTasks, skippedCount } = parseIcsTasks(await file.text());
       if (importedTasks.length === 0) {
-        setImportStatus({
-          severity: "error",
-          message: t("today.importEmpty", { name: file.name }),
-        });
+        showToast?.(t("today.importEmpty", { name: file.name }), "error");
         return;
       }
 
       setTasks(mergeImportedTasks(importedTasks));
-      setImportStatus({
-        severity: "success",
-        message:
-          skippedCount > 0
-            ? t("today.importSuccessWithSkipped", {
-              count: importedTasks.length,
-              skipped: skippedCount,
-              name: file.name,
-            })
-            : t("today.importSuccess", {
-              count: importedTasks.length,
-              name: file.name,
-            }),
-      });
+      showToast?.(
+        skippedCount > 0
+          ? t("today.importSuccessWithSkipped", {
+            count: importedTasks.length,
+            skipped: skippedCount,
+            name: file.name,
+          })
+          : t("today.importSuccess", {
+            count: importedTasks.length,
+            name: file.name,
+          }),
+        "success"
+      );
     } catch {
-      setImportStatus({
-        severity: "error",
-        message: t("today.importError", { name: file.name }),
-      });
+      showToast?.(t("today.importError", { name: file.name }), "error");
     }
   }
 
@@ -639,15 +638,27 @@ export function TodayPage(props: {
         </Stack>
       </Paper>
 
-      {importStatus ? (
-        <Alert severity={importStatus.severity} sx={{ mb: 2.5 }}>
-          {importStatus.message}
-        </Alert>
-      ) : null}
-
       <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mb: 2 }}>
-        <Chip label={t("today.activeCount", { count: totalTasks })} sx={{ fontWeight: 700 }} />
-        <Chip label={t("today.completedCount", { count: completedTaskCount })} variant="outlined" sx={{ fontWeight: 700 }} />
+        <Chip
+          label={t("today.activeCount", { count: totalTasks })}
+          sx={{
+            fontWeight: 700,
+            bgcolor: alpha("#4f46e5", 0.08),
+            color: "primary.main",
+            border: "1px solid",
+            borderColor: alpha("#4f46e5", 0.2),
+          }}
+        />
+        <Chip
+          label={t("today.completedCount", { count: completedTaskCount })}
+          variant="outlined"
+          sx={{
+            fontWeight: 700,
+            color: "#10b981",
+            borderColor: alpha("#10b981", 0.4),
+            bgcolor: alpha("#10b981", 0.06),
+          }}
+        />
       </Stack>
 
       <Paper
@@ -686,13 +697,30 @@ export function TodayPage(props: {
                 <Typography variant="subtitle1" fontWeight={800}>
                   {t("today.productivityTitle")}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {t("today.productivityPitch", {
-                    completed: sevenDayStats.completedCount,
-                    total: sevenDayStats.totalCount,
-                    percent: sevenDayStats.completionRate,
-                  })}
-                </Typography>
+                <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap sx={{ mt: 0.5 }}>
+                  <Chip
+                    size="small"
+                    label={`${dayStats.completedCount}/${dayStats.totalCount} ${t("today.productivityToday").toLowerCase()}`}
+                    sx={{
+                      bgcolor: alpha("#10b981", 0.1),
+                      color: "#10b981",
+                      fontWeight: 700,
+                      fontSize: "0.7rem",
+                      height: 22,
+                    }}
+                  />
+                  <Chip
+                    size="small"
+                    label={`${sevenDayStats.completionRate}% ${t("today.productivityLast7Days").toLowerCase()}`}
+                    sx={{
+                      bgcolor: alpha("#4f46e5", 0.1),
+                      color: "primary.main",
+                      fontWeight: 700,
+                      fontSize: "0.7rem",
+                      height: 22,
+                    }}
+                  />
+                </Stack>
               </Box>
             </Stack>
             <Stack direction="row" spacing={1.25} useFlexGap flexWrap="wrap">
@@ -913,6 +941,9 @@ export function TodayPage(props: {
             bgcolor: "rgba(255,255,255,0.6)",
           }}
         >
+          <Box sx={{ color: "text.disabled", mb: 1.5, display: "flex", justifyContent: "center" }}>
+            <CheckCircleOutlineRoundedIcon sx={{ fontSize: 48 }} />
+          </Box>
           <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 600, mb: 1 }}>
             {t("today.noTasks")}
           </Typography>
@@ -946,38 +977,52 @@ export function TodayPage(props: {
 
           {allDayTasks.length > 0 && (
             <Box sx={{ mb: 3 }}>
-              <Typography
-                variant="subtitle1"
-                fontWeight={800}
-                sx={{
-                  mb: 1.25,
-                  color: "text.secondary",
-                  fontSize: { xs: "0.85rem", sm: "0.95rem" },
-                  textTransform: "uppercase",
-                  letterSpacing: 1,
-                }}
-              >
-                {t("today.allDay")}
-              </Typography>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
+                <Box sx={{ width: 3, height: 14, borderRadius: 1.5, bgcolor: "primary.light", flexShrink: 0 }} />
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontWeight: 800,
+                    textTransform: "uppercase",
+                    letterSpacing: 1.2,
+                    color: "text.secondary",
+                    flexShrink: 0,
+                    fontSize: { xs: "0.75rem", sm: "0.8rem" },
+                  }}
+                >
+                  {t("today.allDay")}
+                </Typography>
+                <Box sx={{ flex: 1, height: "1px", bgcolor: "divider" }} />
+                <Typography variant="caption" sx={{ color: "text.secondary", opacity: 0.6, fontWeight: 700 }}>
+                  {allDayTasks.length}
+                </Typography>
+              </Box>
               {allDayTasks.map(renderTaskCard)}
             </Box>
           )}
 
           {timedTasks.length > 0 && (
             <Box>
-              <Typography
-                variant="subtitle1"
-                fontWeight={800}
-                sx={{
-                  mb: 1.25,
-                  color: "text.secondary",
-                  fontSize: { xs: "0.85rem", sm: "0.95rem" },
-                  textTransform: "uppercase",
-                  letterSpacing: 1,
-                }}
-              >
-                {t("today.scheduled")}
-              </Typography>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
+                <Box sx={{ width: 3, height: 14, borderRadius: 1.5, bgcolor: "secondary.main", flexShrink: 0 }} />
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontWeight: 800,
+                    textTransform: "uppercase",
+                    letterSpacing: 1.2,
+                    color: "text.secondary",
+                    flexShrink: 0,
+                    fontSize: { xs: "0.75rem", sm: "0.8rem" },
+                  }}
+                >
+                  {t("today.scheduled")}
+                </Typography>
+                <Box sx={{ flex: 1, height: "1px", bgcolor: "divider" }} />
+                <Typography variant="caption" sx={{ color: "text.secondary", opacity: 0.6, fontWeight: 700 }}>
+                  {timedTasks.length}
+                </Typography>
+              </Box>
               {timedTasks.map(renderTaskCard)}
             </Box>
           )}
@@ -993,7 +1038,7 @@ export function TodayPage(props: {
         onClose={() => {
           closeTaskEditor();
         }}
-        onSave={upsert}
+        onSave={handleTaskSave}
         onDelete={(id, scope = "series") => {
           const task = tasks.find((item) => item.id === id);
           if (!task) return;
