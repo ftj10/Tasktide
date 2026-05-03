@@ -1,5 +1,25 @@
 # Development Log
 
+## Version 1.25.1
+Update Date: 2026-05-03
+
+### Root cause
+`React.lazy()` throws a `ChunkLoadError` when a dynamically-imported JS chunk cannot be fetched (e.g. offline). No `ErrorBoundary` existed in the tree, so the uncaught render error unmounted the entire React tree → blank page.
+
+### Changes
+
+**`frontend/src/App.tsx`**
+- Added `ChunkErrorBoundary` class component wrapping `<Suspense><Routes>`. Catches chunk load failures and renders `OfflineFallback` instead.
+- Added `OfflineFallback` function component rendering a localised "page unavailable offline" message.
+- `resetKey={location.pathname}` on the boundary auto-resets it on route change, so navigating to a cached page after an error recovers without a full reload.
+
+**`frontend/src/i18n.ts`**
+- Added `app.offlinePageUnavailable` in both `en` and `zh` locales.
+
+### Design notes
+- The boundary is keyed on `location.pathname` so it resets automatically when the user navigates back to a page whose chunk IS cached or when they come back online and click a different route.
+- The secondary gap (chunks not pre-cached in the service worker) is left for a follow-up; the ErrorBoundary is the minimal safe fix.
+
 ## Version 1.25.0
 Version: 1.25.0
 Update Date: 2026-05-03

@@ -1,5 +1,10 @@
 # Release Notes
 
+## Version 1.25.1 – Update Released (2026-05-03)
+
+### Fixes
+- Fixed: Switching to a page you hadn't visited before while offline no longer shows a blank screen. A clear message now appears instead, letting you know the page will be available once you reconnect.
+
 ## Version 1.25.0 – Update Released (2026-05-03)
 
 ### What's New

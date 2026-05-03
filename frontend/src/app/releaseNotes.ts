@@ -14,6 +14,27 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-05-03-offline-blank-page-fix",
+    version: "v1.25.1",
+    releasedAt: "2026-05-03",
+    title: {
+      en: "Offline Navigation Fix",
+      zh: "修复离线页面空白问题"
+    },
+    summary: {
+      en: "Switching pages while offline no longer shows a blank screen.",
+      zh: "离线状态下切换页面不再出现空白屏幕。"
+    },
+    changes: {
+      en: [
+        "Fixed: Navigating to an unvisited page while offline now shows a friendly message instead of a blank screen."
+      ],
+      zh: [
+        "修复：离线状态下切换到未访问过的页面，现在会显示友好提示而非空白页面。"
+      ]
+    }
+  },
+  {
     id: "2026-05-03-stats-page",
     version: "v1.25.0",
     releasedAt: "2026-05-03",

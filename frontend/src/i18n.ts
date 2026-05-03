@@ -9,7 +9,8 @@ const resources = {
   en: {
     translation: {
       app: {
-        loading: "Loading your data..."
+        loading: "Loading your data...",
+        offlinePageUnavailable: "This page isn't available offline. Go back online to load it."
       },
       common: {
         confirm: "Confirm",
@@ -515,7 +516,8 @@ const resources = {
   zh: {
     translation: {
       app: {
-        loading: "正在加载数据..."
+        loading: "正在加载数据...",
+        offlinePageUnavailable: "此页面在离线状态下无法访问，请联网后重试。"
       },
       common: {
         confirm: "确认",

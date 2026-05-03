@@ -64,6 +64,7 @@ import {
 } from "./app/pushNotifications";
 import { areTasksEqual } from "./app/tasks";
 
+import { ChunkErrorBoundary } from "./components/ChunkErrorBoundary";
 import { TodayPage } from "./pages/TodayPage";
 import { LoginPage } from "./pages/LoginPage";
 import { OnboardingTooltip } from "./components/OnboardingTooltip";
@@ -730,7 +731,8 @@ export default function App() {
           <Box sx={{ width: "100%", minWidth: 0, pb: { xs: taskDialogOpen ? 0 : 12, md: 0 } }}>
             <Container maxWidth={false} disableGutters>
               <Box sx={{ py: { xs: 2, md: 0 } }}>
-                <Suspense fallback={<PageLoadingFallback />}>
+                <ChunkErrorBoundary resetKey={location.pathname}>
+                  <Suspense fallback={<PageLoadingFallback />}>
                   <Routes>
                     <Route
                       path="/reminders"
@@ -766,7 +768,8 @@ export default function App() {
                     <Route path="/stats" element={<StatsPage tasks={tasks} />} />
                     <Route path="/help" element={<HelpPage />} />
                   </Routes>
-                </Suspense>
+                  </Suspense>
+                </ChunkErrorBoundary>
               </Box>
             </Container>
           </Box>

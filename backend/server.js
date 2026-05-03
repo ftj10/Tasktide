@@ -70,7 +70,7 @@ app.use(cors({
       return;
     }
 
-    callback(new Error('Not allowed by CORS'));
+    callback(null, false);
   },
   credentials: true,
 }));
