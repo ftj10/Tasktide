@@ -1,5 +1,21 @@
 # Release Notes
 
+## Version 1.25.2 – Update Released (2026-05-04)
+
+Version: 1.25.2
+Update Date: 2026-05-04
+
+Title: Version 1.25.2 – Update Released (2026-05-04)
+
+### What’s New
+- Added: Help Center now explains why an offline page message may appear and what to do next.
+
+### Improvements
+- Improved: Offline guidance is clearer for users who open a page that has not loaded on their device before.
+
+### Fixes
+- Fixed: The frontend can be built and released normally again after the offline page fallback update.
+
 ## Version 1.25.1 – Update Released (2026-05-03)
 
 ### Fixes

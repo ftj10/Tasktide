@@ -33,8 +33,8 @@ describe("ReleaseNotesCenter behavior", () => {
   it("shows the latest shipped version in the update dialog", () => {
     renderWithProviders(<ReleaseNotesCenter username="tom" />);
 
-    expect(screen.getByText("v1.25.1")).toBeInTheDocument();
-    expect(screen.getByText("Offline Navigation Fix")).toBeInTheDocument();
+    expect(screen.getByText("v1.25.2")).toBeInTheDocument();
+    expect(screen.getByText("Frontend Build Fix")).toBeInTheDocument();
   });
 
   it("keeps the 1.18.3 and 1.18.4 coach-mark updates in history", async () => {

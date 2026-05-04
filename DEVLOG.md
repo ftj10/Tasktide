@@ -1,5 +1,41 @@
 # Development Log
 
+## Version 1.25.2
+Version: 1.25.2
+Update Date: 2026-05-04
+
+### Root cause
+`BrokenPage` in `frontend/tests/offline-mode.behavior.test.tsx` always threw during render and had no explicit return type. TypeScript inferred `() => void`, which React 19 type definitions reject as a JSX component because JSX components must return `ReactNode` or `Promise<ReactNode>`.
+
+### Changes
+
+**`frontend/tests/offline-mode.behavior.test.tsx`**
+- Imported `ReactNode` as a type.
+- Annotated `BrokenPage(): ReactNode` so the intentionally throwing test component remains valid JSX while preserving the offline fallback assertion.
+
+**`frontend/src/i18n.ts`**
+- Updated Help Center core flow copy to mention the offline page message.
+- Added `help.faq.q20` in English and Chinese for offline page message guidance.
+
+**`frontend/src/pages/HelpPage.tsx`**
+- Added the new offline page guidance FAQ to the clickable Common Q&A list.
+
+**`frontend/tests/help-page.behavior.test.tsx`**
+- Added assertions that the offline page FAQ appears and explains the blank-screen replacement.
+
+**`frontend/src/app/releaseNotes.ts`, `frontend/tests/release-notes.behavior.test.tsx`**
+- Added the `v1.25.2` in-app update entry and updated latest-release coverage.
+
+**`package.json`, `frontend/package.json`, `frontend/package-lock.json`**
+- Bumped project and frontend package metadata to `1.25.2`.
+
+**`RELEASENOTES.md`, `README.md`, `DEVLOG.md`**
+- Added the required user-facing release note, public overview update, and maintainer log entry.
+
+### Design notes
+- The app behavior is unchanged; the code fix is limited to the test component type.
+- Help Center copy was updated because offline fallback behavior is user-visible and should be discoverable.
+
 ## Version 1.25.1
 Update Date: 2026-05-03
 
