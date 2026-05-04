@@ -1,5 +1,15 @@
 # Release Notes
 
+## Version 1.27.0 – Update Released (2026-05-04)
+
+### What's New
+- Added: The app can now send your syllabus text to an AI for analysis. This is the engine behind the upcoming Syllabus Import feature — once the full import flow is complete, you will be able to drop in a course outline and have your tasks created automatically.
+
+## Version 1.26.0 – Update Released (2026-05-04)
+
+### What's New
+- Added: Course Syllabus Import is on its way. Behind the scenes, support has been added for reading PDF and CSV syllabus files directly in your browser, so your course documents never leave your device.
+
 ## Version 1.25.1 – Update Released (2026-05-03)
 
 ### Fixes

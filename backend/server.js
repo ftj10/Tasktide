@@ -16,6 +16,7 @@ const HelpQuestion = require('./models/HelpQuestion');
 const { getTaskRetentionCutoff, startTaskRetentionScheduler } = require('./taskRetention');
 const { getPushPublicKey } = require('./pushNotifications');
 const { startNotificationScheduler } = require('./notificationScheduler');
+const syllabusAnalysis = require('./syllabusAnalysis');
 
 const app = express();
 const SESSION_COOKIE_NAME = 'tasktide_session';
@@ -787,6 +788,18 @@ app.delete('/help-questions/:id', authenticateToken, async (req, res) => {
     res.status(200).json({ message: "Deleted" });
   } catch (err) {
     res.status(500).json({ error: "Failed to delete" });
+  }
+});
+
+// INPUT: authenticated request with syllabus text / OUTPUT: SyllabusTaskDraft[] / EFFECT: calls Claude API to extract schedule events
+app.post('/syllabus/analyze', authenticateToken, async (req, res) => {
+  try {
+    const text = String(req.body?.text ?? '').trim();
+    if (!text) return res.status(400).json({ error: 'text is required' });
+    const drafts = await syllabusAnalysis.analyzeSyllabus(text);
+    res.json(drafts);
+  } catch {
+    res.status(500).json({ error: 'Analysis failed' });
   }
 });
 

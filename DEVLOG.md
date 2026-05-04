@@ -1,5 +1,64 @@
 # Development Log
 
+## Version 1.27.0
+Update Date: 2026-05-04
+
+### Changes
+
+**`backend/syllabusAnalysis.js`** (new)
+- `analyzeSyllabus(text, overrideClient?) → Promise<SyllabusTaskDraft[]>` — calls `claude-opus-4-7` with `thinking: {type: "adaptive"}` and `tool_choice` forced to `submit_syllabus_tasks`, filters out any returned drafts missing required fields before returning.
+- `SUBMIT_TOOL` — exported tool definition with full JSON schema for the 12-field `SyllabusTaskDraft` item shape; used by both the route and tests.
+- `overrideClient` parameter allows test injection without a real API key.
+
+**`backend/server.js`**
+- Added `require('./syllabusAnalysis')` and `POST /syllabus/analyze` route: auth-protected via `authenticateToken`, validates non-empty `text` body, delegates to `syllabusAnalysis.analyzeSyllabus`, returns draft array.
+
+**`backend/tests/syllabus-analysis.behavior.test.js`** (new)
+- 7 tests: 401 for unauthenticated, 400 for missing/empty text, 200 with mocked drafts, 500 on API error, draft filtering (invalid items removed), empty array when no `tool_use` block returned.
+
+**`frontend/src/app/syllabusPrompt.ts`** (new)
+- `buildSyllabusPrompt(text: string): string` — builds the user-facing Claude prompt encoding all `SyllabusTaskDraftSchema` constraints: 12 sourceTypes with descriptions, confidence rules, YYYY-MM-DD date format, HH:MM 24-hour time format, weekday numbering (1=Mon…7=Sun), once vs recurring rules, verbatim `sourceText` requirement.
+
+**`frontend/tests/syllabus-prompt.behavior.test.ts`** (new)
+- 6 tests: verbatim text inclusion, all 12 sourceTypes present, YYYY-MM-DD mentioned, all 3 confidence levels present, weekday convention (1=Monday, 7=Sunday), non-empty output for empty input.
+
+**Dependencies added:** `@anthropic-ai/sdk` (backend)
+
+### Design notes
+- Backend uses tool_choice forcing to guarantee structured JSON output rather than prompt-based JSON extraction, which is more robust against preamble/fence leakage.
+- `overrideClient` injection pattern avoids module-level client construction at import time, so tests run without `ANTHROPIC_API_KEY` present.
+- Prompt generator lives in the frontend to keep schema knowledge co-located with `syllabusSchema.ts`; the backend route uses its own inline prompt for the actual Claude call.
+
+## Version 1.26.0
+Update Date: 2026-05-04
+
+### Changes
+
+**`frontend/src/app/syllabusSchema.ts`** (new)
+- `SyllabusTaskDraftSchema` — Zod v4 schema for the `SyllabusTaskDraft` type. Single source of truth for AI output validation, TypeScript inference, and tests.
+- `transformDraft(draft) → Task` — pure function mapping a validated draft to a `Task`. Covers all 12 `sourceType → emergency` defaults, `excludedDates → occurrenceOverrides` with `deleted: true`, `type: "recurring" → RECURRING + TaskRecurrence` (WEEKLY when `weekdays` present, DAILY otherwise), `type: "once" → ONCE`.
+- Exported types: `SyllabusTaskDraft`, `SyllabusImportDraftResult`.
+
+**`frontend/src/app/syllabusExtraction.ts`** (new)
+- `extract(input: string | File): Promise<string>` — client-side extractor. Plain text passthrough; PDF via `pdfjs-dist`; CSV via `papaparse` (rows joined with ` | `). Throws a descriptive error for unsupported types with an Excel → CSV hint.
+- Worker URL assignment is wrapped in try/catch so it degrades gracefully in test environments.
+
+**`frontend/tests/syllabus-draft.behavior.test.ts`** (new)
+- 44 tests covering schema validation (valid drafts, invalid fields, all 12 source types) and all `transformDraft` output cases.
+
+**`frontend/tests/syllabus-extraction.behavior.test.ts`** (new)
+- 7 tests covering text passthrough, CSV extraction from a fixture file, PDF extraction with a mocked `pdfjs-dist`, and unsupported-type error messages.
+
+**`frontend/tests/fixtures/sample-syllabus.csv`** (new)
+- Fixture CSV used by extraction tests.
+
+**Dependencies added:** `zod@^4`, `pdfjs-dist@^5`, `papaparse@^5`, `@types/papaparse` (dev).
+
+### Design notes
+- Excel support excluded from MVP. Users with `.xlsx` schedules see an error with a "export to CSV first" hint.
+- `pdfjs-dist` worker URL uses `import.meta.url` for Vite compatibility; fails silently in jsdom so no test shim is needed.
+- `transformDraft` is intentionally pure — no side effects — so the review screen can call it once on mount and let `TaskDialog` own edits from that point.
+
 ## Version 1.25.1
 Update Date: 2026-05-03
 

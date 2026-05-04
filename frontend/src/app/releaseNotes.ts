@@ -14,6 +14,48 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-05-04-syllabus-ai-engine",
+    version: "v1.27.0",
+    releasedAt: "2026-05-04",
+    title: {
+      en: "Syllabus Import — AI Engine Ready",
+      zh: "课程表导入 — AI 分析引擎就绪"
+    },
+    summary: {
+      en: "The AI that will read your course syllabus and turn it into tasks is now in place. The full import flow is coming soon.",
+      zh: "用于读取课程大纲并自动生成任务的 AI 引擎已就绪，完整的导入流程即将上线。"
+    },
+    changes: {
+      en: [
+        "Added: Behind the scenes, the app can now send your syllabus text to an AI and receive a structured list of tasks back — ready for the upcoming import wizard."
+      ],
+      zh: [
+        "新增：应用现在可在后台将您的课程大纲发送给 AI 进行分析，并返回结构化任务列表，为即将上线的导入向导做好准备。"
+      ]
+    }
+  },
+  {
+    id: "2026-05-04-syllabus-import-foundation",
+    version: "v1.26.0",
+    releasedAt: "2026-05-04",
+    title: {
+      en: "Syllabus Import Coming Soon",
+      zh: "课程表导入即将上线"
+    },
+    summary: {
+      en: "Background work has been completed to support importing course syllabuses as tasks.",
+      zh: "已完成课程表导入功能的底层支持，该功能即将上线。"
+    },
+    changes: {
+      en: [
+        "Added: PDF and CSV syllabus files can now be read entirely in your browser — your documents stay on your device."
+      ],
+      zh: [
+        "新增：PDF 和 CSV 格式的课程大纲现在可在浏览器本地读取，您的文件不会离开您的设备。"
+      ]
+    }
+  },
+  {
     id: "2026-05-03-offline-blank-page-fix",
     version: "v1.25.1",
     releasedAt: "2026-05-03",
