@@ -246,6 +246,11 @@ const resources = {
             question: "Export tasks as a calendar file (.ics)",
             title: "how to export tasks as ics calendar file.gif",
             text: "This GIF shows clicking Export ICS on Today, choosing a filter, and downloading the .ics file to open in a calendar app."
+          },
+          syllabusManual: {
+            question: "Import a syllabus using your own AI",
+            title: "how to import syllabus manually.gif",
+            text: "1. Click Import Syllabus in the sidebar.\n2. Paste your syllabus text or upload a PDF or CSV, then click Next.\n3. Choose Copy prompt to my AI.\n4. Optionally add study preferences (e.g. \"remind me 3 days before exams\").\n5. Click Next to see the generated prompt — copy it with the Copy Prompt button.\n6. Paste the prompt into any AI (ChatGPT, Claude, etc.) and copy the JSON it returns.\n7. Paste that JSON into the wizard and click Import Tasks.\n8. Review the extracted tasks, edit or remove any, then click to add them to your planner."
           }
         },
         taskNotifications: {
@@ -274,8 +279,8 @@ const resources = {
           step5Mobile: "On mobile, use the bottom navigation to move between the main pages — including Stats for your 30-day productivity overview — and the top install button to learn how to add TaskTide to your device.",
           step6Desktop: "If you want TaskTide to open like an app, choose Install app and follow the walkthrough for your browser. If you want task alerts, task start reminders, and daily task check-ins, open Help and choose Enable Task Notifications.",
           step6Mobile: "If you want TaskTide on your home screen, choose Install app and follow the mobile steps for your browser. Then open Help and choose Enable Task Notifications if you want task alerts, task start reminders, and daily task check-ins.",
-          step7Desktop: "If your connection drops, keep editing tasks normally. TaskTide will merge repeated offline edits and sync them when the server is available again. Heavier areas such as Week, Month, Help, and Updates load when you open them, so the first screen can start sooner.",
-          step7Mobile: "If your connection drops, keep editing tasks normally. TaskTide will merge repeated offline edits and sync them when the server is available again. Heavier areas such as Week, Month, Help, and Updates load when you open them, so the first screen can start sooner."
+          step7Desktop: "If your connection drops, keep editing tasks normally. TaskTide will merge repeated offline edits and sync them when the server is available again. Heavier areas such as Week, Month, Help, and Updates load when you open them, so the first screen can start sooner. Use Updates to see what changed recently, and use Help when you need the full workflow explained again.",
+          step7Mobile: "If your connection drops, keep editing tasks normally. TaskTide will merge repeated offline edits and sync them when the server is available again. Heavier areas such as Week, Month, Help, and Updates load when you open them, so the first screen can start sooner. Use Updates to see what changed recently, and use Help when you need the full workflow explained again."
         },
         faq: {
           title: "Common Q&A",
@@ -357,7 +362,11 @@ const resources = {
           },
           q20: {
             question: "How does syllabus import work?",
-            answer: "Click Import Syllabus in the sidebar. Paste your syllabus text or upload a PDF or CSV file, then click Analyze. A consent screen shows you exactly what text will be sent to Claude — confirm to proceed. TaskTide extracts lectures, exams, assignments, and more as task drafts. Review each draft, edit or remove any, then click Import to add them to your planner. If you close the browser mid-import, the wizard saves your progress for 24 hours so you can pick up where you left off."
+            answer: "Click Import Syllabus in the sidebar. Paste your syllabus text or upload a PDF or CSV file, then click Next. Choose how to generate tasks: pick Copy prompt to my AI to get a ready-made prompt you paste into any AI — nothing ever leaves your browser — or pick Analyze with Claude to send your text to Claude directly (a consent screen shows exactly what will be sent before anything is submitted). After the AI produces a JSON list, paste it back and the wizard validates each item, showing specific errors if anything is wrong. Review every extracted task, edit or remove any, then click Import to add them to your planner. If you close the browser mid-import, the wizard saves your progress for 24 hours so you can pick up where you left off."
+          },
+          q21: {
+            question: "Where can I see what changed recently?",
+            answer: "Open Updates to read the latest TaskTide changes. The Help Center also stays aligned with new workflows, so you can return here when a new feature changes how you plan, manage, or complete tasks."
           }
         },
         ask: {
@@ -512,7 +521,27 @@ const resources = {
         consentTitle: "Review before sending to Claude",
         consentBody: "The following text will be sent to Claude for analysis:",
         consentConfirm: "Send to Claude",
-        consentCancel: "Cancel"
+        consentCancel: "Cancel",
+        next: "Next",
+        fileTypeError: "Unsupported file type. For Excel files, please export to CSV first.",
+        methodTitle: "How would you like to import tasks?",
+        methodManual: "Copy prompt to my AI",
+        methodManualDesc: "Generate a prompt you paste into any AI. Nothing leaves your browser.",
+        methodAuto: "Analyze with Claude",
+        methodAutoDesc: "Your syllabus text is sent to Claude for analysis.",
+        preferencesTitle: "Study Preferences",
+        preferencesLabel: "Any hints for the AI? (optional)",
+        preferencesPlaceholder: "e.g. remind me 3 days before each exam",
+        preferencesHint: "These instructions are added to the AI prompt.",
+        promptTitle: "Your AI Prompt",
+        promptPrivacy: "Nothing is sent anywhere — paste this prompt into any AI you choose.",
+        promptCopy: "Copy Prompt",
+        promptCopied: "Copied!",
+        promptNext: "I've pasted it — Next",
+        pasteJsonTitle: "Paste AI Response",
+        pasteJsonLabel: "Paste the JSON array from the AI",
+        pasteJsonNext: "Import Tasks",
+        pasteJsonError: "Could not parse the JSON — check the errors below."
       },
       onboarding: {
         title: "Quick tour",
@@ -791,6 +820,11 @@ const resources = {
             question: "将任务导出为日历文件（.ics）",
             title: "how to export tasks as ics calendar file.gif",
             text: "这个 GIF 会演示在 Today 点击导出 ICS、选择筛选条件，以及下载 .ics 文件并在日历应用中打开的完整流程。"
+          },
+          syllabusManual: {
+            question: "使用自己的 AI 导入课程大纲",
+            title: "how to import syllabus manually.gif",
+            text: "1. 点击侧边栏中的「导入课程大纲」。\n2. 粘贴大纲文本或上传 PDF/CSV 文件，然后点击「下一步」。\n3. 选择「复制提示词到我的 AI」。\n4. 可选：填写学习偏好（例如「考试前 3 天提醒我」）。\n5. 点击「下一步」查看生成的提示词，用「复制提示词」按钮复制。\n6. 将提示词粘贴到任意 AI（ChatGPT、Claude 等）并复制它返回的 JSON。\n7. 将 JSON 粘贴回向导，点击「导入任务」。\n8. 检查提取的任务，编辑或删除不需要的，然后点击确认导入到计划中。"
           }
         },
         taskNotifications: {
@@ -819,8 +853,8 @@ const resources = {
           step5Mobile: "手机端可以用底部导航切换主要页面（包括查看 30 天效率概览的 Stats 页），也可以用顶部安装按钮学习如何把 TaskTide 加到设备上。",
           step6Desktop: "如果希望 TaskTide 像应用一样打开，请选择“安装应用”，然后按浏览器演示操作。如果希望收到 task alerts、task start reminders 和 daily task check-ins，请打开 Help 并选择 Enable Task Notifications。",
           step6Mobile: "如果希望 TaskTide 出现在主屏幕，请选择“安装应用”，然后按手机浏览器步骤操作。之后如果希望收到 task alerts、task start reminders 和 daily task check-ins，请打开 Help 并选择 Enable Task Notifications。",
-          step7Desktop: "如果连接中断，可以继续正常编辑任务。TaskTide 会合并重复的离线修改，并在服务器恢复后同步。Week、Month、Help 和 Updates 等较重区域会在打开时加载，让首次进入更快。",
-          step7Mobile: "如果连接中断，可以继续正常编辑任务。TaskTide 会合并重复的离线修改，并在服务器恢复后同步。Week、Month、Help 和 Updates 等较重区域会在打开时加载，让首次进入更快。"
+          step7Desktop: "如果连接中断，可以继续正常编辑任务。TaskTide 会合并重复的离线修改，并在服务器恢复后同步。Week、Month、Help 和 Updates 等较重区域会在打开时加载，让首次进入更快。使用 Updates 查看最近变化，需要重新理解完整流程时可以回到 Help。",
+          step7Mobile: "如果连接中断，可以继续正常编辑任务。TaskTide 会合并重复的离线修改，并在服务器恢复后同步。Week、Month、Help 和 Updates 等较重区域会在打开时加载，让首次进入更快。使用 Updates 查看最近变化，需要重新理解完整流程时可以回到 Help。"
         },
         faq: {
           title: "常见问答",
@@ -902,7 +936,11 @@ const resources = {
           },
           q20: {
             question: "课程大纲导入功能是如何工作的？",
-            answer: "点击侧边栏中的「导入课程大纲」，粘贴大纲文本或上传 PDF 或 CSV 文件，然后点击「分析」。系统会显示一个确认界面，展示即将发送给 Claude 的完整文本，由您决定是否继续。TaskTide 会将讲座、考试、作业等提取为任务草稿，您可以逐一检查、编辑或删除，确认后再导入到计划中。如中途关闭浏览器，向导会保存进度 24 小时，重新打开即可继续。"
+            answer: "点击侧边栏中的「导入课程大纲」，粘贴大纲文本或上传 PDF 或 CSV 文件，然后点击「下一步」。选择生成方式：「复制提示词到我的 AI」会生成一段提示词，您可以粘贴到任何 AI 中——数据不会离开您的浏览器；「用 Claude 自动分析」则会将您的文本发送给 Claude，发送前会显示确认界面。AI 返回 JSON 列表后，将其粘贴回向导，系统会逐项校验并在出现问题时给出具体错误提示。核查每条任务草稿，编辑或删除不需要的，然后点击导入加入计划中。如中途关闭浏览器，向导会保存进度 24 小时，重新打开即可继续。"
+          },
+          q21: {
+            question: "在哪里查看最近更新？",
+            answer: "打开 Updates 可以阅读 TaskTide 最近的变化。Help Center 也会随着新流程更新，所以当新功能改变规划、管理或完成任务的方式时，可以回到这里重新查看说明。"
           }
         },
         ask: {
@@ -1057,7 +1095,27 @@ const resources = {
         consentTitle: "发送前请确认内容",
         consentBody: "以下文本将发送给 Claude 进行分析：",
         consentConfirm: "发送给 Claude",
-        consentCancel: "取消"
+        consentCancel: "取消",
+        next: "下一步",
+        fileTypeError: "不支持该文件格式。如需导入 Excel 文件，请先导出为 CSV。",
+        methodTitle: "请选择导入方式",
+        methodManual: "复制提示词到我的 AI",
+        methodManualDesc: "生成一段提示词，粘贴到任意 AI。数据不会离开您的浏览器。",
+        methodAuto: "用 Claude 自动分析",
+        methodAutoDesc: "课程大纲文本将发送给 Claude 进行分析。",
+        preferencesTitle: "学习偏好",
+        preferencesLabel: "对 AI 有什么特别说明？（选填）",
+        preferencesPlaceholder: "例如：考试前 3 天提醒我",
+        preferencesHint: "这些说明会附加到 AI 提示词中。",
+        promptTitle: "您的 AI 提示词",
+        promptPrivacy: "数据不会发送到任何地方——请将此提示词粘贴到您选择的任意 AI 中。",
+        promptCopy: "复制提示词",
+        promptCopied: "已复制！",
+        promptNext: "已粘贴 — 下一步",
+        pasteJsonTitle: "粘贴 AI 回复",
+        pasteJsonLabel: "将 AI 返回的 JSON 数组粘贴到此处",
+        pasteJsonNext: "导入任务",
+        pasteJsonError: "无法解析 JSON — 请检查以下错误。"
       },
       onboarding: {
         title: "快速引导",

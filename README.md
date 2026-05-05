@@ -1,8 +1,10 @@
 # TaskTide Application
 
-Current version: `v2.3.0`
+Current version: `v2.4.1`
 
 TaskTide is a full-stack planner for daily tasks, weekly routines, reminders, shared help questions, and calendar-based scheduling.
+
+Contributor guidance is maintained in `AGENTS.md` so automated and human-assisted changes follow the same versioning, documentation, Help Center, development log, and testing expectations.
 
 Deployed Web: TaskTide
 

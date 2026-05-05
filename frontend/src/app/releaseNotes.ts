@@ -14,6 +14,71 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-05-05-add-task-id-fix",
+    version: "v2.5.1",
+    releasedAt: "2026-05-05",
+    title: {
+      en: "Add Task Fix",
+      zh: "新增任务修复"
+    },
+    summary: {
+      en: "Fixed a bug where adding a second task in the same session could silently overwrite the first one.",
+      zh: "修复了在同一会话中添加第二个任务时，可能会静默覆盖第一个任务的问题。"
+    },
+    changes: {
+      en: ["Fixed: Adding a task after a previous task was just created no longer silently replaces the first task."],
+      zh: ["修复：在同一次使用中连续新增任务时，不再出现第一个任务被静默覆盖的问题。"]
+    }
+  },
+  {
+    id: "2026-05-05-syllabus-manual-wizard",
+    version: "v2.5.0",
+    releasedAt: "2026-05-05",
+    title: {
+      en: "Syllabus Import: Manual AI Path",
+      zh: "课程大纲导入：手动 AI 路径"
+    },
+    summary: {
+      en: "You can now import a syllabus using any AI — generate a prompt, paste it into ChatGPT or Claude, then paste the result back. Nothing leaves your browser.",
+      zh: "您现在可以用任意 AI 导入课程大纲——生成提示词，粘贴到 ChatGPT 或 Claude，再把结果粘贴回来。数据不会离开您的浏览器。"
+    },
+    changes: {
+      en: [
+        "Added: Manual import path — generate a prompt and paste it into any AI; nothing is sent anywhere.",
+        "Added: Study Preferences step for adding hints before the prompt is generated.",
+        "Added: Pasted JSON is validated field-by-field with specific errors shown without losing your content.",
+        "Added: Uploading an unsupported file (e.g. Excel) now shows a clear error with a tip to export to CSV first."
+      ],
+      zh: [
+        "新增：手动导入路径——生成提示词并粘贴到任意 AI，数据不会发送到任何地方。",
+        "新增：学习偏好步骤，可在生成提示词前添加说明。",
+        "新增：粘贴的 JSON 会逐字段校验，出错时显示具体错误提示且不丢失已粘贴内容。",
+        "新增：上传不支持的文件格式（如 Excel）时，现在会显示明确错误提示并建议先导出为 CSV。"
+      ]
+    }
+  },
+  {
+    id: "2026-05-05-agent-guidance",
+    version: "v2.4.1",
+    releasedAt: "2026-05-05",
+    title: {
+      en: "Clearer Contributor Guidance",
+      zh: "更清晰的贡献指引"
+    },
+    summary: {
+      en: "TaskTide now has clearer guidance for keeping future updates consistent across user help, release notes, documentation, and tests.",
+      zh: "TaskTide 现在有更清晰的指引，帮助后续更新在用户帮助、更新说明、文档和测试中保持一致。"
+    },
+    changes: {
+      en: [
+        "Improved: TaskTide now has clearer contributor guidance, helping future updates stay consistent across release notes, Help Center guidance, README documentation, development logs, and tests."
+      ],
+      zh: [
+        "改进：TaskTide 现在有更清晰的贡献指引，帮助后续更新在更新说明、帮助中心指引、README 文档、开发日志和测试中保持一致。"
+      ]
+    }
+  },
+  {
     id: "2026-05-04-syllabus-batch-delete",
     version: "v2.4.0",
     releasedAt: "2026-05-04",

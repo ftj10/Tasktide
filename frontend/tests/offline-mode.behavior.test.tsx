@@ -55,12 +55,12 @@ describe("offline mode behavior", () => {
     vi.restoreAllMocks();
   });
 
-  // Cycle 4: chunk load failure shows fallback UI, not blank page
   it("shows the offline fallback message when a page chunk fails to load", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
 
     function BrokenPage() {
       throw new TypeError("Failed to fetch dynamically imported module");
+      return null;
     }
 
     renderWithProviders(

@@ -30,17 +30,25 @@ Create:
 
 Use `/planning-with-files:status` to check progress during or after implementation.
 
-### 6. /tdd (before implementation)
-Create test plan: first failing test, minimal behavior, frontend tests, backend tests, regression tests, edge cases, existing tests that may need updates. Do not implement product code.
+### 6. Claude TDD handoff prompt
+Create a Codex-ready TDD prompt: first failing test, minimal behavior, frontend tests, backend tests, regression tests, edge cases, existing tests that may need updates. Do not implement product code or write the tests in Claude unless the user explicitly asks.
 
 ### 7. Codex handoff
-Generate prompt (see template below).
+Generate prompt (see template below). Codex owns the implementation, including test creation, product code, required docs, version bump, release notes, and verification commands.
+
+If Claude Code has `openai/codex-plugin-cc` installed, delegate the prompt with:
+
+```
+/codex:rescue --background <Codex handoff prompt>
+```
+
+Use `/codex:status` to monitor background jobs and `/codex:result` to retrieve the final output. Use `/codex:review` for a standard read-only review and `/codex:adversarial-review` when Claude wants Codex to challenge design choices, risks, or assumptions. If the plugin is unavailable, output the handoff prompt as plain text.
 
 ### 8. Claude diff review
 Review diff (see template below). Do not implement fixes unless asked.
 
-### 9. /tdd (after implementation)
-Verify Codex implementation: add/improve missing tests, run relevant tests, check behavior coverage, add regression tests, update progress.md.
+### 9. Codex fix prompt after review
+If review finds missing tests or behavior gaps, generate a focused Codex fix prompt. Claude should describe the gap and expected observable behavior; Codex should update tests, implementation, docs, and progress files.
 
 ### 10. /zoom-out
 Review whether the feature group made the project cleaner or messier: naming consistency, duplicated concepts, architecture drift, docs/tests completeness, future cleanup needs.
@@ -52,7 +60,7 @@ For larger milestones, optionally run `/improve-codebase-architecture` — find 
 ## Codex handoff prompt template
 
 ```
-Implement this requirement using the documented plan.
+Implement this requirement using the documented plan. Codex owns all tests and implementation work.
 
 Read these files first:
 - AGENTS.md
@@ -67,22 +75,57 @@ Rules:
 - Do not change architecture decisions unless there is a direct conflict. If there is a conflict, stop and explain it.
 - Preserve existing behavior.
 - Implement only the planned scope.
-- Add or update tests.
+- Add or update tests first. Start with the first failing test described below, then implement the minimal code needed to pass it.
+- Continue one behavior at a time until the planned scope is complete.
 - Update README.md if setup or behavior changes.
 - Update Help Center or user-facing docs if user behavior changes.
 - Update RELEASENOTES.md.
 - Increment version: patch for bug fixes, minor for new features.
 
+First failing test:
+- Behavior:
+- Public interface:
+- Expected failure before implementation:
+- Minimal implementation after failure:
+
+Remaining behaviors:
+- Behavior:
+- Test file:
+- User-visible acceptance check:
+
 Comment rule:
 Do not add explanation comments. Do not include meta comments.
 Only include feature comments using exactly:
-// INPUT: <what goes in>
-// OUTPUT: <what comes out>
-// EFFECT: <side effects or state changes>
+INPUT:
+OUTPUT:
+EFFECT:
 
 After implementation:
 - Run tests, build, lint.
 - Update .planning/{feature-slug}/progress.md with: files changed, tests run, build result, lint result, version updated, docs updated, known issues.
+```
+
+## Claude Code plugin command template
+
+```
+/codex:rescue --background Implement this requirement using the documented plan. Codex owns all tests and implementation work.
+
+Read these files first:
+- AGENTS.md
+- docs/CONTEXT.md
+- docs/adr/
+- .planning/{feature-slug}/task_plan.md
+- .planning/{feature-slug}/findings.md
+- .planning/{feature-slug}/progress.md
+
+Use the first failing test and remaining behavior sections from the handoff prompt. Follow the comment rule exactly. Run tests/build/lint and update progress.md before finishing.
+```
+
+After starting a background delegation:
+
+```
+/codex:status
+/codex:result
 ```
 
 ---
@@ -117,6 +160,31 @@ Do not implement fixes unless explicitly asked.
 ```
 
 ---
+
+## Codex fix prompt template
+
+```
+Address the review findings below. Codex owns all tests and implementation changes.
+
+Read these files first:
+- AGENTS.md
+- .planning/{feature-slug}/task_plan.md
+- .planning/{feature-slug}/progress.md
+- Relevant source and test files from the review
+
+Review findings:
+- ...
+
+Required behavior:
+- ...
+
+Implementation rules:
+- Add or update tests before changing product code when the gap is behavioral.
+- Keep the fix scoped to the review finding.
+- Preserve existing behavior outside the finding.
+- Update required docs, release notes, version, and progress files if the fix changes user-facing behavior or project process.
+- Run the relevant tests and build checks.
+```
 
 ## Version, docs, and release rules
 

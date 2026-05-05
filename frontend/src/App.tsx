@@ -852,6 +852,8 @@ export default function App() {
         <SyllabusImportDialog
           open={syllabusImportOpen}
           onClose={() => setSyllabusImportOpen(false)}
+          onImportSuccess={() => void reloadTasksFromServer()}
+          showToast={showToast}
         />
       </Suspense>
       <Snackbar

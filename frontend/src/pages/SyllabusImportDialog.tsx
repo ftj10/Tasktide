@@ -1,6 +1,6 @@
 // INPUT: open/close state, import-success callback, toast notifier
-// OUTPUT: two-step modal wizard — step 0: upload/paste, step 1: review drafts before import
-// EFFECT: step 0 calls extract() + POST /api/syllabus/analyze; step 1 calls POST /api/tasks/batch on confirm; wizard state persisted to localStorage with 24h TTL
+// OUTPUT: multi-step wizard — upload → method select → manual path (preferences → prompt → paste JSON) or auto path (consent → analyze) → review → batch import
+// EFFECT: manual path generates a local AI prompt with no data leaving the browser; auto path calls POST /api/syllabus/analyze; review calls POST /api/tasks/batch; wizard state persisted to localStorage with 24h TTL
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -23,14 +23,26 @@ import UploadFileRoundedIcon from "@mui/icons-material/UploadFileRounded";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import RestoreRoundedIcon from "@mui/icons-material/RestoreRounded";
+import ContentCopyRoundedIcon from "@mui/icons-material/ContentCopyRounded";
+import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import { useTranslation } from "react-i18next";
 import dayjs from "dayjs";
 
 import type { Task } from "../types";
 import type { SyllabusTaskDraft } from "../app/syllabusSchema";
-import { transformDraft } from "../app/syllabusSchema";
+import { SyllabusTaskDraftSchema, transformDraft } from "../app/syllabusSchema";
 import { extract } from "../app/syllabusExtraction";
+import { buildSyllabusPrompt } from "../app/syllabusPrompt";
 import { TaskDialog } from "../components/TaskDialog";
+
+export type WizardStep =
+  | "upload"
+  | "method"
+  | "preferences"
+  | "prompt"
+  | "paste"
+  | "consent"
+  | "review";
 
 type ReviewItem = {
   draft: SyllabusTaskDraft;
@@ -39,8 +51,10 @@ type ReviewItem = {
 };
 
 type SavedDraft = {
-  step: number;
+  wizardStep: WizardStep;
   pasteText: string;
+  extractedText: string;
+  studyPreferences: string;
   drafts: SyllabusTaskDraft[];
   savedAt: number;
 };
@@ -71,6 +85,55 @@ function clearDraft() {
   localStorage.removeItem(STORAGE_KEY);
 }
 
+export function validatePastedJson(raw: string): {
+  drafts: SyllabusTaskDraft[];
+  errors: string[];
+} {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return {
+      drafts: [],
+      errors: ["Not valid JSON — check for missing brackets or quotes."],
+    };
+  }
+  if (!Array.isArray(parsed)) {
+    return {
+      drafts: [],
+      errors: [`Expected a JSON array (starting with [). Got: ${typeof parsed}`],
+    };
+  }
+  const drafts: SyllabusTaskDraft[] = [];
+  const errors: string[] = [];
+  (parsed as unknown[]).forEach((item, idx) => {
+    const result = SyllabusTaskDraftSchema.safeParse(item);
+    if (result.success) {
+      drafts.push(result.data);
+    } else {
+      for (const issue of result.error.issues) {
+        errors.push(
+          `Item ${idx + 1}: ${issue.path.join(".") || "(root)"} — ${issue.message}`
+        );
+      }
+    }
+  });
+  return { drafts, errors };
+}
+
+async function copyToClipboard(text: string): Promise<void> {
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    const el = document.createElement("textarea");
+    el.value = text;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand("copy");
+    document.body.removeChild(el);
+  }
+}
+
 async function callAnalyze(text: string): Promise<SyllabusTaskDraft[]> {
   const res = await fetch("/api/syllabus/analyze", {
     method: "POST",
@@ -94,7 +157,10 @@ function stampBatchId(tasks: Task[], batchId: string): Task[] {
   return tasks.map((t) => ({ ...t, syllabusImportBatchId: batchId }));
 }
 
-const SOURCE_TYPE_COLOR: Record<string, "error" | "warning" | "info" | "default"> = {
+const SOURCE_TYPE_COLOR: Record<
+  string,
+  "error" | "warning" | "info" | "default"
+> = {
   final: "error",
   midterm: "error",
   assignment: "warning",
@@ -109,16 +175,38 @@ const SOURCE_TYPE_COLOR: Record<string, "error" | "warning" | "info" | "default"
   reading: "default",
 };
 
+const STEP_TITLE_KEY: Record<WizardStep, string> = {
+  upload: "syllabus.step1Title",
+  method: "syllabus.methodTitle",
+  preferences: "syllabus.preferencesTitle",
+  prompt: "syllabus.promptTitle",
+  paste: "syllabus.pasteJsonTitle",
+  consent: "syllabus.consentTitle",
+  review: "syllabus.step2Title",
+};
+
 export function SyllabusImportDialog(props: {
   open: boolean;
   onClose: () => void;
   onImportSuccess: () => void;
-  showToast: (message: string, severity: "success" | "error" | "info" | "warning") => void;
+  showToast: (
+    message: string,
+    severity: "success" | "error" | "info" | "warning"
+  ) => void;
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [step, setStep] = useState(0);
+
+  const [wizardStep, setWizardStep] = useState<WizardStep>("upload");
+  const [wizardMode, setWizardMode] = useState<"manual" | "auto">("auto");
   const [pasteText, setPasteText] = useState("");
+  const [extractedText, setExtractedText] = useState("");
+  const [studyPreferences, setStudyPreferences] = useState("");
+  const [generatedPrompt, setGeneratedPrompt] = useState("");
+  const [promptCopied, setPromptCopied] = useState(false);
+  const [pastedJson, setPastedJson] = useState("");
+  const [jsonErrors, setJsonErrors] = useState<string[]>([]);
+  const [fileError, setFileError] = useState<string | null>(null);
   const [reviewItems, setReviewItems] = useState<ReviewItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [analyzeError, setAnalyzeError] = useState<string | null>(null);
@@ -126,7 +214,6 @@ export function SyllabusImportDialog(props: {
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
   const [taskDialogOpen, setTaskDialogOpen] = useState(false);
   const [pendingResume, setPendingResume] = useState<SavedDraft | null>(null);
-  const [consentText, setConsentText] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const today = dayjs().format("YYYY-MM-DD");
@@ -140,9 +227,17 @@ export function SyllabusImportDialog(props: {
 
   function applyResume(saved: SavedDraft) {
     setPasteText(saved.pasteText);
-    if (saved.step === 1 && saved.drafts.length > 0) {
-      setReviewItems(saved.drafts.map((draft) => ({ draft, task: transformDraft(draft), deleted: false })));
-      setStep(1);
+    setExtractedText(saved.extractedText ?? saved.pasteText);
+    setStudyPreferences(saved.studyPreferences ?? "");
+    if (saved.wizardStep === "review" && saved.drafts.length > 0) {
+      setReviewItems(
+        saved.drafts.map((draft) => ({
+          draft,
+          task: transformDraft(draft),
+          deleted: false,
+        }))
+      );
+      setWizardStep("review");
     }
     setPendingResume(null);
   }
@@ -154,24 +249,129 @@ export function SyllabusImportDialog(props: {
 
   function handleClose() {
     clearDraft();
-    setStep(0);
+    setWizardStep("upload");
     setPasteText("");
+    setExtractedText("");
+    setStudyPreferences("");
+    setGeneratedPrompt("");
+    setPromptCopied(false);
+    setPastedJson("");
+    setJsonErrors([]);
+    setFileError(null);
     setReviewItems([]);
     setAnalyzeError(null);
     setConfirmError(null);
     setPendingResume(null);
-    setConsentText(null);
     props.onClose();
   }
 
-  async function runAnalyze(text: string) {
+  function handleContinueUpload() {
+    const text = pasteText.trim();
+    if (!text) return;
+    setExtractedText(text);
+    setFileError(null);
+    setWizardStep("method");
+  }
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+    setFileError(null);
+    try {
+      const text = await extract(file);
+      setExtractedText(text);
+      setPasteText(text);
+      setWizardStep("method");
+    } catch (err) {
+      setFileError(
+        err instanceof Error ? err.message : t("syllabus.fileTypeError")
+      );
+    }
+  }
+
+  function handleChooseManual() {
+    setWizardMode("manual");
+    setWizardStep("preferences");
+  }
+
+  function handleChooseAuto() {
+    setWizardMode("auto");
+    setWizardStep("consent");
+  }
+
+  function handleContinuePreferences() {
+    const prompt = buildSyllabusPrompt(extractedText, studyPreferences);
+    setGeneratedPrompt(prompt);
+    setPromptCopied(false);
+    setWizardStep("prompt");
+  }
+
+  async function handleCopyPrompt() {
+    await copyToClipboard(generatedPrompt);
+    setPromptCopied(true);
+    setTimeout(() => setPromptCopied(false), 2000);
+  }
+
+  function handleContinueFromPrompt() {
+    setPastedJson("");
+    setJsonErrors([]);
+    setWizardStep("paste");
+  }
+
+  function handlePasteImport() {
+    if (!pastedJson.trim()) {
+      setJsonErrors([t("syllabus.pasteJsonError")]);
+      return;
+    }
+    const { drafts, errors } = validatePastedJson(pastedJson);
+    if (errors.length > 0) {
+      setJsonErrors(errors);
+      return;
+    }
+    if (drafts.length === 0) {
+      setJsonErrors([t("syllabus.noDraftsFound")]);
+      return;
+    }
+    setJsonErrors([]);
+    const items = drafts.map((draft) => ({
+      draft,
+      task: transformDraft(draft),
+      deleted: false,
+    }));
+    setReviewItems(items);
+    saveDraft({
+      wizardStep: "review",
+      pasteText,
+      extractedText,
+      studyPreferences,
+      drafts,
+      savedAt: Date.now(),
+    });
+    setWizardStep("review");
+  }
+
+  async function handleConsentConfirm() {
     setLoading(true);
     setAnalyzeError(null);
     try {
-      const drafts = await callAnalyze(text);
-      setReviewItems(drafts.map((draft) => ({ draft, task: transformDraft(draft), deleted: false })));
-      saveDraft({ step: 1, pasteText: text, drafts, savedAt: Date.now() });
-      setStep(1);
+      const drafts = await callAnalyze(extractedText);
+      setReviewItems(
+        drafts.map((draft) => ({
+          draft,
+          task: transformDraft(draft),
+          deleted: false,
+        }))
+      );
+      saveDraft({
+        wizardStep: "review",
+        pasteText,
+        extractedText,
+        studyPreferences,
+        drafts,
+        savedAt: Date.now(),
+      });
+      setWizardStep("review");
     } catch {
       setAnalyzeError(t("syllabus.analyzeError"));
     } finally {
@@ -179,27 +379,36 @@ export function SyllabusImportDialog(props: {
     }
   }
 
-  async function handleAnalyze(input: string | File) {
-    const text = typeof input === "string" ? input : await extract(input);
-    setConsentText(text);
-  }
-
-  async function handleConsentConfirm() {
-    if (!consentText) return;
-    const text = consentText;
-    setConsentText(null);
-    await runAnalyze(text);
-  }
-
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (file) void handleAnalyze(file);
-    e.target.value = "";
+  function goBack() {
+    switch (wizardStep) {
+      case "method":
+        setWizardStep("upload");
+        break;
+      case "preferences":
+        setWizardStep("method");
+        break;
+      case "prompt":
+        setWizardStep("preferences");
+        break;
+      case "paste":
+        setWizardStep("prompt");
+        break;
+      case "consent":
+        setWizardStep("method");
+        break;
+      case "review":
+        setWizardStep(wizardMode === "manual" ? "paste" : "consent");
+        break;
+      default:
+        break;
+    }
   }
 
   function toggleDeleted(idx: number) {
     setReviewItems((prev) =>
-      prev.map((item, i) => (i === idx ? { ...item, deleted: !item.deleted } : item))
+      prev.map((item, i) =>
+        i === idx ? { ...item, deleted: !item.deleted } : item
+      )
     );
   }
 
@@ -209,17 +418,21 @@ export function SyllabusImportDialog(props: {
   }
 
   async function handleConfirm() {
-    const raw = reviewItems.filter((item) => !item.deleted).map((item) => item.task);
+    const raw = reviewItems
+      .filter((item) => !item.deleted)
+      .map((item) => item.task);
     if (raw.length === 0) return;
     const batchId = crypto.randomUUID();
     const tasksToImport = stampBatchId(raw, batchId);
-
     setLoading(true);
     setConfirmError(null);
     try {
       await callBatchImport(tasksToImport);
       clearDraft();
-      props.showToast(t("syllabus.importSuccess", { count: tasksToImport.length }), "success");
+      props.showToast(
+        t("syllabus.importSuccess", { count: tasksToImport.length }),
+        "success"
+      );
       props.onImportSuccess();
       handleClose();
       navigate("/week");
@@ -236,9 +449,7 @@ export function SyllabusImportDialog(props: {
   return (
     <>
       <Dialog open={props.open} onClose={handleClose} fullWidth maxWidth="sm">
-        <DialogTitle>
-          {step === 0 ? t("syllabus.step1Title") : t("syllabus.step2Title")}
-        </DialogTitle>
+        <DialogTitle>{t(STEP_TITLE_KEY[wizardStep])}</DialogTitle>
         <DialogContent>
           {pendingResume ? (
             <Stack spacing={2} sx={{ pt: 0.5 }}>
@@ -246,10 +457,18 @@ export function SyllabusImportDialog(props: {
                 severity="info"
                 action={
                   <Stack direction="row" spacing={1}>
-                    <Button size="small" color="inherit" onClick={() => applyResume(pendingResume)}>
+                    <Button
+                      size="small"
+                      color="inherit"
+                      onClick={() => applyResume(pendingResume)}
+                    >
                       {t("syllabus.resume")}
                     </Button>
-                    <Button size="small" color="inherit" onClick={dismissResume}>
+                    <Button
+                      size="small"
+                      color="inherit"
+                      onClick={dismissResume}
+                    >
                       {t("syllabus.startFresh")}
                     </Button>
                   </Stack>
@@ -258,7 +477,143 @@ export function SyllabusImportDialog(props: {
                 {t("syllabus.resumePrompt")}
               </Alert>
             </Stack>
-          ) : consentText !== null ? (
+          ) : wizardStep === "upload" ? (
+            <Stack spacing={2} sx={{ pt: 0.5 }}>
+              <TextField
+                label={t("syllabus.pasteLabel")}
+                multiline
+                minRows={6}
+                fullWidth
+                value={pasteText}
+                onChange={(e) => setPasteText(e.target.value)}
+              />
+              <Button
+                variant="outlined"
+                startIcon={<UploadFileRoundedIcon />}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {t("syllabus.uploadLabel")}
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.csv"
+                hidden
+                onChange={(e) => void handleFileChange(e)}
+              />
+              {fileError && <Alert severity="error">{fileError}</Alert>}
+            </Stack>
+          ) : wizardStep === "method" ? (
+            <Stack spacing={2} sx={{ pt: 0.5 }}>
+              <Button
+                variant="outlined"
+                fullWidth
+                onClick={handleChooseManual}
+                sx={{ justifyContent: "flex-start", textAlign: "left", p: 2 }}
+              >
+                <Stack spacing={0.5} alignItems="flex-start">
+                  <Typography variant="subtitle2">
+                    {t("syllabus.methodManual")}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {t("syllabus.methodManualDesc")}
+                  </Typography>
+                </Stack>
+              </Button>
+              <Button
+                variant="outlined"
+                fullWidth
+                onClick={handleChooseAuto}
+                sx={{ justifyContent: "flex-start", textAlign: "left", p: 2 }}
+              >
+                <Stack spacing={0.5} alignItems="flex-start">
+                  <Typography variant="subtitle2">
+                    {t("syllabus.methodAuto")}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {t("syllabus.methodAutoDesc")}
+                  </Typography>
+                </Stack>
+              </Button>
+            </Stack>
+          ) : wizardStep === "preferences" ? (
+            <Stack spacing={2} sx={{ pt: 0.5 }}>
+              <TextField
+                label={t("syllabus.preferencesLabel")}
+                placeholder={t("syllabus.preferencesPlaceholder")}
+                multiline
+                minRows={3}
+                fullWidth
+                value={studyPreferences}
+                onChange={(e) => setStudyPreferences(e.target.value)}
+              />
+              <Typography variant="caption" color="text.secondary">
+                {t("syllabus.preferencesHint")}
+              </Typography>
+            </Stack>
+          ) : wizardStep === "prompt" ? (
+            <Stack spacing={2} sx={{ pt: 0.5 }}>
+              <Alert severity="info" icon={false}>
+                {t("syllabus.promptPrivacy")}
+              </Alert>
+              <Button
+                variant="outlined"
+                startIcon={
+                  promptCopied ? (
+                    <CheckRoundedIcon />
+                  ) : (
+                    <ContentCopyRoundedIcon />
+                  )
+                }
+                onClick={() => void handleCopyPrompt()}
+                color={promptCopied ? "success" : "primary"}
+                data-testid="copy-prompt-button"
+              >
+                {promptCopied
+                  ? t("syllabus.promptCopied")
+                  : t("syllabus.promptCopy")}
+              </Button>
+              <Box
+                component="pre"
+                sx={{
+                  p: 1.5,
+                  bgcolor: "action.hover",
+                  borderRadius: 1,
+                  fontSize: "0.72rem",
+                  whiteSpace: "pre-wrap",
+                  wordBreak: "break-word",
+                  maxHeight: 280,
+                  overflow: "auto",
+                }}
+              >
+                {generatedPrompt}
+              </Box>
+            </Stack>
+          ) : wizardStep === "paste" ? (
+            <Stack spacing={2} sx={{ pt: 0.5 }}>
+              <TextField
+                label={t("syllabus.pasteJsonLabel")}
+                multiline
+                minRows={8}
+                fullWidth
+                value={pastedJson}
+                onChange={(e) => {
+                  setPastedJson(e.target.value);
+                  if (jsonErrors.length > 0) setJsonErrors([]);
+                }}
+                error={jsonErrors.length > 0}
+              />
+              {jsonErrors.length > 0 && (
+                <Stack spacing={0.5}>
+                  {jsonErrors.map((err, i) => (
+                    <Typography key={i} variant="caption" color="error">
+                      {err}
+                    </Typography>
+                  ))}
+                </Stack>
+              )}
+            </Stack>
+          ) : wizardStep === "consent" ? (
             <Stack spacing={2} sx={{ pt: 0.5 }}>
               <Typography variant="body2" color="text.secondary">
                 {t("syllabus.consentBody")}
@@ -276,35 +631,8 @@ export function SyllabusImportDialog(props: {
                   overflow: "auto",
                 }}
               >
-                {consentText}
+                {extractedText}
               </Box>
-            </Stack>
-          ) : step === 0 ? (
-            <Stack spacing={2} sx={{ pt: 0.5 }}>
-              <TextField
-                label={t("syllabus.pasteLabel")}
-                multiline
-                minRows={6}
-                fullWidth
-                value={pasteText}
-                onChange={(e) => setPasteText(e.target.value)}
-                disabled={loading}
-              />
-              <Button
-                variant="outlined"
-                startIcon={<UploadFileRoundedIcon />}
-                onClick={() => fileInputRef.current?.click()}
-                disabled={loading}
-              >
-                {t("syllabus.uploadLabel")}
-              </Button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".pdf,.csv"
-                hidden
-                onChange={handleFileChange}
-              />
               {analyzeError && (
                 <Typography variant="caption" color="error">
                   {analyzeError}
@@ -313,7 +641,9 @@ export function SyllabusImportDialog(props: {
             </Stack>
           ) : reviewItems.length === 0 ? (
             <Box sx={{ pt: 0.5 }}>
-              <Typography color="text.secondary">{t("syllabus.noDraftsFound")}</Typography>
+              <Typography color="text.secondary">
+                {t("syllabus.noDraftsFound")}
+              </Typography>
             </Box>
           ) : (
             <Stack spacing={1.5} sx={{ pt: 0.5 }}>
@@ -324,15 +654,26 @@ export function SyllabusImportDialog(props: {
                 <Card
                   key={`${item.draft.sourceText}-${idx}`}
                   variant="outlined"
-                  sx={{ opacity: item.deleted ? 0.45 : 1, transition: "opacity 0.15s" }}
+                  sx={{
+                    opacity: item.deleted ? 0.45 : 1,
+                    transition: "opacity 0.15s",
+                  }}
                 >
                   <CardContent sx={{ py: 1.5, "&:last-child": { pb: 1.5 } }}>
                     <Stack spacing={0.75}>
-                      <Stack direction="row" spacing={0.75} alignItems="center" flexWrap="wrap">
+                      <Stack
+                        direction="row"
+                        spacing={0.75}
+                        alignItems="center"
+                        flexWrap="wrap"
+                      >
                         <Chip
                           label={item.draft.sourceType}
                           size="small"
-                          color={SOURCE_TYPE_COLOR[item.draft.sourceType] ?? "default"}
+                          color={
+                            SOURCE_TYPE_COLOR[item.draft.sourceType] ??
+                            "default"
+                          }
                         />
                         {item.draft.confidence === "low" && (
                           <Chip
@@ -344,7 +685,11 @@ export function SyllabusImportDialog(props: {
                         <Typography
                           variant="body2"
                           fontWeight={600}
-                          sx={{ textDecoration: item.deleted ? "line-through" : "none" }}
+                          sx={{
+                            textDecoration: item.deleted
+                              ? "line-through"
+                              : "none",
+                          }}
                         >
                           {item.task.title}
                         </Typography>
@@ -361,7 +706,11 @@ export function SyllabusImportDialog(props: {
                       >
                         {item.draft.sourceText}
                       </Typography>
-                      <Stack direction="row" spacing={0.5} justifyContent="flex-end">
+                      <Stack
+                        direction="row"
+                        spacing={0.5}
+                        justifyContent="flex-end"
+                      >
                         {!item.deleted && (
                           <Button
                             size="small"
@@ -383,7 +732,9 @@ export function SyllabusImportDialog(props: {
                           }
                           onClick={() => toggleDeleted(idx)}
                         >
-                          {item.deleted ? t("syllabus.restoreItem") : t("syllabus.deleteItem")}
+                          {item.deleted
+                            ? t("syllabus.restoreItem")
+                            : t("syllabus.deleteItem")}
                         </Button>
                       </Stack>
                     </Stack>
@@ -401,10 +752,48 @@ export function SyllabusImportDialog(props: {
         <DialogActions>
           {pendingResume ? (
             <Button onClick={handleClose}>{t("common.cancel")}</Button>
-          ) : consentText !== null ? (
+          ) : wizardStep === "upload" ? (
             <>
-              <Button onClick={() => setConsentText(null)} disabled={loading}>
-                {t("syllabus.consentCancel")}
+              <Button onClick={handleClose}>{t("common.cancel")}</Button>
+              <Button
+                variant="contained"
+                onClick={handleContinueUpload}
+                disabled={!pasteText.trim()}
+              >
+                {t("syllabus.next")}
+              </Button>
+            </>
+          ) : wizardStep === "method" ? (
+            <Button onClick={goBack}>{t("syllabus.back")}</Button>
+          ) : wizardStep === "preferences" ? (
+            <>
+              <Button onClick={goBack}>{t("syllabus.back")}</Button>
+              <Button variant="contained" onClick={handleContinuePreferences}>
+                {t("syllabus.next")}
+              </Button>
+            </>
+          ) : wizardStep === "prompt" ? (
+            <>
+              <Button onClick={goBack}>{t("syllabus.back")}</Button>
+              <Button variant="contained" onClick={handleContinueFromPrompt}>
+                {t("syllabus.promptNext")}
+              </Button>
+            </>
+          ) : wizardStep === "paste" ? (
+            <>
+              <Button onClick={goBack}>{t("syllabus.back")}</Button>
+              <Button
+                variant="contained"
+                onClick={handlePasteImport}
+                disabled={!pastedJson.trim()}
+              >
+                {t("syllabus.pasteJsonNext")}
+              </Button>
+            </>
+          ) : wizardStep === "consent" ? (
+            <>
+              <Button onClick={goBack} disabled={loading}>
+                {t("syllabus.back")}
               </Button>
               <Button
                 variant="contained"
@@ -412,26 +801,14 @@ export function SyllabusImportDialog(props: {
                 disabled={loading}
                 startIcon={loading ? <CircularProgress size={16} /> : undefined}
               >
-                {loading ? t("syllabus.analyzing") : t("syllabus.consentConfirm")}
-              </Button>
-            </>
-          ) : step === 0 ? (
-            <>
-              <Button onClick={handleClose} disabled={loading}>
-                {t("common.cancel")}
-              </Button>
-              <Button
-                variant="contained"
-                onClick={() => void handleAnalyze(pasteText)}
-                disabled={loading || !pasteText.trim()}
-                startIcon={loading ? <CircularProgress size={16} /> : undefined}
-              >
-                {loading ? t("syllabus.analyzing") : t("syllabus.analyze")}
+                {loading
+                  ? t("syllabus.analyzing")
+                  : t("syllabus.consentConfirm")}
               </Button>
             </>
           ) : (
             <>
-              <Button onClick={() => setStep(0)} disabled={loading}>
+              <Button onClick={goBack} disabled={loading}>
                 {t("syllabus.back")}
               </Button>
               <Button
@@ -461,7 +838,9 @@ export function SyllabusImportDialog(props: {
           onSave={(updatedTask) => {
             if (editingIdx === null) return;
             setReviewItems((prev) =>
-              prev.map((item, i) => (i === editingIdx ? { ...item, task: updatedTask } : item))
+              prev.map((item, i) =>
+                i === editingIdx ? { ...item, task: updatedTask } : item
+              )
             );
             setTaskDialogOpen(false);
             setEditingIdx(null);

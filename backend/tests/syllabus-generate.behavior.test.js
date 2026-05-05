@@ -108,3 +108,41 @@ test('behavior: syllabus/generate-drafts - schema validation failure returns 422
 
   assert.equal(result.statusCode, 422);
 });
+
+test('behavior: syllabus/generate-drafts - route forwards studyPreferences as second arg to generateDrafts', async () => {
+  stubAuth();
+
+  let capturedArgs;
+  syllabusAnalysis.generateDrafts = async (...args) => {
+    capturedArgs = args;
+    return [SAMPLE_DRAFT];
+  };
+
+  await invokeApp(app, '/syllabus/generate-drafts', {
+    method: 'POST',
+    body: { extractedText: 'CSCI 101 syllabus', studyPreferences: 'remind me 3 days before exams' },
+    headers: { Authorization: 'Bearer valid-token' },
+  });
+
+  assert.equal(capturedArgs[0], 'CSCI 101 syllabus');
+  assert.equal(capturedArgs[1], 'remind me 3 days before exams');
+});
+
+test('behavior: syllabus/generate-drafts - omitting studyPreferences passes empty string and returns 200', async () => {
+  stubAuth();
+
+  let capturedPreferences;
+  syllabusAnalysis.generateDrafts = async (_text, prefs) => {
+    capturedPreferences = prefs;
+    return [];
+  };
+
+  const result = await invokeApp(app, '/syllabus/generate-drafts', {
+    method: 'POST',
+    body: { extractedText: 'CSCI 101 syllabus' },
+    headers: { Authorization: 'Bearer valid-token' },
+  });
+
+  assert.equal(result.statusCode, 200);
+  assert.equal(capturedPreferences, '');
+});

@@ -1,4 +1,7 @@
-export function buildSyllabusPrompt(text: string): string {
+export function buildSyllabusPrompt(text: string, preferences?: string): string {
+  const prefSection = preferences?.trim()
+    ? `\nUser preferences:\n${preferences.trim()}\n`
+    : "";
   return `You are extracting academic tasks from a course syllabus. Return ONLY a valid JSON array of task objects — no markdown fences, no explanation, no preamble.
 
 Each object must conform exactly to this shape:
@@ -33,7 +36,7 @@ Rules:
 - Omit fields that are not applicable; do not include null values
 - Dates always in YYYY-MM-DD format; times always in HH:MM 24-hour format
 - Weekdays: 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat, 7=Sun
-
+${prefSection}
 Syllabus text:
 ${text}`;
 }

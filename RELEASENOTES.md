@@ -1,5 +1,23 @@
 # Release Notes
 
+## Version 2.5.1 – Update Released (2026-05-05)
+
+### Fixes
+- Fixed: Adding a task after a previous task was just created no longer silently replaces the first task.
+
+## Version 2.5.0 – Update Released (2026-05-05)
+
+### What's New
+- Added: The Syllabus Import wizard now supports a fully manual path — generate a ready-made AI prompt, copy it into any AI of your choice (ChatGPT, Claude, etc.), then paste the JSON response back. Nothing is sent anywhere when using this path.
+- Added: A new Study Preferences step lets you add hints for the AI before the prompt is generated (e.g. "remind me 3 days before exams").
+- Added: When pasting AI output, the wizard validates every item against the task schema and shows specific field-level errors so you know exactly what to fix — without losing your pasted content.
+- Added: Uploading an unsupported file type (e.g. Excel) now shows a clear error with a tip to export to CSV first.
+
+## Version 2.4.1 – Update Released (2026-05-05)
+
+### Improvements
+- Improved: TaskTide now has clearer contributor guidance, helping future updates stay consistent across release notes, Help Center guidance, README documentation, development logs, and tests.
+
 ## Version 2.4.0 – Update Released (2026-05-04)
 
 ### What's New

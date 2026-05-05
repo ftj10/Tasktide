@@ -52,4 +52,31 @@ describe("buildSyllabusPrompt", () => {
     expect(typeof prompt).toBe("string");
     expect(prompt.length).toBeGreaterThan(0);
   });
+
+  describe("with preferences", () => {
+    it("includes the preferences text verbatim when provided", () => {
+      const prefs = "remind me 3 days before each exam";
+      const prompt = buildSyllabusPrompt("syllabus text", prefs);
+      expect(prompt).toContain(prefs);
+    });
+
+    it("does not include a preferences section when preferences is empty string", () => {
+      const prompt = buildSyllabusPrompt("syllabus text", "");
+      expect(prompt).not.toContain("User preferences");
+    });
+
+    it("does not include a preferences section when preferences is whitespace only", () => {
+      const prompt = buildSyllabusPrompt("syllabus text", "   ");
+      expect(prompt).not.toContain("User preferences");
+    });
+
+    it("preferences appear before the syllabus text in the prompt", () => {
+      const prefs = "focus on exam prep tasks";
+      const prompt = buildSyllabusPrompt("CSCI 101 syllabus", prefs);
+      const prefsIdx = prompt.indexOf(prefs);
+      const syllabusIdx = prompt.indexOf("CSCI 101 syllabus");
+      expect(prefsIdx).toBeGreaterThan(-1);
+      expect(syllabusIdx).toBeGreaterThan(prefsIdx);
+    });
+  });
 });

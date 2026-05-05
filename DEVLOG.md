@@ -1,5 +1,90 @@
 # Development Log
 
+## Version 2.5.1
+Update Date: 2026-05-05
+
+### Changes
+
+**`frontend/src/components/TaskDialog.tsx`**
+- Added `props.open` to the `base` `useMemo` dependency array.
+- Root cause: the `base` memo computed a fresh UUID for create mode once and cached it. When the dialog closed and reopened with no other prop changes, `base` did not recompute, so the same UUID was reused. `saveTaskCollection` then filtered out the existing task with that UUID before appending the "new" task, silently replacing the previously created task.
+- Fix: adding `props.open` forces `base` to recompute on every open, guaranteeing a unique id per create session.
+
+**`frontend/tests/task-dialog.behavior.test.tsx`**
+- Added regression test: opens the dialog twice in create mode (simulate close → reopen) and asserts that each saved task gets a distinct id.
+
+## Version 2.5.0
+Update Date: 2026-05-05
+
+### Changes
+
+**`frontend/src/pages/SyllabusImportDialog.tsx`**
+- Refactored step model from `number + consentText` to a named `WizardStep` union type: `upload | method | preferences | prompt | paste | consent | review`.
+- Added `method` step: two option buttons let the user pick Manual (copy prompt) or Automatic (send to Claude).
+- Added `preferences` step (manual path): optional free-text field appended to the generated prompt.
+- Added `prompt` step (manual path): displays the full generated prompt in a scrollable `<pre>`, with a one-click copy button and a privacy disclosure ("Nothing is sent anywhere").
+- Added `paste` step (manual path): JSON textarea + `validatePastedJson` (exported pure function) that runs `SyllabusTaskDraftSchema.safeParse` per item and surfaces field-level errors without clearing input.
+- Fixed silent swallow of `extract()` errors on file upload — unsupported types (e.g. `.xlsx`) now display the error message from `syllabusExtraction.ts` in an `Alert`.
+- `goBack()` tracks `wizardMode` ("manual" | "auto") so Back from review returns to `paste` (manual) or `consent` (auto).
+- `SavedDraft` shape extended: `wizardStep: WizardStep`, `extractedText`, `studyPreferences` fields added; `step: number` removed.
+
+**`frontend/src/app/syllabusPrompt.ts`**
+- `buildSyllabusPrompt(text, preferences?)` — added optional `preferences` parameter injected as a "User preferences:" block before the syllabus text.
+
+**`frontend/src/i18n.ts`**
+- Added 16 new en+zh key pairs under `syllabus.*`: `next`, `fileTypeError`, `methodTitle`, `methodManual`, `methodManualDesc`, `methodAuto`, `methodAutoDesc`, `preferencesTitle`, `preferencesLabel`, `preferencesPlaceholder`, `preferencesHint`, `promptTitle`, `promptPrivacy`, `promptCopy`, `promptCopied`, `promptNext`, `pasteJsonTitle`, `pasteJsonLabel`, `pasteJsonNext`, `pasteJsonError`.
+- Updated `q20` answer (en + zh) to describe both manual and auto paths.
+- Added `walkthroughs.syllabusManual` (en + zh): step-by-step guide for the manual import flow.
+
+**`frontend/tests/syllabus-wizard.behavior.test.ts`**
+- Updated `SavedDraft` type to match new schema (`wizardStep`, `extractedText`, `studyPreferences`).
+- Added `validatePastedJson` test suite: covers invalid JSON syntax, non-array top-level, missing required fields, mixed valid/invalid items, fully valid arrays, and empty arrays.
+
+**`frontend/tests/syllabus-import.behavior.test.tsx`**
+- Rewrote `analyzeWithConsent` helper to go through the new method-select step.
+- Updated all existing auto-path tests to use "Next" → "Analyze with Claude" → "Send to Claude" flow.
+- Added test: Back from review (auto) returns to consent; Back from review (manual) returns to paste.
+- Added manual path describe block: walks preferences → prompt → paste; tests privacy disclosure, clipboard write, invalid JSON errors (field-level), schema validation errors, valid JSON advancing to review.
+- Added test: unsupported file type (`.xlsx`) shows the "export to CSV first" error alert.
+
+## Version 2.4.1
+Update Date: 2026-05-05
+
+### Changes
+
+**`AGENTS.md`**
+- Added root Codex agent instructions covering comment format, versioning, release notes, Help Center structure, README expectations, development log expectations, and test requirements.
+
+**`package.json`** / **`frontend/package.json`** / **`backend/package.json`**
+- Aligned package versions to `2.4.1`.
+
+**`frontend/package-lock.json`** / **`backend/package-lock.json`**
+- Aligned root package metadata versions to `2.4.1`.
+
+**`RELEASENOTES.md`**
+- Added the `2.4.1` client-facing update entry.
+
+**`frontend/src/app/releaseNotes.ts`**
+- Added the in-app `v2.4.1` release history entry.
+
+**`frontend/src/i18n.ts`**
+- Improved the Help Center website flow copy to point users back to Updates and Help when workflows change.
+- Added a Common Q&A entry explaining where users can see recent updates.
+
+**`frontend/src/pages/HelpPage.tsx`**
+- Added the syllabus import and recent updates FAQ entries to the rendered Help Center FAQ list.
+
+**`backend/tests/agents-doc.behavior.test.js`**
+- Added behavior coverage that verifies `AGENTS.md` exists and retains the required operating sections.
+
+### Design decisions
+- Used `AGENTS.md` as the canonical filename because Codex agents discover that file convention automatically.
+- Treated the missing agent instruction file as a patch-level process/documentation fix.
+- Kept the Help Center update user-facing by directing users to Updates and Help instead of exposing internal implementation details.
+
+### Known limitations
+- `AGENTS.md` documents repository expectations but cannot enforce every required update by itself; tests cover its presence and required sections.
+
 ## Version 2.4.0
 Update Date: 2026-05-04
 
