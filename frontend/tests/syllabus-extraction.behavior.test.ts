@@ -23,6 +23,12 @@ vi.mock("pdfjs-dist", () => ({
   }),
 }));
 
+vi.mock("mammoth", () => ({
+  extractRawText: vi.fn().mockResolvedValue({
+    value: "COMSC 101 Syllabus\nFinal Exam December 15",
+  }),
+}));
+
 describe("extract — plain text", () => {
   it("returns the input string unchanged", async () => {
     const text = "Jan 10: Lecture 1\nJan 17: Lecture 2";
@@ -76,16 +82,22 @@ describe("extract — PDF file (mocked pdfjs-dist)", () => {
   });
 });
 
+describe("extract — DOCX file (mocked mammoth)", () => {
+  it("extracts plain text from a .docx file", async () => {
+    const file = new File(["binary"], "syllabus.docx", {
+      type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    });
+    const result = await extract(file);
+    expect(result).toContain("COMSC 101 Syllabus");
+    expect(result).toContain("Final Exam December 15");
+  });
+});
+
 describe("extract — unsupported file type", () => {
   it("throws a descriptive error for .xlsx files", async () => {
     const file = new File(["data"], "schedule.xlsx", {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
     await expect(extract(file)).rejects.toThrow(/export to CSV first/i);
-  });
-
-  it("throws a descriptive error for .docx files", async () => {
-    const file = new File(["data"], "syllabus.docx", { type: "application/octet-stream" });
-    await expect(extract(file)).rejects.toThrow(/Unsupported file type/i);
   });
 });

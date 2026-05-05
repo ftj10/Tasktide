@@ -31,10 +31,10 @@ Create:
 Use `/planning-with-files:status` to check progress during or after implementation.
 
 ### 6. Claude TDD handoff prompt
-Create a Codex-ready TDD prompt: first failing test, minimal behavior, frontend tests, backend tests, regression tests, edge cases, existing tests that may need updates. Do not implement product code or write the tests in Claude unless the user explicitly asks.
+Create a Codex-ready TDD prompt: first failing test, minimal behavior, frontend tests, backend tests, regression tests, edge cases, existing tests that may need updates. Claude must not implement product code or write tests; Codex execution is mandatory whenever implementation or tests are needed.
 
 ### 7. Codex handoff
-Generate prompt (see template below). Codex owns the implementation, including test creation, product code, required docs, version bump, release notes, and verification commands.
+Generate prompt (see template below). Codex owns the implementation, including test creation, product code, required docs, version bump, release notes, and verification commands. Do not treat the Codex step as optional.
 
 If Claude Code has `openai/codex-plugin-cc` installed, delegate the prompt with:
 
@@ -42,7 +42,7 @@ If Claude Code has `openai/codex-plugin-cc` installed, delegate the prompt with:
 /codex:rescue --background <Codex handoff prompt>
 ```
 
-Use `/codex:status` to monitor background jobs and `/codex:result` to retrieve the final output. Use `/codex:review` for a standard read-only review and `/codex:adversarial-review` when Claude wants Codex to challenge design choices, risks, or assumptions. If the plugin is unavailable, output the handoff prompt as plain text.
+Use `/codex:status` to monitor background jobs and `/codex:result` to retrieve the final output. Use `/codex:review` for a standard read-only review and `/codex:adversarial-review` when Claude wants Codex to challenge design choices, risks, or assumptions. If the plugin is unavailable, output the handoff prompt as plain text and make running that prompt in Codex the required next action.
 
 ### 8. Claude diff review
 Review diff (see template below). Do not implement fixes unless asked.

@@ -1,5 +1,58 @@
 # Development Log
 
+## Version 2.6.0
+Update Date: 2026-05-05
+
+### Changes
+
+**`.claude/skills/tasktide-agent-workflow/SKILL.md`**
+- Changed the quick-start workflow so implementation and test work must route to Codex.
+- Changed the Claude Code Codex plugin guidance so `/codex:rescue --background` is required for implementation, bug investigation, and tests when the plugin is available.
+- Changed the no-plugin fallback so running the generated Codex prompt remains the required next action.
+
+**`.claude/skills/tasktide-agent-workflow/REFERENCE.md`**
+- Updated the detailed TDD and Codex handoff rules so Claude must not treat Codex execution as optional for implementation or tests.
+- Updated the unavailable-plugin fallback to require manual Codex execution as the next action.
+
+**`backend/tests/agents-doc.behavior.test.js`**
+- Added regression coverage for mandatory Codex execution wording in the TaskTide agent workflow skill and reference.
+
+**`frontend/package.json`**
+- Added `mammoth` dependency for client-side Word document (.docx) text extraction.
+
+**`frontend/src/app/syllabusExtraction.ts`**
+- Added `extractDocx(file)` using `mammoth.extractRawText` with `arrayBuffer` input (browser-compatible path).
+- Routed `.docx` extension to `extractDocx` in the `extract` dispatch function.
+
+**`frontend/src/pages/SyllabusImportDialog.tsx`**
+- Added `uploadedFiles: File[]` state to track queued files separately from paste text.
+- Removed immediate navigation on file select — files now appear as removable `Chip` elements; extraction and navigation happen on Next click.
+- `handleFileChange` is now synchronous: validates extensions immediately, adds valid files to `uploadedFiles`, shows `fileTypeError` for unsupported types without calling `extract`.
+- `handleContinueUpload` is now async: extracts all queued files in parallel via `Promise.all`, combines results with paste text using `\n---\n` separator, then navigates to method step.
+- "Next" button disabled when both `uploadedFiles` is empty and `pasteText` is blank.
+- File input updated to `accept=".pdf,.csv,.docx"` and `multiple`.
+- `handleClose` resets `uploadedFiles` and `extracting` state.
+
+**`frontend/src/i18n.ts`**
+- Updated English and Chinese syllabus import copy so the upload button, walkthrough, and Q&A mention PDF, CSV, and DOCX files.
+
+**`frontend/tests/syllabus-extraction.behavior.test.ts`**
+- Added `vi.mock("mammoth", ...)` returning mocked `extractRawText`.
+- Replaced the "DOCX throws" test with a "DOCX extracts plain text" test.
+- Kept the "xlsx throws" test.
+
+**`frontend/tests/syllabus-import.behavior.test.tsx`**
+- Updated "triggers auto analysis when file uploaded" test to click Next after upload (file no longer auto-navigates).
+- Updated "shows file type error" test to remove the `extract` mock (error is now thrown from extension check, not from extract).
+- Added coverage for the upload button copy listing PDF, CSV, and DOCX support.
+- Added: "Next button enabled when a file is queued but paste text is empty".
+- Added: "uploaded files appear as removable chips; removing a chip disables Next again".
+
+### Design decisions
+- Files are not extracted on select to keep the UI responsive. Extraction runs on Next click, allowing the user to review their queue first.
+- Unsupported types are rejected at the extension-check level (in the dialog), not at the extraction level. This gives immediate feedback without an async round-trip.
+- `pasteText` state tracks only what the user typed; `extractedText` holds the combined result after Next is clicked. This keeps the two sources independent and makes draft serialization straightforward (File objects can't be serialized to localStorage; combined text can).
+
 ## Version 2.5.2
 Update Date: 2026-05-05
 

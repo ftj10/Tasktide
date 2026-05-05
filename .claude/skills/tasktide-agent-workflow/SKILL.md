@@ -11,7 +11,7 @@ description: Coordinates the full AI-assisted development workflow for TaskTide 
 2. Classify it (see below)
 3. Output: chosen path, reason, command sequence, files to read/update, next action
 4. Generate the Codex handoff prompt for implementation and tests
-5. Do not implement code unless the user explicitly asks
+5. When implementation or tests are needed, route the work to Codex; this is mandatory, not optional
 
 ## Classification
 
@@ -89,7 +89,7 @@ Use:
 - `/codex:review` or `/codex:adversarial-review` for read-only review after Codex changes
 - `/codex:cancel` if a delegated job should stop
 
-Prefer `/codex:rescue --background` for medium or large implementation tasks so Claude can keep planning or reviewing while Codex works. If the plugin is not installed, still output the Codex handoff prompt so the user can paste it into Codex manually.
+Use `/codex:rescue --background` for every task that needs implementation, bug investigation, or tests. If the plugin is not installed, still output the Codex handoff prompt and make Codex execution the required next action.
 
 ## Output format (every run)
 1. **Chosen workflow path** — with reason

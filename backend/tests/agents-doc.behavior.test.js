@@ -43,6 +43,7 @@ test('behavior: TaskTide agent workflow delegates implementation and tests to Co
   const reference = fs.readFileSync(referencePath, 'utf8');
 
   assert.equal(skill.includes('Codex as the implementation/test owner'), true);
+  assert.equal(skill.includes('route the work to Codex; this is mandatory, not optional'), true);
   assert.equal(skill.includes('Claude TDD handoff prompt'), true);
   assert.equal(skill.includes('Codex owns:'), true);
   assert.equal(skill.includes('openai/codex-plugin-cc'), true);
@@ -50,6 +51,8 @@ test('behavior: TaskTide agent workflow delegates implementation and tests to Co
   assert.equal(skill.includes('/codex:status'), true);
   assert.equal(skill.includes('/codex:result'), true);
   assert.equal(reference.includes('Codex owns all tests and implementation work'), true);
+  assert.equal(reference.includes('Codex execution is mandatory whenever implementation or tests are needed'), true);
+  assert.equal(reference.includes('Do not treat the Codex step as optional'), true);
   assert.equal(reference.includes('Add or update tests first'), true);
   assert.equal(reference.includes('First failing test:'), true);
   assert.equal(reference.includes('/codex:review'), true);

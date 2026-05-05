@@ -1,6 +1,13 @@
 # Release Notes
 
-Title: Version 2.5.2 – Update Released (2026-05-05)
+## Version 2.6.0 – Update Released (2026-05-05)
+
+### What's New
+- Added: The Syllabus Import wizard now accepts Word documents (.docx) alongside PDFs and CSVs.
+- Added: You can now upload multiple files at once — mix and match .docx, .pdf, and .csv files in a single import. Each file appears as a removable chip so you can review before proceeding.
+- Added: Paste your own text and attach files at the same time. All sources are combined automatically when you click Next.
+
+## Version 2.5.2 – Update Released (2026-05-05)
 
 What’s New
 

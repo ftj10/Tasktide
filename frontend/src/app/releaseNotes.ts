@@ -14,6 +14,31 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-05-05-syllabus-multifile-docx",
+    version: "v2.6.0",
+    releasedAt: "2026-05-05",
+    title: {
+      en: "Syllabus Import: Word Files & Multi-File Upload",
+      zh: "课程大纲导入：支持 Word 文件与多文件上传"
+    },
+    summary: {
+      en: "You can now upload Word documents and attach multiple files — mix PDFs, CSVs, and .docx files together, or combine them with pasted text in one import.",
+      zh: "现在支持上传 Word 文档，还可以同时上传多个文件——PDF、CSV 和 .docx 文件可混合使用，也可与粘贴文本一起导入。"
+    },
+    changes: {
+      en: [
+        "Added: Word (.docx) files are now accepted in the Syllabus Import wizard.",
+        "Added: Upload multiple files at once — each file appears as a removable chip before you proceed.",
+        "Added: Paste text and attach files at the same time; all sources are combined when you click Next."
+      ],
+      zh: [
+        "新增：课程大纲导入现已支持 Word（.docx）文件。",
+        "新增：可一次上传多个文件，每个文件以可删除标签显示，确认后继续。",
+        "新增：可同时粘贴文本并附加文件，点击下一步时所有内容自动合并。"
+      ]
+    }
+  },
+  {
     id: "2026-05-05-reminder-completion-toast-fix",
     version: "v2.5.2",
     releasedAt: "2026-05-05",

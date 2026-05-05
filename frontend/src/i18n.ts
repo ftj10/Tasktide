@@ -251,7 +251,7 @@ const resources = {
           syllabusManual: {
             question: "Import a syllabus using your own AI",
             title: "how to import syllabus manually.gif",
-            text: "1. Click Import Syllabus in the sidebar.\n2. Paste your syllabus text or upload a PDF or CSV, then click Next.\n3. Choose Copy prompt to my AI.\n4. Optionally add study preferences (e.g. \"remind me 3 days before exams\").\n5. Click Next to see the generated prompt — copy it with the Copy Prompt button.\n6. Paste the prompt into any AI (ChatGPT, Claude, etc.) and copy the JSON it returns.\n7. Paste that JSON into the wizard and click Import Tasks.\n8. Review the extracted tasks, edit or remove any, then click to add them to your planner."
+            text: "1. Click Import Syllabus in the sidebar.\n2. Paste your syllabus text or upload a PDF, CSV, or DOCX file, then click Next.\n3. Choose Copy prompt to my AI.\n4. Optionally add study preferences (e.g. \"remind me 3 days before exams\").\n5. Click Next to see the generated prompt — copy it with the Copy Prompt button.\n6. Paste the prompt into any AI (ChatGPT, Claude, etc.) and copy the JSON it returns.\n7. Paste that JSON into the wizard and click Import Tasks.\n8. Review the extracted tasks, edit or remove any, then click to add them to your planner."
           }
         },
         taskNotifications: {
@@ -363,7 +363,7 @@ const resources = {
           },
           q20: {
             question: "How does syllabus import work?",
-            answer: "Click Import Syllabus in the sidebar. Paste your syllabus text or upload a PDF or CSV file, then click Next. Choose how to generate tasks: pick Copy prompt to my AI to get a ready-made prompt you paste into any AI — nothing ever leaves your browser — or pick Analyze with Claude to send your text to Claude directly (a consent screen shows exactly what will be sent before anything is submitted). After the AI produces a JSON list, paste it back and the wizard validates each item, showing specific errors if anything is wrong. Review every extracted task, edit or remove any, then click Import to add them to your planner. If you close the browser mid-import, the wizard saves your progress for 24 hours so you can pick up where you left off."
+            answer: "Click Import Syllabus in the sidebar. Paste your syllabus text or upload a PDF, CSV, or DOCX file, then click Next. Choose how to generate tasks: pick Copy prompt to my AI to get a ready-made prompt you paste into any AI — nothing ever leaves your browser — or pick Analyze with Claude to send your text to Claude directly (a consent screen shows exactly what will be sent before anything is submitted). After the AI produces a JSON list, paste it back and the wizard validates each item, showing specific errors if anything is wrong. Review every extracted task, edit or remove any, then click Import to add them to your planner. If you close the browser mid-import, the wizard saves your progress for 24 hours so you can pick up where you left off."
           },
           q21: {
             question: "Where can I see what changed recently?",
@@ -499,7 +499,7 @@ const resources = {
         step1Title: "Upload or Paste Syllabus",
         step2Title: "Tasks Found",
         pasteLabel: "Paste syllabus text",
-        uploadLabel: "Upload PDF or CSV",
+        uploadLabel: "Upload PDF, CSV, or DOCX",
         analyze: "Analyze",
         analyzing: "Analyzing…",
         analyzeError: "Analysis failed. Please try again.",
@@ -826,7 +826,7 @@ const resources = {
           syllabusManual: {
             question: "使用自己的 AI 导入课程大纲",
             title: "how to import syllabus manually.gif",
-            text: "1. 点击侧边栏中的「导入课程大纲」。\n2. 粘贴大纲文本或上传 PDF/CSV 文件，然后点击「下一步」。\n3. 选择「复制提示词到我的 AI」。\n4. 可选：填写学习偏好（例如「考试前 3 天提醒我」）。\n5. 点击「下一步」查看生成的提示词，用「复制提示词」按钮复制。\n6. 将提示词粘贴到任意 AI（ChatGPT、Claude 等）并复制它返回的 JSON。\n7. 将 JSON 粘贴回向导，点击「导入任务」。\n8. 检查提取的任务，编辑或删除不需要的，然后点击确认导入到计划中。"
+            text: "1. 点击侧边栏中的「导入课程大纲」。\n2. 粘贴大纲文本或上传 PDF、CSV 或 DOCX 文件，然后点击「下一步」。\n3. 选择「复制提示词到我的 AI」。\n4. 可选：填写学习偏好（例如「考试前 3 天提醒我」）。\n5. 点击「下一步」查看生成的提示词，用「复制提示词」按钮复制。\n6. 将提示词粘贴到任意 AI（ChatGPT、Claude 等）并复制它返回的 JSON。\n7. 将 JSON 粘贴回向导，点击「导入任务」。\n8. 检查提取的任务，编辑或删除不需要的，然后点击确认导入到计划中。"
           }
         },
         taskNotifications: {
@@ -938,7 +938,7 @@ const resources = {
           },
           q20: {
             question: "课程大纲导入功能是如何工作的？",
-            answer: "点击侧边栏中的「导入课程大纲」，粘贴大纲文本或上传 PDF 或 CSV 文件，然后点击「下一步」。选择生成方式：「复制提示词到我的 AI」会生成一段提示词，您可以粘贴到任何 AI 中——数据不会离开您的浏览器；「用 Claude 自动分析」则会将您的文本发送给 Claude，发送前会显示确认界面。AI 返回 JSON 列表后，将其粘贴回向导，系统会逐项校验并在出现问题时给出具体错误提示。核查每条任务草稿，编辑或删除不需要的，然后点击导入加入计划中。如中途关闭浏览器，向导会保存进度 24 小时，重新打开即可继续。"
+            answer: "点击侧边栏中的「导入课程大纲」，粘贴大纲文本或上传 PDF、CSV 或 DOCX 文件，然后点击「下一步」。选择生成方式：「复制提示词到我的 AI」会生成一段提示词，您可以粘贴到任何 AI 中——数据不会离开您的浏览器；「用 Claude 自动分析」则会将您的文本发送给 Claude，发送前会显示确认界面。AI 返回 JSON 列表后，将其粘贴回向导，系统会逐项校验并在出现问题时给出具体错误提示。核查每条任务草稿，编辑或删除不需要的，然后点击导入加入计划中。如中途关闭浏览器，向导会保存进度 24 小时，重新打开即可继续。"
           },
           q21: {
             question: "在哪里查看最近更新？",
@@ -1074,7 +1074,7 @@ const resources = {
         step1Title: "上传或粘贴课程大纲",
         step2Title: "找到的任务",
         pasteLabel: "粘贴课程大纲文本",
-        uploadLabel: "上传 PDF 或 CSV",
+        uploadLabel: "上传 PDF、CSV 或 DOCX",
         analyze: "分析",
         analyzing: "正在分析…",
         analyzeError: "分析失败，请重试。",

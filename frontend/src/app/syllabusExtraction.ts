@@ -6,10 +6,18 @@ export async function extract(input: string | File): Promise<string> {
   const name = input.name.toLowerCase();
   if (name.endsWith(".pdf")) return extractPdf(input);
   if (name.endsWith(".csv")) return extractCsv(input);
+  if (name.endsWith(".docx")) return extractDocx(input);
 
   throw new Error(
     `Unsupported file type: "${input.name}". For Excel files, please export to CSV first.`
   );
+}
+
+async function extractDocx(file: File): Promise<string> {
+  const mammoth = await import("mammoth");
+  const buffer = await file.arrayBuffer();
+  const result = await mammoth.extractRawText({ arrayBuffer: buffer });
+  return result.value;
 }
 
 async function extractPdf(file: File): Promise<string> {

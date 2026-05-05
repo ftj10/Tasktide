@@ -57,6 +57,9 @@ describe("SyllabusImportDialog behavior", () => {
     expect(
       screen.getByRole("heading", { name: /upload or paste/i })
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /upload pdf, csv, or docx/i })
+    ).toBeInTheDocument();
   });
 
   it("keeps Next button disabled while textarea is empty", () => {
@@ -244,6 +247,11 @@ describe("SyllabusImportDialog behavior", () => {
     await user.upload(fileInput, csvFile);
 
     await waitFor(() =>
+      expect(screen.getByText("syllabus.csv")).toBeInTheDocument()
+    );
+    await user.click(screen.getByRole("button", { name: /^next$/i }));
+
+    await waitFor(() =>
       screen.getByRole("button", { name: /analyze with claude/i })
     );
     await user.click(
@@ -260,13 +268,6 @@ describe("SyllabusImportDialog behavior", () => {
   });
 
   it("shows file type error when unsupported file is uploaded", async () => {
-    const { extract } = await import("../src/app/syllabusExtraction");
-    vi.mocked(extract).mockRejectedValueOnce(
-      new Error(
-        'Unsupported file type: "report.xlsx". For Excel files, please export to CSV first.'
-      )
-    );
-
     const user = userEvent.setup({ applyAccept: false });
     renderSyllabusImportDialog();
 
@@ -284,6 +285,46 @@ describe("SyllabusImportDialog behavior", () => {
     expect(
       screen.getByRole("heading", { name: /upload or paste/i })
     ).toBeInTheDocument();
+  });
+
+  it("Next button enabled when a file is queued but paste text is empty", async () => {
+    const user = userEvent.setup();
+    renderSyllabusImportDialog();
+
+    expect(screen.getByRole("button", { name: /^next$/i })).toBeDisabled();
+
+    const fileInput = document.querySelector(
+      'input[type="file"]'
+    ) as HTMLInputElement;
+    const csvFile = new File(["Event,Date"], "schedule.csv", { type: "text/csv" });
+    await user.upload(fileInput, csvFile);
+
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: /^next$/i })).not.toBeDisabled()
+    );
+  });
+
+  it("uploaded files appear as removable chips; removing a chip disables Next again", async () => {
+    const user = userEvent.setup();
+    renderSyllabusImportDialog();
+
+    const fileInput = document.querySelector(
+      'input[type="file"]'
+    ) as HTMLInputElement;
+    const csvFile = new File(["Event,Date"], "notes.csv", { type: "text/csv" });
+    await user.upload(fileInput, csvFile);
+
+    await waitFor(() =>
+      expect(screen.getByText("notes.csv")).toBeInTheDocument()
+    );
+
+    const deleteIcon = screen.getByTestId("CancelIcon");
+    await user.click(deleteIcon);
+
+    await waitFor(() =>
+      expect(screen.queryByText("notes.csv")).not.toBeInTheDocument()
+    );
+    expect(screen.getByRole("button", { name: /^next$/i })).toBeDisabled();
   });
 
   describe("manual path", () => {

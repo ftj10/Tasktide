@@ -201,6 +201,8 @@ export function SyllabusImportDialog(props: {
   const [wizardMode, setWizardMode] = useState<"manual" | "auto">("auto");
   const [pasteText, setPasteText] = useState("");
   const [extractedText, setExtractedText] = useState("");
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [extracting, setExtracting] = useState(false);
   const [studyPreferences, setStudyPreferences] = useState("");
   const [generatedPrompt, setGeneratedPrompt] = useState("");
   const [promptCopied, setPromptCopied] = useState(false);
@@ -252,6 +254,8 @@ export function SyllabusImportDialog(props: {
     setWizardStep("upload");
     setPasteText("");
     setExtractedText("");
+    setUploadedFiles([]);
+    setExtracting(false);
     setStudyPreferences("");
     setGeneratedPrompt("");
     setPromptCopied(false);
@@ -265,28 +269,43 @@ export function SyllabusImportDialog(props: {
     props.onClose();
   }
 
-  function handleContinueUpload() {
-    const text = pasteText.trim();
-    if (!text) return;
-    setExtractedText(text);
-    setFileError(null);
-    setWizardStep("method");
-  }
-
-  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    e.target.value = "";
+  async function handleContinueUpload() {
+    setExtracting(true);
     setFileError(null);
     try {
-      const text = await extract(file);
-      setExtractedText(text);
-      setPasteText(text);
+      const fileParts = await Promise.all(uploadedFiles.map((f) => extract(f)));
+      const parts = [...fileParts];
+      if (pasteText.trim()) parts.push(pasteText.trim());
+      setExtractedText(parts.join("\n---\n"));
       setWizardStep("method");
     } catch (err) {
       setFileError(
         err instanceof Error ? err.message : t("syllabus.fileTypeError")
       );
+    } finally {
+      setExtracting(false);
+    }
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    e.target.value = "";
+    setFileError(null);
+    const supported = [".pdf", ".csv", ".docx"];
+    const unsupported = files.filter(
+      (f) => !supported.some((ext) => f.name.toLowerCase().endsWith(ext))
+    );
+    const valid = files.filter((f) =>
+      supported.some((ext) => f.name.toLowerCase().endsWith(ext))
+    );
+    if (unsupported.length > 0) {
+      setFileError(t("syllabus.fileTypeError"));
+    }
+    if (valid.length > 0) {
+      setUploadedFiles((prev) => {
+        const existing = new Set(prev.map((f) => f.name));
+        return [...prev, ...valid.filter((f) => !existing.has(f.name))];
+      });
     }
   }
 
@@ -497,10 +516,27 @@ export function SyllabusImportDialog(props: {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".pdf,.csv"
+                accept=".pdf,.csv,.docx"
                 hidden
-                onChange={(e) => void handleFileChange(e)}
+                multiple
+                onChange={handleFileChange}
               />
+              {uploadedFiles.length > 0 && (
+                <Stack direction="row" flexWrap="wrap" gap={1}>
+                  {uploadedFiles.map((f) => (
+                    <Chip
+                      key={f.name}
+                      label={f.name}
+                      size="small"
+                      onDelete={() =>
+                        setUploadedFiles((prev) =>
+                          prev.filter((x) => x.name !== f.name)
+                        )
+                      }
+                    />
+                  ))}
+                </Stack>
+              )}
               {fileError && <Alert severity="error">{fileError}</Alert>}
             </Stack>
           ) : wizardStep === "method" ? (
@@ -757,8 +793,9 @@ export function SyllabusImportDialog(props: {
               <Button onClick={handleClose}>{t("common.cancel")}</Button>
               <Button
                 variant="contained"
-                onClick={handleContinueUpload}
-                disabled={!pasteText.trim()}
+                onClick={() => void handleContinueUpload()}
+                disabled={extracting || (!pasteText.trim() && uploadedFiles.length === 0)}
+                startIcon={extracting ? <CircularProgress size={16} /> : undefined}
               >
                 {t("syllabus.next")}
               </Button>
