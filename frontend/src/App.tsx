@@ -33,6 +33,7 @@ import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import LanguageRoundedIcon from "@mui/icons-material/LanguageRounded";
 import TaskAltRoundedIcon from "@mui/icons-material/TaskAltRounded";
 import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
+import MenuBookRoundedIcon from "@mui/icons-material/MenuBookRounded";
 
 import type { Task, Reminder } from "./types";
 import {
@@ -88,6 +89,9 @@ const StatsPage = lazy(() =>
 const ReleaseNotesCenter = lazy(() =>
   import("./components/ReleaseNotesCenter").then((module) => ({ default: module.ReleaseNotesCenter }))
 );
+const SyllabusImportDialog = lazy(() =>
+  import("./pages/SyllabusImportDialog").then((module) => ({ default: module.SyllabusImportDialog }))
+);
 
 function areRemindersEqual(source: Reminder, target: Reminder) {
   return (
@@ -133,6 +137,7 @@ export default function App() {
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [taskDialogOpen, setTaskDialogOpen] = useState(false);
+  const [syllabusImportOpen, setSyllabusImportOpen] = useState(false);
   const tasksRef = useRef<Task[]>([]);
   const remindersRef = useRef<Reminder[]>([]);
   const taskSyncQueue = useRef(Promise.resolve());
@@ -567,6 +572,11 @@ export default function App() {
               <LanguageRoundedIcon />
             </IconButton>
           </Tooltip>
+          <Tooltip title={t("syllabus.importButton")} placement="bottom">
+            <IconButton id="import-syllabus-mobile" color="inherit" onClick={() => setSyllabusImportOpen(true)} size="small">
+              <MenuBookRoundedIcon />
+            </IconButton>
+          </Tooltip>
           <Tooltip title={t("nav.installApp")} placement="bottom">
             <IconButton id="install-web-app-mobile" data-onboarding="download-app-button" component={Link} to="/help?topic=open-web-app-pc" color="inherit" size="small">
               <DownloadRoundedIcon />
@@ -687,6 +697,15 @@ export default function App() {
               <Box sx={{ height: 1, bgcolor: "divider" }} />
 
               <Stack spacing={1}>
+                <Button
+                  id="import-syllabus-desktop"
+                  variant="outlined"
+                  startIcon={<MenuBookRoundedIcon />}
+                  onClick={() => setSyllabusImportOpen(true)}
+                  sx={{ borderRadius: 2.5 }}
+                >
+                  {t("syllabus.importButton")}
+                </Button>
                 {username ? (
                   <Suspense fallback={null}>
                     <ReleaseNotesCenter username={username} suppressAutoOpen={shouldSuppressReleaseNotes} />
@@ -748,6 +767,7 @@ export default function App() {
                           setTasks={handleSetTasks}
                           onTaskDialogVisibilityChange={handleTaskDialogVisibilityChange}
                           showToast={showToast}
+                          reloadTasks={reloadTasksFromServer}
                         />
                       }
                     />
@@ -758,6 +778,8 @@ export default function App() {
                           tasks={tasks}
                           setTasks={handleSetTasks}
                           onTaskDialogVisibilityChange={handleTaskDialogVisibilityChange}
+                          showToast={showToast}
+                          reloadTasks={reloadTasksFromServer}
                         />
                       }
                     />
@@ -826,6 +848,12 @@ export default function App() {
         </BottomNavigation>
       </Paper>
       <OnboardingTooltip steps={onboardingSteps} storageKey={ONBOARDING_STORAGE_KEY} forceAdvanceSignal={onboardingForceSignal} />
+      <Suspense fallback={null}>
+        <SyllabusImportDialog
+          open={syllabusImportOpen}
+          onClose={() => setSyllabusImportOpen(false)}
+        />
+      </Suspense>
       <Snackbar
         open={toast.open}
         autoHideDuration={3000}

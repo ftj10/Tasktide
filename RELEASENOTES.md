@@ -1,11 +1,29 @@
 # Release Notes
 
-## Version 1.27.0 – Update Released (2026-05-04)
+## Version 2.4.0 – Update Released (2026-05-04)
+
+### What's New
+- Added: When you delete a task that came from a syllabus import, you now have the option to delete all tasks from that same import in one step — no need to remove them one by one.
+
+## Version 2.3.0 – Update Released (2026-05-04)
+
+### What's New
+- Added: The Syllabus Import wizard now shows a review screen where you can inspect every extracted task before it is added to your planner — edit, remove, or restore any item before confirming.
+- Added: Before your syllabus text is sent to AI for analysis, a consent screen shows you exactly what will be sent and asks you to confirm. Nothing is sent until you say so.
+- Added: Your unfinished import is automatically saved for 24 hours. If you close the browser mid-import, you can pick up exactly where you left off when you reopen.
+- Added: Importing a batch of tasks now has a 200-task safety limit to keep imports fast and reliable.
+
+## Version 2.2.0 – Update Released (2026-05-04)
+
+### What's New
+- Added: A new "Import Syllabus" button now appears in the sidebar on desktop and in the top bar on mobile. Paste your course syllabus or upload a PDF or CSV file, click Analyze, and TaskTide will extract your schedule events as task drafts ready for your review.
+
+## Version 2.1.0 – Update Released (2026-05-04)
 
 ### What's New
 - Added: The app can now send your syllabus text to an AI for analysis. This is the engine behind the upcoming Syllabus Import feature — once the full import flow is complete, you will be able to drop in a course outline and have your tasks created automatically.
 
-## Version 1.26.0 – Update Released (2026-05-04)
+## Version 2.0.0 – Update Released (2026-05-04)
 
 ### What's New
 - Added: Course Syllabus Import is on its way. Behind the scenes, support has been added for reading PDF and CSV syllabus files directly in your browser, so your course documents never leave your device.

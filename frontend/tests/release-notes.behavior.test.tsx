@@ -33,8 +33,8 @@ describe("ReleaseNotesCenter behavior", () => {
   it("shows the latest shipped version in the update dialog", () => {
     renderWithProviders(<ReleaseNotesCenter username="tom" />);
 
-    expect(screen.getByText("v1.25.1")).toBeInTheDocument();
-    expect(screen.getByText("Offline Navigation Fix")).toBeInTheDocument();
+    expect(screen.getByText("v2.4.0")).toBeInTheDocument();
+    expect(screen.getByText("Delete Entire Syllabus Import at Once")).toBeInTheDocument();
   });
 
   it("keeps the 1.18.3 and 1.18.4 coach-mark updates in history", async () => {

@@ -1,6 +1,123 @@
 # Development Log
 
-## Version 1.27.0
+## Version 2.4.0
+Update Date: 2026-05-04
+
+### Changes
+
+**`backend/models/Task.js`**
+- Added `syllabusImportBatchId: { type: String }` field to task schema.
+- Added compound index `{ userId: 1, syllabusImportBatchId: 1 }` for efficient batch-scoped queries.
+
+**`backend/server.js`**
+- Added `DELETE /tasks/batch/:batchId` route (JWT required). Calls `Task.deleteMany({ userId, syllabusImportBatchId: batchId })` and returns `{ deleted: N }`. Placed before `DELETE /tasks/:id` so Express route precedence is correct.
+
+**`frontend/src/types.ts`**
+- Added `syllabusImportBatchId?: string` to the `Task` type.
+
+**`frontend/src/app/storage.ts`**
+- Exported `deleteSyllabusBatch(batchId: string)` — calls `DELETE /api/tasks/batch/:batchId`, throws on non-ok so callers handle errors explicitly (no offline retry queue for batch ops).
+
+**`frontend/src/pages/SyllabusImportDialog.tsx`**
+- `handleConfirm()` now generates `crypto.randomUUID()` and stamps each task with `syllabusImportBatchId` before calling `callBatchImport`. UUID is frontend-generated so no backend changes were needed to the import route.
+
+**`frontend/src/components/ConfirmDeleteDialog.tsx`**
+- Added optional props `syllabusTaskCount?: number` and `onDeleteSyllabus?: () => void`. When `onDeleteSyllabus` is provided, a "Delete all N syllabus tasks" warning button appears between Cancel and Delete. This does not affect the existing delete flow for non-syllabus tasks.
+
+**`frontend/src/pages/TodayPage.tsx`** / **`frontend/src/pages/WeekPage.tsx`**
+- Added `reloadTasks?: () => Promise<void>` prop to both pages (wired from App.tsx's `reloadTasksFromServer`).
+- Added `removeSyllabusBatch(batchId)` function: calls `deleteSyllabusBatch`, then `reloadTasks()` to replace local state from server — avoids queue-poisoning that would occur if `setTasks` were used after bulk server-side delete.
+- `ConfirmDeleteDialog` now receives `syllabusTaskCount` (count of tasks in same batch) and `onDeleteSyllabus` (calls `removeSyllabusBatch`) when the selected task has `syllabusImportBatchId`.
+
+**`frontend/src/App.tsx`**
+- Passes `showToast` and `reloadTasks={reloadTasksFromServer}` to `WeekPage` (previously missing both).
+- Passes `reloadTasks={reloadTasksFromServer}` to `TodayPage`.
+
+**`frontend/src/i18n.ts`**
+- Added `dialog.deleteSyllabusHint`, `dialog.deleteSyllabusAction` (en + zh).
+- Added `toast.syllabusDeleted`, `toast.syllabusDeleteFailed` (en + zh).
+
+### Design decisions
+- **Frontend UUID generation**: Avoids changing the batch import API shape and keeps the implementation minimal.
+- **`reloadTasks` after batch delete**: If we instead called `setTasks(tasks.filter(...))`, App.tsx would diff and fire `DELETE /tasks/:id` for each removed task. Those tasks are already gone (→ 404), which `deleteTask()` handles by enqueuing a retry — poisoning the offline sync queue. Reload from server sidesteps this entirely.
+- **Route ordering**: `DELETE /tasks/batch/:batchId` must be registered before `DELETE /tasks/:id` so Express does not match the literal string `batch` as the `:id` parameter.
+
+## Version 2.3.0
+Update Date: 2026-05-04
+
+### Changes
+
+**`backend/server.js`**
+- Added `POST /syllabus/generate-drafts` (JWT required). Receives `{ extractedText, studyPreferences }`, calls `syllabusAnalysis.generateDrafts()`, returns validated `SyllabusTaskDraft[]`. Returns 400 on missing body, 422 on schema validation failure, 502 on Claude API error. Distinct from `/syllabus/analyze` (no studyPreferences, generic 500).
+- Added `BATCH_IMPORT_MAX = 200` constant and guard to `POST /tasks/batch` — returns 400 with message if exceeded.
+
+**`backend/syllabusAnalysis.js`**
+- Added `generateDrafts(extractedText, studyPreferences, overrideClient)` — includes studyPreferences in prompt, generates prep tasks for high-priority items. Throws `{ claudeError: true }` on Anthropic API failure, `{ validationError: true }` when all returned tasks fail schema validation.
+- Exported `generateDrafts` alongside existing `analyzeSyllabus`.
+
+**`frontend/src/pages/SyllabusImportDialog.tsx`** (updated)
+- Full review screen (step 1): one `Card` per `ReviewItem` showing `sourceText`, `sourceType` chip, `confidence: "low"` chip, title, Edit (opens `TaskDialog`), and Delete/Restore toggle.
+- Consent gate: clicking Analyze sets `consentText` state — shows the full text to be sent before any API call fires. Confirmed → `runAnalyze(text)`. Cancelled → returns to step 0, no fetch.
+- LocalStorage persistence: `saveDraft()` called after successful analyze (step→1), `clearDraft()` called on confirm success and on close/cancel. `loadDraft()` on open checks 24h TTL — expired drafts silently removed. `pendingResume` state shows Alert with Resume/Start Fresh buttons.
+- `handleConfirm()` calls `clearDraft()` before the batch API request succeeds.
+- `handleClose()` clears all state including `consentText` and `pendingResume`.
+
+**`backend/tests/batch-import.behavior.test.js`** (updated)
+- Added stub for `Task.deleteMany` in tests that call the batch route (needed because `cleanupTasksForUser` runs before `updateOne`).
+- Added test: batch exceeding 200 tasks returns 400.
+
+**`backend/tests/syllabus-generate.behavior.test.js`** (new)
+- 5 behavior tests: unauthenticated 401, missing extractedText 400, successful response 200, Claude API failure 502, schema validation failure 422.
+
+**`frontend/tests/syllabus-import.behavior.test.tsx`** (updated)
+- Added `analyzeWithConsent()` helper — clicks Analyze, waits for consent gate, clicks "Send to Claude".
+- Added 2 new tests: consent gate shows text before API call; cancelling consent gate returns to step 1 without calling fetch.
+- Updated all existing flow tests to go through the consent gate.
+- Added `localStorage.clear()` in `beforeEach` to prevent resume prompt from appearing in unrelated tests.
+
+**`frontend/tests/syllabus-wizard.behavior.test.ts`** (new)
+- 6 unit tests for `loadDraft`/`saveDraft`/`clearDraft` logic: null when empty, returns within TTL, discards after 24h, clears on remove, persists step-1 state, handles invalid JSON.
+
+**`frontend/src/i18n.ts`** (updated)
+- Added syllabus keys: `reviewHeader`, `confidenceLow`, `editItem`, `deleteItem`, `restoreItem`, `confirmImport_one/other`, `importing`, `importSuccess_one/other`, `confirmError`, `resumePrompt`, `resume`, `startFresh`, `consentTitle`, `consentBody`, `consentConfirm`, `consentCancel` (en + zh).
+- Updated `q20` help center answer (en + zh) to describe consent gate, review screen, and 24h session save.
+
+## Version 2.2.0
+Update Date: 2026-05-04
+
+### Changes
+
+**`frontend/src/pages/SyllabusImportDialog.tsx`** (new)
+- Two-step wizard dialog: step 0 accepts paste text or file upload; step 1 shows the extracted draft count (placeholder for full review in #8).
+- `callAnalyze(text)` — `POST /api/syllabus/analyze`, throws on non-ok responses.
+- `handleAnalyze(input: string | File)` — calls `extract()` when input is a File, then `callAnalyze()`; sets `drafts` and advances to step 1 on success; sets `error` string on failure.
+- `handleFileChange` — triggered by hidden `<input type="file" accept=".pdf,.csv">`, delegates to `handleAnalyze`.
+- Step 0 actions: Cancel (closes + resets), Analyze (disabled while empty or loading, shows CircularProgress spinner).
+- Step 1 actions: Back (returns to step 0 with state intact), Close.
+- All strings via i18n `syllabus.*` keys.
+
+**`frontend/src/App.tsx`**
+- Added `MenuBookRoundedIcon` import.
+- Lazy-imported `SyllabusImportDialog`.
+- Added `syllabusImportOpen` state.
+- Desktop sidebar: "Import Syllabus" button added to the utility `Stack` above ReleaseNotesCenter.
+- Mobile AppBar: `MenuBookRoundedIcon` IconButton added before Install App.
+- `<Suspense><SyllabusImportDialog /></Suspense>` rendered at root level.
+
+**`frontend/src/i18n.ts`**
+- Added `syllabus` section (en + zh): `importButton`, `step1Title`, `step2Title`, `pasteLabel`, `uploadLabel`, `analyze`, `analyzing`, `analyzeError`, `draftsFound`, `noDraftsFound`, `back`.
+- Added `help.faq.q20` (en + zh): syllabus import explainer FAQ.
+
+**`frontend/tests/syllabus-import.behavior.test.tsx`** (new)
+- 7 tests: renders step 1 heading, analyze button disabled on empty text, paste→analyze→step 2 draft count, API failure shows error, Back returns to step 1, empty API array shows no-drafts message, file upload triggers analysis with mocked `extract`.
+
+### Design notes
+- `extract` is mocked at module level in the test file so file-upload tests don't depend on pdfjs-dist or papaparse.
+- Dialog state resets fully on close (`handleClose`) so re-opening always starts at step 0.
+- Lazy-loaded at root so it doesn't inflate the initial bundle.
+- No GIF walkthrough added to helpCenter.ts yet; deferred until the full review flow (#8) is shipped.
+
+## Version 2.1.0
 Update Date: 2026-05-04
 
 ### Changes
@@ -29,7 +146,7 @@ Update Date: 2026-05-04
 - `overrideClient` injection pattern avoids module-level client construction at import time, so tests run without `ANTHROPIC_API_KEY` present.
 - Prompt generator lives in the frontend to keep schema knowledge co-located with `syllabusSchema.ts`; the backend route uses its own inline prompt for the actual Claude call.
 
-## Version 1.26.0
+## Version 2.0.0
 Update Date: 2026-05-04
 
 ### Changes

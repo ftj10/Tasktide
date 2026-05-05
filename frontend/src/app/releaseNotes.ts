@@ -14,8 +14,77 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-05-04-syllabus-batch-delete",
+    version: "v2.4.0",
+    releasedAt: "2026-05-04",
+    title: {
+      en: "Delete Entire Syllabus Import at Once",
+      zh: "一键删除整批课程任务"
+    },
+    summary: {
+      en: "When deleting a task from a syllabus import, you can now remove all tasks from that batch in one tap.",
+      zh: "删除课程大纲导入的任务时，可以选择一次性删除该批次的全部任务。"
+    },
+    changes: {
+      en: [
+        "Added: A \"Delete all N syllabus tasks\" option appears in the delete dialog when the task was imported from a syllabus, letting you clear the entire batch at once."
+      ],
+      zh: [
+        "新增：删除由课程大纲导入的任务时，对话框会显示\"删除全部 N 个课程任务\"选项，可一次性清除整批任务。"
+      ]
+    }
+  },
+  {
+    id: "2026-05-04-syllabus-review-consent",
+    version: "v2.3.0",
+    releasedAt: "2026-05-04",
+    title: {
+      en: "Syllabus Import: Review & Consent",
+      zh: "课程大纲导入：审核与确认"
+    },
+    summary: {
+      en: "Review your extracted tasks before importing, confirm what gets sent to AI, and resume unfinished imports for up to 24 hours.",
+      zh: "导入前可逐一审核提取的任务，确认发送给 AI 的内容，未完成的导入可在 24 小时内继续。"
+    },
+    changes: {
+      en: [
+        "Added: A review screen lets you inspect, edit, remove, or restore each extracted task before confirming the import.",
+        "Added: A consent gate shows you exactly what text will be sent to Claude before any network call is made.",
+        "Added: Your in-progress import is saved locally for 24 hours — reopen the wizard to resume where you left off.",
+        "Added: Batch imports are capped at 200 tasks to keep the process fast and reliable."
+      ],
+      zh: [
+        "新增：审核界面让您在确认导入前检查、编辑、删除或恢复每个提取的任务。",
+        "新增：发送前的确认界面会显示即将发送给 Claude 的完整文本，由您决定是否继续。",
+        "新增：未完成的导入会在本地保存 24 小时，重新打开向导即可继续。",
+        "新增：批量导入上限为 200 个任务，确保导入过程快速可靠。"
+      ]
+    }
+  },
+  {
+    id: "2026-05-04-syllabus-import-wizard",
+    version: "v2.2.0",
+    releasedAt: "2026-05-04",
+    title: {
+      en: "Syllabus Import Wizard",
+      zh: "课程大纲导入向导"
+    },
+    summary: {
+      en: "You can now open the Syllabus Import wizard from the sidebar. Paste or upload your course syllabus and let AI extract your tasks.",
+      zh: "现在可以从侧边栏打开课程大纲导入向导。粘贴或上传课程大纲，让 AI 自动提取任务。"
+    },
+    changes: {
+      en: [
+        "Added: A new Import Syllabus button in the sidebar lets you paste syllabus text or upload a PDF or CSV file, analyze it with AI, and preview the extracted task drafts before they are added to your planner."
+      ],
+      zh: [
+        "新增：侧边栏新增「导入课程大纲」按钮，可粘贴课程大纲文本或上传 PDF/CSV 文件，通过 AI 分析后预览提取的任务草稿，确认无误后再导入计划。"
+      ]
+    }
+  },
+  {
     id: "2026-05-04-syllabus-ai-engine",
-    version: "v1.27.0",
+    version: "v2.1.0",
     releasedAt: "2026-05-04",
     title: {
       en: "Syllabus Import — AI Engine Ready",
@@ -36,7 +105,7 @@ export const RELEASE_NOTES: ReleaseNote[] = [
   },
   {
     id: "2026-05-04-syllabus-import-foundation",
-    version: "v1.26.0",
+    version: "v2.0.0",
     releasedAt: "2026-05-04",
     title: {
       en: "Syllabus Import Coming Soon",

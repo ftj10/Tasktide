@@ -412,6 +412,13 @@ export async function updateTask(task: Task, previousTask?: Task): Promise<void>
   }
 }
 
+// INPUT: syllabus import batch id
+// OUTPUT: delete completion
+// EFFECT: Deletes all tasks sharing one syllabus import batch via the batch delete API
+export async function deleteSyllabusBatch(batchId: string): Promise<void> {
+  await requestOk(`/tasks/batch/${encodeURIComponent(batchId)}`, { method: 'DELETE' });
+}
+
 // INPUT: task id
 // OUTPUT: delete completion
 // EFFECT: Deletes a task via the task CRUD API

@@ -182,7 +182,9 @@ const resources = {
         taskDone: "Task marked as done",
         allTasksDone: "All tasks marked as done",
         reminderCreated: "Reminder created",
-        reminderUpdated: "Reminder updated"
+        reminderUpdated: "Reminder updated",
+        syllabusDeleted: "All syllabus tasks deleted",
+        syllabusDeleteFailed: "Failed to delete syllabus tasks"
       },
       release: {
         toolbar: "Updates",
@@ -352,6 +354,10 @@ const resources = {
           q19: {
             question: "What does the Stats page show?",
             answer: "Stats shows your task activity for the past 30 days. You can see how many tasks you completed, created, and left overdue, your overall completion rate, and how these compare with the previous 30 days. The page also shows daily trend bars, behaviour insights, and your most and least productive days of the week."
+          },
+          q20: {
+            question: "How does syllabus import work?",
+            answer: "Click Import Syllabus in the sidebar. Paste your syllabus text or upload a PDF or CSV file, then click Analyze. A consent screen shows you exactly what text will be sent to Claude — confirm to proceed. TaskTide extracts lectures, exams, assignments, and more as task drafts. Review each draft, edit or remove any, then click Import to add them to your planner. If you close the browser mid-import, the wizard saves your progress for 24 hours so you can pick up where you left off."
           }
         },
         ask: {
@@ -373,6 +379,8 @@ const resources = {
       dialog: {
         doneMessage: "Mark \"{{title}}\" as done?",
         deleteMessage: "Delete \"{{title}}\"?",
+        deleteSyllabusHint: "This task was imported from a syllabus.",
+        deleteSyllabusAction: "Delete all {{count}} syllabus tasks",
         allDoneMessage: "Mark all tasks for this day as done?",
         allDoneAction: "All done",
         addTaskTitle: "Add task",
@@ -475,6 +483,36 @@ const resources = {
         backlogNeutral: "Neutral",
         currentPeriodRange: "Current: {{start}} – {{end}}",
         previousPeriodRange: "Previous: {{start}} – {{end}}"
+      },
+      syllabus: {
+        importButton: "Import Syllabus",
+        step1Title: "Upload or Paste Syllabus",
+        step2Title: "Tasks Found",
+        pasteLabel: "Paste syllabus text",
+        uploadLabel: "Upload PDF or CSV",
+        analyze: "Analyze",
+        analyzing: "Analyzing…",
+        analyzeError: "Analysis failed. Please try again.",
+        reviewHeader: "{{count}} tasks found — review and confirm.",
+        noDraftsFound: "No tasks could be extracted from this syllabus.",
+        confidenceLow: "Low confidence",
+        editItem: "Edit",
+        deleteItem: "Remove",
+        restoreItem: "Restore",
+        back: "Back",
+        confirmImport_one: "Add {{count}} to Planner",
+        confirmImport_other: "Add {{count}} to Planner",
+        importing: "Importing…",
+        importSuccess_one: "{{count}} task imported",
+        importSuccess_other: "{{count}} tasks imported",
+        confirmError: "Import failed. Please try again.",
+        resumePrompt: "You have an unfinished import from your last session.",
+        resume: "Resume",
+        startFresh: "Start Fresh",
+        consentTitle: "Review before sending to Claude",
+        consentBody: "The following text will be sent to Claude for analysis:",
+        consentConfirm: "Send to Claude",
+        consentCancel: "Cancel"
       },
       onboarding: {
         title: "Quick tour",
@@ -689,7 +727,9 @@ const resources = {
         taskDone: "任务已完成",
         allTasksDone: "所有任务已完成",
         reminderCreated: "提醒已创建",
-        reminderUpdated: "提醒已更新"
+        reminderUpdated: "提醒已更新",
+        syllabusDeleted: "所有课程任务已删除",
+        syllabusDeleteFailed: "课程任务删除失败"
       },
       release: {
         toolbar: "更新",
@@ -859,6 +899,10 @@ const resources = {
           q19: {
             question: "统计页面（Stats）显示什么？",
             answer: "Stats 页面展示你过去 30 天的任务活动情况，包括已完成、已创建和逾期的任务数量，以及整体完成率，并与前 30 天进行对比。页面还包含每日趋势柱状图、行为洞察，以及一周中效率最高和最低的日期。"
+          },
+          q20: {
+            question: "课程大纲导入功能是如何工作的？",
+            answer: "点击侧边栏中的「导入课程大纲」，粘贴大纲文本或上传 PDF 或 CSV 文件，然后点击「分析」。系统会显示一个确认界面，展示即将发送给 Claude 的完整文本，由您决定是否继续。TaskTide 会将讲座、考试、作业等提取为任务草稿，您可以逐一检查、编辑或删除，确认后再导入到计划中。如中途关闭浏览器，向导会保存进度 24 小时，重新打开即可继续。"
           }
         },
         ask: {
@@ -880,6 +924,8 @@ const resources = {
       dialog: {
         doneMessage: "将“{{title}}”标记为完成？",
         deleteMessage: "删除“{{title}}”？",
+        deleteSyllabusHint: "此任务由课程大纲批量导入。",
+        deleteSyllabusAction: "删除全部 {{count}} 个课程任务",
         allDoneMessage: "将这一天的所有任务标记为完成？",
         allDoneAction: "全部完成",
         addTaskTitle: "添加任务",
@@ -982,6 +1028,36 @@ const resources = {
         backlogNeutral: "基本持平",
         currentPeriodRange: "当前：{{start}} – {{end}}",
         previousPeriodRange: "前期：{{start}} – {{end}}"
+      },
+      syllabus: {
+        importButton: "导入课程大纲",
+        step1Title: "上传或粘贴课程大纲",
+        step2Title: "找到的任务",
+        pasteLabel: "粘贴课程大纲文本",
+        uploadLabel: "上传 PDF 或 CSV",
+        analyze: "分析",
+        analyzing: "正在分析…",
+        analyzeError: "分析失败，请重试。",
+        reviewHeader: "找到 {{count}} 个任务 — 核对后确认。",
+        noDraftsFound: "未能从该大纲中提取到任何任务。",
+        confidenceLow: "置信度低",
+        editItem: "编辑",
+        deleteItem: "删除",
+        restoreItem: "恢复",
+        back: "返回",
+        confirmImport_one: "加入计划 ({{count}})",
+        confirmImport_other: "加入计划 ({{count}})",
+        importing: "正在导入…",
+        importSuccess_one: "已导入 {{count}} 个任务",
+        importSuccess_other: "已导入 {{count}} 个任务",
+        confirmError: "导入失败，请重试。",
+        resumePrompt: "您有一个上次未完成的导入任务。",
+        resume: "继续",
+        startFresh: "重新开始",
+        consentTitle: "发送前请确认内容",
+        consentBody: "以下文本将发送给 Claude 进行分析：",
+        consentConfirm: "发送给 Claude",
+        consentCancel: "取消"
       },
       onboarding: {
         title: "快速引导",
