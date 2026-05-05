@@ -1,5 +1,14 @@
 # Release Notes
 
+Title: Version 2.5.2 – Update Released (2026-05-05)
+
+What’s New
+
+Improvements
+
+Fixes
+- Fixed: Completing a reminder no longer shows a mistaken "Reminder created" message.
+
 ## Version 2.5.1 – Update Released (2026-05-05)
 
 ### Fixes

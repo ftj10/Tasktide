@@ -45,7 +45,14 @@ export function ReminderPage(props: {
   }
 
   function doMarkDone(reminder: Reminder) {
-    upsert({ ...reminder, done: true, updatedAt: new Date().toISOString() });
+    props.setReminders(
+      props.reminders.map((currentReminder) =>
+        currentReminder.id === reminder.id
+          ? { ...currentReminder, done: true, updatedAt: new Date().toISOString() }
+          : currentReminder
+      )
+    );
+    showToast?.(t("toast.reminderDone"));
   }
 
   return (

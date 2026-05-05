@@ -1,5 +1,21 @@
 # Development Log
 
+## Version 2.5.2
+Update Date: 2026-05-05
+
+### Changes
+
+**`frontend/src/pages/ReminderPage.tsx`**
+- Split reminder completion away from the create/edit `upsert` helper.
+- Root cause: completing a reminder reused `upsert`, which derived the toast from dialog edit state. When no edit dialog was active, completion was classified as create and showed "Reminder created".
+- Fix: completion now updates the matching reminder directly and shows a dedicated completion toast.
+
+**`frontend/src/i18n.ts`**
+- Added `toast.reminderDone` in English and Chinese.
+
+**`frontend/tests/reminder-page.behavior.test.tsx`**
+- Added regression coverage asserting reminder completion shows "Reminder completed" and does not show "Reminder created".
+
 ## Version 2.5.1
 Update Date: 2026-05-05
 

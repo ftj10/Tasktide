@@ -183,6 +183,7 @@ const resources = {
         allTasksDone: "All tasks marked as done",
         reminderCreated: "Reminder created",
         reminderUpdated: "Reminder updated",
+        reminderDone: "Reminder completed",
         syllabusDeleted: "All syllabus tasks deleted",
         syllabusDeleteFailed: "Failed to delete syllabus tasks"
       },
@@ -274,7 +275,7 @@ const resources = {
           step1: "If you want to plan today, start on Today. Add tasks, import calendar events from an ICS file if you have one, and use the list as your daily work plan. Every action — create, edit, complete, delete — confirms with a brief message at the bottom of the screen.",
           step2: "When you need to organize the whole week, open Week. Place tasks into time slots, compare busy days, and adjust your plan before the work happens.",
           step3: "Use Month when you want to scan a larger schedule, choose a future date, or jump back into Today for a specific day.",
-          step4: "Use Reminders for notes that are not tied to one schedule slot but should stay easy to find until you complete them.",
+          step4: "Use Reminders for notes that are not tied to one schedule slot but should stay easy to find until you complete them. When you mark a reminder done, TaskTide confirms that it was completed.",
           step5Desktop: "On desktop, use the left sidebar to move between Reminders, Today, Week, Month, Stats, Help, and the install guide.",
           step5Mobile: "On mobile, use the bottom navigation to move between the main pages — including Stats for your 30-day productivity overview — and the top install button to learn how to add TaskTide to your device.",
           step6Desktop: "If you want TaskTide to open like an app, choose Install app and follow the walkthrough for your browser. If you want task alerts, task start reminders, and daily task check-ins, open Help and choose Enable Task Notifications.",
@@ -290,7 +291,7 @@ const resources = {
           },
           q2: {
             question: "How do reminders differ from tasks?",
-            answer: "Tasks are planned by date. Reminders are simple notes that stay visible until you mark them done."
+            answer: "Tasks are planned by date. Reminders are simple notes that stay visible until you mark them done. Completing a reminder removes it from the active list and shows a completion message."
           },
           q3: {
             question: "Why does a task need a valid end time?",
@@ -757,6 +758,7 @@ const resources = {
         allTasksDone: "所有任务已完成",
         reminderCreated: "提醒已创建",
         reminderUpdated: "提醒已更新",
+        reminderDone: "提醒已完成",
         syllabusDeleted: "所有课程任务已删除",
         syllabusDeleteFailed: "课程任务删除失败"
       },
@@ -848,7 +850,7 @@ const resources = {
           step1: "如果要规划今天，就从 Today 开始。添加任务，有 ICS 文件时可以导入日历事件，并把列表当作当天的执行计划。每次创建、编辑、完成或删除操作后，屏幕底部都会显示简短的确认提示。",
           step2: "需要整理整周安排时，打开 Week。把任务放进时间段，比较哪些天更忙，并在开始前调整计划。",
           step3: "想查看更大范围、选择未来日期，或进入某一天的 Today 时，使用 Month。",
-          step4: "Reminders 适合记录不绑定具体时间段、但需要一直容易找到直到完成的事项。",
+          step4: "Reminders 适合记录不绑定具体时间段、但需要一直容易找到直到完成的事项。标记提醒完成后，TaskTide 会确认它已完成。",
           step5Desktop: "桌面端可以用左侧边栏切换 Reminders、Today、Week、Month、Stats、Help，并打开安装指引。",
           step5Mobile: "手机端可以用底部导航切换主要页面（包括查看 30 天效率概览的 Stats 页），也可以用顶部安装按钮学习如何把 TaskTide 加到设备上。",
           step6Desktop: "如果希望 TaskTide 像应用一样打开，请选择“安装应用”，然后按浏览器演示操作。如果希望收到 task alerts、task start reminders 和 daily task check-ins，请打开 Help 并选择 Enable Task Notifications。",
@@ -864,7 +866,7 @@ const resources = {
           },
           q2: {
             question: "提醒和任务有什么不同？",
-            answer: "任务按日期安排。提醒更像会一直显示的简短备忘。"
+            answer: "任务按日期安排。提醒更像会一直显示的简短备忘。完成提醒后，它会从进行中列表移除，并显示完成提示。"
           },
           q3: {
             question: "为什么结束时间必须有效？",

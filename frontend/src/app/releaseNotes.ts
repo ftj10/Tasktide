@@ -14,6 +14,27 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-05-05-reminder-completion-toast-fix",
+    version: "v2.5.2",
+    releasedAt: "2026-05-05",
+    title: {
+      en: "Reminder Completion Fix",
+      zh: "提醒完成提示修复"
+    },
+    summary: {
+      en: "Completing a reminder now shows the correct confirmation instead of sometimes saying a reminder was created.",
+      zh: "完成提醒时现在会显示正确确认，不再偶尔提示已创建提醒。"
+    },
+    changes: {
+      en: [
+        "Fixed: Completing a reminder no longer shows a mistaken \"Reminder created\" message."
+      ],
+      zh: [
+        "修复：完成提醒时不再错误显示“提醒已创建”。"
+      ]
+    }
+  },
+  {
     id: "2026-05-05-add-task-id-fix",
     version: "v2.5.1",
     releasedAt: "2026-05-05",

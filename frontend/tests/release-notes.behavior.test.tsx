@@ -33,8 +33,8 @@ describe("ReleaseNotesCenter behavior", () => {
   it("shows the latest shipped version in the update dialog", () => {
     renderWithProviders(<ReleaseNotesCenter username="tom" />);
 
-    expect(screen.getByText("v2.5.0")).toBeInTheDocument();
-    expect(screen.getByText("Syllabus Import: Manual AI Path")).toBeInTheDocument();
+    expect(screen.getByText("v2.5.2")).toBeInTheDocument();
+    expect(screen.getByText("Reminder Completion Fix")).toBeInTheDocument();
   });
 
   it("keeps the 1.18.3 and 1.18.4 coach-mark updates in history", async () => {

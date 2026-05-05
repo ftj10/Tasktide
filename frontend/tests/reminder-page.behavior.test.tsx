@@ -31,14 +31,19 @@ describe("ReminderPage behavior", () => {
       },
     ];
     const setReminders = vi.fn();
+    const showToast = vi.fn();
 
-    renderWithProviders(<ReminderPage reminders={reminders} setReminders={setReminders} />);
+    renderWithProviders(
+      <ReminderPage reminders={reminders} setReminders={setReminders} showToast={showToast} />
+    );
 
     await user.click(screen.getByRole("button", { name: "Done" }));
 
     expect(setReminders).toHaveBeenCalledTimes(1);
     const nextReminders = setReminders.mock.calls[0][0] as Reminder[];
     expect(nextReminders[0].done).toBe(true);
+    expect(showToast).toHaveBeenCalledWith("Reminder completed");
+    expect(showToast).not.toHaveBeenCalledWith("Reminder created");
   });
 
   it("opens the reminder dialog full-screen on mobile screens", async () => {
