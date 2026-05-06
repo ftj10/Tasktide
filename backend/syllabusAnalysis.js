@@ -83,6 +83,14 @@ async function streamMessage(client, params) {
   return client.messages.stream(params).finalMessage();
 }
 
+function detectSectionAmbiguityQuestion(text) {
+  const sectionMatches = text.match(/\b(?:section|sec\.?)\s+[A-Z]?\d{1,3}[A-Z]?|\b[A-Z]{1,3}\d{2}\b/gi) ?? [];
+  const normalized = new Set(sectionMatches.map((match) => match.toLowerCase().replace(/\s+/g, ' ').trim()));
+  return normalized.size > 1
+    ? 'Which section are you enrolled in?'
+    : null;
+}
+
 async function analyzeSyllabus(text, overrideClient) {
   const client = overrideClient ?? createAnthropicClient();
 
@@ -131,14 +139,14 @@ async function generateDrafts(extractedText, studyPreferences, overrideClient) {
   let response;
   try {
     response = await streamMessage(client, {
-      model: 'claude-opus-4-7',
-      max_tokens: 32768,
+      model: 'claude-sonnet-4-6',
+      max_tokens: 8192,
       tool_choice: { type: 'tool', name: 'submit_syllabus_tasks' },
       tools: [SUBMIT_TOOL],
       messages: [
         {
           role: 'user',
-          content: `Extract all academic planning items from the following course syllabus, including exams, assignments, projects, quizzes, readings, labs, tutorials, lectures, office hours, prep work, and any dated or recurring course obligations. For each item, determine whether it is a one-time occurrence or a recurring pattern. Generate prep tasks for high-priority items (exams, major assignments). ${DESCRIPTION_REQUIREMENT}${prefNote}\n\n${extractedText}`,
+          content: `Extract all academic planning items from this syllabus (exams, assignments, labs, lectures, office hours, readings, recurring sessions, prep tasks for high-priority items). For each, determine once vs recurring. Include a one-sentence description per item.${prefNote}\n\nSyllabus:\n${extractedText}`,
         },
       ],
     });
@@ -169,4 +177,45 @@ async function generateDrafts(extractedText, studyPreferences, overrideClient) {
   return valid;
 }
 
-module.exports = { analyzeSyllabus, generateDrafts, getAnthropicApiKey, SUBMIT_TOOL };
+async function detectAmbiguities(text, overrideClient) {
+  const client = overrideClient ?? createAnthropicClient();
+  const sectionQuestion = detectSectionAmbiguityQuestion(text);
+
+  let response;
+  try {
+    response = await client.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 512,
+      messages: [
+        {
+          role: 'user',
+          content: `Read this syllabus excerpt. List up to 5 short questions whose answers would let you extract tasks more accurately (e.g. missing section IDs, unclear dates, ambiguous recurring patterns). If the syllabus includes multiple sections, labs, tutorials, or schedules that differ by section and the student's section is not specified, ask which section they belong to. If nothing is ambiguous, return an empty array. Return ONLY a JSON array of question strings, no markdown.\n\n${text}`,
+        },
+      ],
+    });
+  } catch (err) {
+    const error = new Error('Claude API call failed');
+    error.claudeError = true;
+    throw error;
+  }
+
+  const textBlock = response.content?.find((block) => block.type === 'text');
+  try {
+    const parsed = JSON.parse(textBlock?.text ?? '');
+    const questions = Array.isArray(parsed)
+      ? parsed.filter((question) => typeof question === 'string')
+      : [];
+    const merged = sectionQuestion ? [sectionQuestion, ...questions] : questions;
+    return [...new Set(merged)].slice(0, 5);
+  } catch {
+    return sectionQuestion ? [sectionQuestion] : [];
+  }
+}
+
+module.exports = {
+  analyzeSyllabus,
+  generateDrafts,
+  detectAmbiguities,
+  getAnthropicApiKey,
+  SUBMIT_TOOL,
+};

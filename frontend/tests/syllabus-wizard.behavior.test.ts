@@ -3,7 +3,7 @@
 // EFFECT: exercises pure functions and localStorage directly — no DOM rendering needed
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { validatePastedJson } from "../src/pages/SyllabusImportDialog";
+import { validatePastedJson } from "../src/app/syllabusJson";
 
 const STORAGE_KEY = "syllabus_wizard_draft";
 const TTL_MS = 24 * 60 * 60 * 1000;

@@ -8,6 +8,16 @@ describe("buildSyllabusPrompt", () => {
     expect(prompt).toContain(input);
   });
 
+  it("guides the student through clarify and extract steps", () => {
+    const input = "CS101: Midterm date TBA.";
+    const prefs = "remind me 3 days before each exam";
+    const prompt = buildSyllabusPrompt(input, prefs);
+    expect(prompt).toContain("STEP 1");
+    expect(prompt).toContain("STEP 2");
+    expect(prompt).toContain(input);
+    expect(prompt).toContain(prefs);
+  });
+
   it("mentions all 12 sourceType values", () => {
     const prompt = buildSyllabusPrompt("test");
     const sourceTypes = [
@@ -41,16 +51,16 @@ describe("buildSyllabusPrompt", () => {
     expect(prompt).toContain("low");
   });
 
-  it("requires a concise description for every extracted task", () => {
+  it("requires a concise description shape for every extracted task", () => {
     const prompt = buildSyllabusPrompt("test");
-    expect(prompt).toMatch(/description is required for every object/i);
+    expect(prompt).toContain('"description":"one concise sentence"');
     expect(prompt).toMatch(/one concise sentence/i);
   });
 
-  it("documents weekday convention: 1=Monday and 7=Sunday", () => {
+  it("documents weekday range for recurring tasks", () => {
     const prompt = buildSyllabusPrompt("test");
-    expect(prompt).toMatch(/1[=\s]+Mon(day)?/i);
-    expect(prompt).toMatch(/7[=\s]+Sun(day)?/i);
+    expect(prompt).toContain('"weekdays":[1-7]');
+    expect(prompt).toMatch(/recurring only/i);
   });
 
   it("returns a non-empty prompt string when given an empty input", () => {

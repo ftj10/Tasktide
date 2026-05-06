@@ -861,6 +861,21 @@ app.post('/syllabus/generate-drafts', authenticateToken, async (req, res) => {
   }
 });
 
+async function detectSyllabusAmbiguities(req, res) {
+  try {
+    const extractedText = String(req.body?.extractedText ?? '').trim();
+    if (!extractedText) return res.status(400).json({ error: 'extractedText is required' });
+    const questions = await syllabusAnalysis.detectAmbiguities(extractedText);
+    res.json({ questions });
+  } catch (err) {
+    if (err.claudeError) return res.status(503).json({ error: 'Claude API is unavailable. Please continue without clarifications.' });
+    res.status(500).json({ error: 'Ambiguity detection failed' });
+  }
+}
+
+app.post('/api/syllabus/detect-ambiguities', authenticateToken, detectSyllabusAmbiguities);
+app.post('/syllabus/detect-ambiguities', authenticateToken, detectSyllabusAmbiguities);
+
 const PORT = process.env.PORT || 2676;
 
 // INPUT: environment database connection string

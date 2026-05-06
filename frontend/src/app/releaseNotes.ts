@@ -14,6 +14,54 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-05-06-syllabus-section-clarify-fix",
+    version: "v2.8.1",
+    releasedAt: "2026-05-06",
+    title: {
+      en: "Syllabus Import: Section Clarification Fix",
+      zh: "课程大纲导入：课程 section 澄清修复",
+    },
+    summary: {
+      en: "Automatic syllabus import now asks which section applies when a syllabus lists multiple section schedules.",
+      zh: "当课程大纲列出多个 section 的不同安排时，自动导入现在会询问您属于哪个 section。",
+    },
+    changes: {
+      en: [
+        "Fixed: Automatic syllabus import now asks which course section applies when a syllabus includes multiple sections with different schedules.",
+      ],
+      zh: [
+        "修复：当课程大纲包含多个 section 且安排不同时，自动课程大纲导入现在会询问应使用哪个 section。",
+      ],
+    },
+  },
+  {
+    id: "2026-05-06-syllabus-clarify-quality",
+    version: "v2.8.0",
+    releasedAt: "2026-05-06",
+    title: {
+      en: "Syllabus Import: Clarify Before Extracting",
+      zh: "课程大纲导入：提取前先澄清",
+    },
+    summary: {
+      en: "Automatic syllabus import can now ask clarification questions before creating task drafts.",
+      zh: "自动课程大纲导入现在可以在生成任务草稿前先提出澄清问题。",
+    },
+    changes: {
+      en: [
+        "Added: Automatic syllabus import can ask up to five short questions when dates, sections, or repeating patterns are unclear.",
+        "Added: The Analyze with Claude option now shows a High Quality label so the recommended automatic path is easier to spot.",
+        "Improved: Manual AI prompts now guide you through a clarify-first workflow before extracting tasks.",
+        "Improved: Automatic analysis now uses a shorter, more focused request for faster syllabus task generation.",
+      ],
+      zh: [
+        "新增：当日期、章节或重复安排不清楚时，自动课程大纲导入最多可提出五个简短问题。",
+        "新增：“用 Claude 自动分析”现在显示“高质量”标签，方便识别推荐的自动路径。",
+        "改进：手动 AI 提示词现在会先引导澄清问题，再提取任务。",
+        "改进：自动分析现在使用更简洁聚焦的请求，让课程任务生成更顺畅。",
+      ],
+    },
+  },
+  {
     id: "2026-05-05-syllabus-max-tokens-fix",
     version: "v2.7.3",
     releasedAt: "2026-05-05",

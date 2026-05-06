@@ -30,8 +30,9 @@ import dayjs from "dayjs";
 
 import type { Task } from "../types";
 import type { SyllabusTaskDraft } from "../app/syllabusSchema";
-import { SyllabusTaskDraftSchema, transformDraft } from "../app/syllabusSchema";
+import { transformDraft } from "../app/syllabusSchema";
 import { extract } from "../app/syllabusExtraction";
+import { validatePastedJson } from "../app/syllabusJson";
 import { buildSyllabusPrompt } from "../app/syllabusPrompt";
 import { TaskDialog } from "../components/TaskDialog";
 
@@ -42,6 +43,7 @@ export type WizardStep =
   | "prompt"
   | "paste"
   | "consent"
+  | "clarify"
   | "review";
 
 type ReviewItem = {
@@ -85,42 +87,6 @@ function clearDraft() {
   localStorage.removeItem(STORAGE_KEY);
 }
 
-export function validatePastedJson(raw: string): {
-  drafts: SyllabusTaskDraft[];
-  errors: string[];
-} {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(raw);
-  } catch {
-    return {
-      drafts: [],
-      errors: ["Not valid JSON — check for missing brackets or quotes."],
-    };
-  }
-  if (!Array.isArray(parsed)) {
-    return {
-      drafts: [],
-      errors: [`Expected a JSON array (starting with [). Got: ${typeof parsed}`],
-    };
-  }
-  const drafts: SyllabusTaskDraft[] = [];
-  const errors: string[] = [];
-  (parsed as unknown[]).forEach((item, idx) => {
-    const result = SyllabusTaskDraftSchema.safeParse(item);
-    if (result.success) {
-      drafts.push(result.data);
-    } else {
-      for (const issue of result.error.issues) {
-        errors.push(
-          `Item ${idx + 1}: ${issue.path.join(".") || "(root)"} — ${issue.message}`
-        );
-      }
-    }
-  });
-  return { drafts, errors };
-}
-
 async function copyToClipboard(text: string): Promise<void> {
   try {
     await navigator.clipboard.writeText(text);
@@ -145,6 +111,19 @@ async function callGenerateDrafts(
   });
   if (!res.ok) throw new Error("analyze failed");
   return res.json() as Promise<SyllabusTaskDraft[]>;
+}
+
+async function callDetectAmbiguities(extractedText: string): Promise<string[]> {
+  const res = await fetch("/api/syllabus/detect-ambiguities", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ extractedText }),
+  });
+  if (!res.ok) throw new Error("clarify failed");
+  const data = (await res.json()) as { questions?: unknown };
+  return Array.isArray(data.questions)
+    ? data.questions.filter((question): question is string => typeof question === "string")
+    : [];
 }
 
 async function callBatchImport(tasks: Task[]): Promise<void> {
@@ -185,6 +164,7 @@ const STEP_TITLE_KEY: Record<WizardStep, string> = {
   prompt: "syllabus.promptTitle",
   paste: "syllabus.pasteJsonTitle",
   consent: "syllabus.consentTitle",
+  clarify: "syllabus.clarifyTitle",
   review: "syllabus.step2Title",
 };
 
@@ -213,6 +193,8 @@ export function SyllabusImportDialog(props: {
   const [jsonErrors, setJsonErrors] = useState<string[]>([]);
   const [fileError, setFileError] = useState<string | null>(null);
   const [reviewItems, setReviewItems] = useState<ReviewItem[]>([]);
+  const [ambiguityQuestions, setAmbiguityQuestions] = useState<string[]>([]);
+  const [clarificationAnswer, setClarificationAnswer] = useState("");
   const [loading, setLoading] = useState(false);
   const [analyzeError, setAnalyzeError] = useState<string | null>(null);
   const [confirmError, setConfirmError] = useState<string | null>(null);
@@ -266,6 +248,8 @@ export function SyllabusImportDialog(props: {
     setJsonErrors([]);
     setFileError(null);
     setReviewItems([]);
+    setAmbiguityQuestions([]);
+    setClarificationAnswer("");
     setAnalyzeError(null);
     setConfirmError(null);
     setPendingResume(null);
@@ -377,6 +361,16 @@ export function SyllabusImportDialog(props: {
     setLoading(true);
     setAnalyzeError(null);
     try {
+      try {
+        const questions = await callDetectAmbiguities(extractedText);
+        if (questions.length > 0) {
+          setAmbiguityQuestions(questions);
+          setWizardStep("clarify");
+          return;
+        }
+      } catch {
+        setAmbiguityQuestions([]);
+      }
       const drafts = await callGenerateDrafts(extractedText, studyPreferences);
       setReviewItems(
         drafts.map((draft) => ({
@@ -390,6 +384,37 @@ export function SyllabusImportDialog(props: {
         pasteText,
         extractedText,
         studyPreferences,
+        drafts,
+        savedAt: Date.now(),
+      });
+      setWizardStep("review");
+    } catch {
+      setAnalyzeError(t("syllabus.analyzeError"));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleClarifyConfirm() {
+    setLoading(true);
+    setAnalyzeError(null);
+    try {
+      const nextPreferences = clarificationAnswer.trim()
+        ? `${studyPreferences}\n\nClarifications: ${clarificationAnswer.trim()}`
+        : studyPreferences;
+      const drafts = await callGenerateDrafts(extractedText, nextPreferences);
+      setReviewItems(
+        drafts.map((draft) => ({
+          draft,
+          task: transformDraft(draft),
+          deleted: false,
+        }))
+      );
+      saveDraft({
+        wizardStep: "review",
+        pasteText,
+        extractedText,
+        studyPreferences: nextPreferences,
         drafts,
         savedAt: Date.now(),
       });
@@ -417,6 +442,9 @@ export function SyllabusImportDialog(props: {
         break;
       case "consent":
         setWizardStep("method");
+        break;
+      case "clarify":
+        setWizardStep("consent");
         break;
       case "review":
         setWizardStep(wizardMode === "manual" ? "paste" : "consent");
@@ -566,9 +594,16 @@ export function SyllabusImportDialog(props: {
                 sx={{ justifyContent: "flex-start", textAlign: "left", p: 2 }}
               >
                 <Stack spacing={0.5} alignItems="flex-start">
-                  <Typography variant="subtitle2">
-                    {t("syllabus.methodAuto")}
-                  </Typography>
+                  <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+                    <Typography variant="subtitle2">
+                      {t("syllabus.methodAuto")}
+                    </Typography>
+                    <Chip
+                      label={t("syllabus.methodAutoQuality")}
+                      color="success"
+                      size="small"
+                    />
+                  </Stack>
                   <Typography variant="caption" color="text.secondary">
                     {t("syllabus.methodAutoDesc")}
                   </Typography>
@@ -672,6 +707,35 @@ export function SyllabusImportDialog(props: {
               >
                 {extractedText}
               </Box>
+              {analyzeError && (
+                <Typography variant="caption" color="error">
+                  {analyzeError}
+                </Typography>
+              )}
+            </Stack>
+          ) : wizardStep === "clarify" ? (
+            <Stack spacing={2} sx={{ pt: 0.5 }}>
+              <Typography variant="body2" color="text.secondary">
+                {t("syllabus.clarifyQuestionsHeader")}
+              </Typography>
+              <Stack component="ul" spacing={0.75} sx={{ pl: 2.5, m: 0 }}>
+                {ambiguityQuestions.map((question) => (
+                  <Typography component="li" variant="body2" key={question}>
+                    {question}
+                  </Typography>
+                ))}
+              </Stack>
+              <TextField
+                label={t("syllabus.clarifyAnswerLabel")}
+                multiline
+                minRows={3}
+                fullWidth
+                value={clarificationAnswer}
+                onChange={(e) => setClarificationAnswer(e.target.value)}
+              />
+              <Typography variant="caption" color="text.secondary">
+                {t("syllabus.clarifySkipHint")}
+              </Typography>
               {analyzeError && (
                 <Typography variant="caption" color="error">
                   {analyzeError}
@@ -844,6 +908,22 @@ export function SyllabusImportDialog(props: {
                 {loading
                   ? t("syllabus.analyzing")
                   : t("syllabus.consentConfirm")}
+              </Button>
+            </>
+          ) : wizardStep === "clarify" ? (
+            <>
+              <Button onClick={goBack} disabled={loading}>
+                {t("syllabus.back")}
+              </Button>
+              <Button
+                variant="contained"
+                onClick={() => void handleClarifyConfirm()}
+                disabled={loading}
+                startIcon={loading ? <CircularProgress size={16} /> : undefined}
+              >
+                {loading
+                  ? t("syllabus.analyzing")
+                  : t("syllabus.clarifyAnalyze")}
               </Button>
             </>
           ) : (

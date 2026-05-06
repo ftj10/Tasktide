@@ -117,25 +117,31 @@ describe("SyllabusImportDialog behavior", () => {
 
   it("moves to review and shows draft count after successful auto analysis", async () => {
     const user = userEvent.setup();
-    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
-      ok: true,
-      json: async () => [
-        {
-          title: "Midterm",
-          sourceType: "midterm",
-          type: "once",
-          confidence: "high",
-          sourceText: "Midterm Oct 1",
-        },
-        {
-          title: "Lecture",
-          sourceType: "lecture",
-          type: "recurring",
-          confidence: "medium",
-          sourceText: "Mon 10am",
-        },
-      ],
-    } as Response);
+    const fetchSpy = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ questions: [] }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [
+          {
+            title: "Midterm",
+            sourceType: "midterm",
+            type: "once",
+            confidence: "high",
+            sourceText: "Midterm Oct 1",
+          },
+          {
+            title: "Lecture",
+            sourceType: "lecture",
+            type: "recurring",
+            confidence: "medium",
+            sourceText: "Mon 10am",
+          },
+        ],
+      } as Response);
 
     renderSyllabusImportDialog();
     await user.type(
@@ -164,10 +170,15 @@ describe("SyllabusImportDialog behavior", () => {
 
   it("shows error message when auto API call fails", async () => {
     const user = userEvent.setup();
-    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
-      ok: false,
-      status: 500,
-    } as Response);
+    vi.spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ questions: [] }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+      } as Response);
 
     renderSyllabusImportDialog();
     await user.type(
@@ -186,10 +197,15 @@ describe("SyllabusImportDialog behavior", () => {
 
   it("Back from review (auto path) returns to consent screen", async () => {
     const user = userEvent.setup();
-    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
-      ok: true,
-      json: async () => [],
-    } as Response);
+    vi.spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ questions: [] }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [],
+      } as Response);
 
     renderSyllabusImportDialog();
     await user.type(
@@ -210,10 +226,15 @@ describe("SyllabusImportDialog behavior", () => {
 
   it("shows zero-drafts message when auto API returns empty array", async () => {
     const user = userEvent.setup();
-    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
-      ok: true,
-      json: async () => [],
-    } as Response);
+    vi.spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ questions: [] }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [],
+      } as Response);
 
     renderSyllabusImportDialog();
     await user.type(
@@ -231,18 +252,24 @@ describe("SyllabusImportDialog behavior", () => {
 
   it("triggers auto analysis with extracted text when a file is uploaded", async () => {
     const user = userEvent.setup();
-    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
-      ok: true,
-      json: async () => [
-        {
-          title: "Final",
-          sourceType: "final",
-          type: "once",
-          confidence: "high",
-          sourceText: "Final Dec 15",
-        },
-      ],
-    } as Response);
+    const fetchSpy = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ questions: [] }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [
+          {
+            title: "Final",
+            sourceType: "final",
+            type: "once",
+            confidence: "high",
+            sourceText: "Final Dec 15",
+          },
+        ],
+      } as Response);
 
     renderSyllabusImportDialog();
 

@@ -1,6 +1,6 @@
 # TaskTide Application
 
-Current version: `v2.6.0`
+Current version: `v2.8.1`
 
 TaskTide is a full-stack planner for daily tasks, weekly routines, reminders, shared help questions, and calendar-based scheduling.
 
@@ -10,7 +10,7 @@ Deployed Web: TaskTide
 
 ## Features
 
-- A Syllabus Import wizard lets you paste a course syllabus or upload one or more files — PDF, CSV, and Word (.docx) are all supported. You can mix file types and paste text together; all sources are combined before analysis. The AI prompt asks for concise task descriptions and looks for exams, assignments, readings, prep work, recurring course obligations, and other academic planning items. Before sending to Claude, a consent gate shows you exactly what text will be shared. Extracted task drafts appear on a review screen where you can edit, remove, or restore each item before confirming. The wizard saves your progress for 24 hours so a closed browser does not mean starting over. Batch imports are capped at 200 tasks. Access it from the sidebar on desktop or the top bar on mobile.
+- A Syllabus Import wizard lets you paste a course syllabus or upload one or more files — PDF, CSV, and Word (.docx) are all supported. You can mix file types and paste text together; all sources are combined before analysis. The AI prompt asks for concise task descriptions and looks for exams, assignments, readings, prep work, recurring course obligations, and other academic planning items. Before sending to Claude, a consent gate shows you exactly what text will be shared. Automatic import checks for ambiguous syllabus details first, lets you answer optional clarification questions, then creates task drafts with the high-quality analysis path. Extracted task drafts appear on a review screen where you can edit, remove, or restore each item before confirming. The wizard saves your progress for 24 hours so a closed browser does not mean starting over. Batch imports are capped at 200 tasks. Access it from the sidebar on desktop or the top bar on mobile.
 - Task and reminder CRUD actions — create, update, complete, delete — each confirm with a brief toast notification at the bottom of the screen, including a correct completion message when reminders are marked done. ICS import results also appear as toasts instead of inline banners.
 - Secure registration and login with HttpOnly cookie sessions and persisted `USER` / `ADMIN` roles.
 - Registration now trims usernames, prevents duplicate-looking username casing, and requires stronger passwords before an account is created.

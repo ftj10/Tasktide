@@ -1,5 +1,88 @@
 # Development Log
 
+## Version 2.8.1
+Update Date: 2026-05-06
+
+### Changes
+
+**`backend/syllabusAnalysis.js`**
+- Added deterministic section ambiguity detection before parsing Claude's ambiguity response.
+- When syllabus text contains more than one section-like identifier, ambiguity detection now includes `Which section are you enrolled in?`.
+- Tightened the Claude ambiguity prompt to explicitly ask which section applies when multiple sections, labs, tutorials, or section-specific schedules are present.
+- Merges the deterministic section question with Claude questions, de-duplicates, and keeps the existing five-question cap.
+
+**`backend/tests/syllabusAnalysis.detectAmbiguities.test.js`**
+- Added regression coverage for multi-section syllabi where Claude returns `[]`.
+- Added prompt coverage that section selection is explicitly prioritized.
+
+**`frontend/src/app/releaseNotes.ts`**
+- Added the in-app v2.8.1 update note for the section clarification fix.
+
+**`README.md`, `RELEASENOTES.md`, `package.json`, `backend/package.json`, `backend/package-lock.json`, `frontend/package.json`, `frontend/package-lock.json`**
+- Bumped version from `2.8.0` to `2.8.1` and documented the user-facing fix.
+
+### Debugging observations
+- The route was working, but ambiguity detection depended on Claude deciding that multiple sections were ambiguous.
+- A syllabus with `Section A01` and `Section B02` could return no questions if Claude considered the excerpt clear enough.
+
+### Design decision
+- Section selection is now handled as a deterministic pre-check because choosing the wrong section directly changes generated lecture, lab, tutorial, and exam tasks.
+
+## Version 2.8.0
+Update Date: 2026-05-06
+
+### Changes
+
+**`backend/syllabusAnalysis.js`**
+- Added `detectAmbiguities(text, overrideClient)` using `claude-haiku-4-5-20251001` with `max_tokens: 512`.
+- Parses Claude text output as a JSON array of question strings and returns `[]` when parsing fails.
+- Changed `generateDrafts()` from `claude-opus-4-7` at `32768` tokens to `claude-sonnet-4-6` at `8192` tokens.
+- Replaced the draft-generation prompt with the shorter academic planning item extraction prompt requested for token optimization.
+- Left `analyzeSyllabus()` unchanged.
+
+**`backend/server.js`**
+- Added authenticated ambiguity detection handlers for `POST /api/syllabus/detect-ambiguities` and the proxy-stripped `POST /syllabus/detect-ambiguities` path.
+- Returns `{ questions }`, validates missing `extractedText` as `400`, and maps Claude provider errors to `503`.
+
+**`frontend/src/pages/SyllabusImportDialog.tsx`**
+- Added the `clarify` wizard step between consent and review.
+- Automatic import now calls ambiguity detection before draft generation.
+- If questions are returned, the wizard shows them with an optional clarification answer field and passes the answers into draft generation as `Clarifications: ...`.
+- If ambiguity detection returns no questions or fails, automatic import continues directly to draft generation.
+- Added the High Quality chip to the Analyze with Claude method option.
+
+**`frontend/src/app/syllabusPrompt.ts`**
+- Replaced the manual prompt with a two-step clarify-then-extract workflow.
+
+**`frontend/src/app/syllabusJson.ts`**
+- Moved pasted JSON validation out of the dialog module so the dialog file only exports the React component and still shares validation with tests.
+
+**`frontend/src/App.tsx`**
+- Added the stable toast setter to the `showToast` callback dependency list to satisfy the React hooks lint rule without changing callback behavior.
+
+**`frontend/src/components/ChunkErrorBoundary.tsx`**
+- Replaced the local fallback component function with a `Translation` render prop inside the existing class boundary so fast-refresh linting passes while preserving the offline chunk fallback UI.
+
+**`frontend/eslint.config.js`**
+- Allowed the class-based `ChunkErrorBoundary` export name for the fast-refresh rule because error boundaries must remain class components.
+
+**`frontend/tests/syllabus-extraction.behavior.test.ts`**
+- Removed an unused mock argument so the frontend lint command exits cleanly.
+
+**Tests**
+- Added `backend/tests/syllabusAnalysis.detectAmbiguities.test.js`.
+- Added `frontend/src/pages/SyllabusImportDialog.behavior.test.tsx`.
+- Updated prompt and auto-import behavior tests for the new clarify-first flow.
+- Added direct coverage for `/syllabus/detect-ambiguities` because Vite rewrites frontend `/api/syllabus/detect-ambiguities` requests to that backend path in local development.
+
+**Documentation and release metadata**
+- Bumped frontend, backend, and workspace package versions to `2.8.0`.
+- Updated release notes, in-app release notes, Help Center walkthrough content, README, and this development log.
+
+### Design decisions
+- Registered both `/api/syllabus/detect-ambiguities` and `/syllabus/detect-ambiguities` so direct backend tests and the Vite `/api` proxy path both resolve correctly.
+- Kept clarification answers as appended study preferences to avoid expanding the draft-generation API contract.
+
 ## Version 2.7.3
 Update Date: 2026-05-05
 

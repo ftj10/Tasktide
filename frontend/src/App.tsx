@@ -156,7 +156,7 @@ export default function App() {
     (message: string, severity: "success" | "error" | "info" | "warning" = "success") => {
       setToast({ open: true, message, severity });
     },
-    []
+    [setToast]
   );
   const canUseBackgroundPush = supportsPushNotifications();
   const onboardingSteps = getOnboardingSteps(t);

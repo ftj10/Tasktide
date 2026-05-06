@@ -248,6 +248,11 @@ const resources = {
             title: "how to export tasks as ics calendar file.gif",
             text: "This GIF shows clicking Export ICS on Today, choosing a filter, and downloading the .ics file to open in a calendar app."
           },
+          syllabusAutoClarify: {
+            question: "Import a syllabus with AI clarifications",
+            title: "how to import syllabus with clarifications.gif",
+            text: "What it does:\nAutomatic syllabus import checks whether any dates, section details, or repeating schedules are unclear before creating tasks.\n\nHow to use:\n1. Click Import Syllabus and add your syllabus text or file.\n2. Choose Analyze with Claude.\n3. Review the text and click Send to Claude.\n4. If questions appear, answer any that you can or leave the answer box blank to skip.\n5. Click Analyze, then review and add the suggested tasks."
+          },
           syllabusManual: {
             question: "Import a syllabus using your own AI",
             title: "how to import syllabus manually.gif",
@@ -523,6 +528,11 @@ const resources = {
         consentBody: "The following text will be sent to Claude for analysis:",
         consentConfirm: "Send to Claude",
         consentCancel: "Cancel",
+        clarifyTitle: "Clarify Ambiguities",
+        clarifyQuestionsHeader: "The AI found these questions about your syllabus:",
+        clarifyAnswerLabel: "Your answers (optional)",
+        clarifySkipHint: "Answer any questions above to improve accuracy, or skip.",
+        clarifyAnalyze: "Analyze",
         next: "Next",
         fileTypeError: "Unsupported file type. For Excel files, please export to CSV first.",
         methodTitle: "How would you like to import tasks?",
@@ -530,6 +540,7 @@ const resources = {
         methodManualDesc: "Generate a prompt you paste into any AI. Nothing leaves your browser.",
         methodAuto: "Analyze with Claude",
         methodAutoDesc: "Your syllabus text is sent to Claude for analysis.",
+        methodAutoQuality: "High Quality",
         preferencesTitle: "Study Preferences",
         preferencesLabel: "Any hints for the AI? (optional)",
         preferencesPlaceholder: "e.g. remind me 3 days before each exam",
@@ -823,6 +834,11 @@ const resources = {
             title: "how to export tasks as ics calendar file.gif",
             text: "这个 GIF 会演示在 Today 点击导出 ICS、选择筛选条件，以及下载 .ics 文件并在日历应用中打开的完整流程。"
           },
+          syllabusAutoClarify: {
+            question: "通过 AI 澄清信息后导入课程大纲",
+            title: "how to import syllabus with clarifications.gif",
+            text: "功能说明：\n自动课程大纲导入会先检查日期、章节信息或重复安排是否不清楚，然后再创建任务。\n\n使用方法：\n1. 点击「导入课程大纲」，添加大纲文本或文件。\n2. 选择「用 Claude 自动分析」。\n3. 检查文本并点击「发送给 Claude」。\n4. 如果出现问题，请回答能确定的问题，也可以留空跳过。\n5. 点击「分析」，然后检查并添加建议任务。"
+          },
           syllabusManual: {
             question: "使用自己的 AI 导入课程大纲",
             title: "how to import syllabus manually.gif",
@@ -1098,6 +1114,11 @@ const resources = {
         consentBody: "以下文本将发送给 Claude 进行分析：",
         consentConfirm: "发送给 Claude",
         consentCancel: "取消",
+        clarifyTitle: "澄清模糊信息",
+        clarifyQuestionsHeader: "AI 对您的课程大纲有以下疑问：",
+        clarifyAnswerLabel: "您的回答（可选）",
+        clarifySkipHint: "回答上述问题可提高准确性，也可跳过。",
+        clarifyAnalyze: "分析",
         next: "下一步",
         fileTypeError: "不支持该文件格式。如需导入 Excel 文件，请先导出为 CSV。",
         methodTitle: "请选择导入方式",
@@ -1105,6 +1126,7 @@ const resources = {
         methodManualDesc: "生成一段提示词，粘贴到任意 AI。数据不会离开您的浏览器。",
         methodAuto: "用 Claude 自动分析",
         methodAutoDesc: "课程大纲文本将发送给 Claude 进行分析。",
+        methodAutoQuality: "高质量",
         preferencesTitle: "学习偏好",
         preferencesLabel: "对 AI 有什么特别说明？（选填）",
         preferencesPlaceholder: "例如：考试前 3 天提醒我",

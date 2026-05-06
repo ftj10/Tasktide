@@ -1,5 +1,29 @@
 # Release Notes
 
+Title: Version 2.8.1 – Update Released (2026-05-06)
+
+What’s New
+
+Improvements
+
+Fixes
+
+- Fixed: Automatic syllabus import now asks which course section applies when a syllabus includes multiple sections with different schedules.
+
+Title: Version 2.8.0 – Update Released (2026-05-06)
+
+What’s New
+
+- Added: Automatic syllabus import can now ask up to five clarification questions before creating tasks, helping you resolve unclear dates, sections, or repeating patterns.
+- Added: The Analyze with Claude option now shows a High Quality label so the recommended automatic path is easier to recognize.
+
+Improvements
+
+- Improved: Syllabus task generation now uses a shorter, more focused request so large imports can finish with less unnecessary AI output.
+- Improved: The manual AI prompt now guides students through a clarify-first workflow before extracting tasks.
+
+Fixes
+
 ## Version 2.7.3 – Update Released (2026-05-05)
 
 ### What's New

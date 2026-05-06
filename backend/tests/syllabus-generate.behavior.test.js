@@ -158,7 +158,7 @@ test('behavior: syllabus/generate-drafts - omitting studyPreferences passes empt
   assert.equal(capturedPreferences, '');
 });
 
-test('behavior: generateDrafts - prompt requires concise descriptions', async () => {
+test('behavior: generateDrafts - prompt requests one-sentence descriptions', async () => {
   let capturedPrompt;
   const mockClient = makeStreamClient((params) => {
     capturedPrompt = params.messages[0].content;
@@ -167,8 +167,7 @@ test('behavior: generateDrafts - prompt requires concise descriptions', async ()
 
   await syllabusAnalysis.generateDrafts('CSCI 101 syllabus', 'study before exams', mockClient);
 
-  assert.match(capturedPrompt, /Include a description for every event/i);
-  assert.match(capturedPrompt, /one concise sentence/i);
+  assert.match(capturedPrompt, /Include a one-sentence description per item/i);
 });
 
 test('behavior: generateDrafts - prompt asks for broad academic planning items', async () => {

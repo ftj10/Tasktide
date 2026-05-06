@@ -6,7 +6,7 @@ import { extract } from "../src/app/syllabusExtraction";
 
 vi.mock("pdfjs-dist", () => ({
   GlobalWorkerOptions: { workerSrc: "" },
-  getDocument: (_src: unknown) => ({
+  getDocument: () => ({
     promise: Promise.resolve({
       numPages: 2,
       getPage: (pageNum: number) =>
