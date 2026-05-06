@@ -182,7 +182,10 @@ const resources = {
         taskDone: "Task marked as done",
         allTasksDone: "All tasks marked as done",
         reminderCreated: "Reminder created",
-        reminderUpdated: "Reminder updated"
+        reminderUpdated: "Reminder updated",
+        reminderDone: "Reminder completed",
+        syllabusDeleted: "All syllabus tasks deleted",
+        syllabusDeleteFailed: "Failed to delete syllabus tasks"
       },
       release: {
         toolbar: "Updates",
@@ -251,9 +254,14 @@ const resources = {
             text: "This GIF shows clicking Export ICS on Today, choosing a filter, and downloading the .ics file to open in a calendar app."
           },
           syllabusAutoClarify: {
-            question: "Use automatic syllabus clarification",
-            title: "how syllabus import auto clarifies tasks.gif",
-            text: "This GIF shows automatic syllabus import asking clarification questions before creating task drafts."
+            question: "Import a syllabus with AI clarifications",
+            title: "how to import syllabus with clarifications.gif",
+            text: "What it does:\nAutomatic syllabus import checks whether any dates, section details, or repeating schedules are unclear before creating tasks.\n\nHow to use:\n1. Click Import Syllabus and add your syllabus text or file.\n2. Choose Analyze with Claude.\n3. Review the text and click Send to Claude.\n4. If questions appear, answer any that you can or leave the answer box blank to skip.\n5. Click Analyze, then review and add the suggested tasks."
+          },
+          syllabusManual: {
+            question: "Import a syllabus using your own AI",
+            title: "how to import syllabus manually.gif",
+            text: "1. Click Import Syllabus in the sidebar.\n2. Paste your syllabus text or upload a PDF, CSV, or DOCX file, then click Next.\n3. Choose Copy prompt to my AI.\n4. Optionally add study preferences (e.g. \"remind me 3 days before exams\").\n5. Click Next to see the generated prompt — copy it with the Copy Prompt button.\n6. Paste the prompt into any AI (ChatGPT, Claude, etc.) and copy the JSON it returns. The prompt asks for a short useful description on every task.\n7. Paste that JSON into the wizard and click Import Tasks.\n8. Review the extracted tasks, edit descriptions if needed, remove anything you do not want, then click to add them to your planner."
           }
         },
         taskNotifications: {
@@ -277,13 +285,13 @@ const resources = {
           step1: "If you want to plan today, start on Today. Add tasks, import calendar events from an ICS file if you have one, and use the list as your daily work plan. Every action — create, edit, complete, delete — confirms with a brief message at the bottom of the screen.",
           step2: "When you need to organize the whole week, open Week. Place tasks into time slots, compare busy days, and adjust your plan before the work happens.",
           step3: "Use Month when you want to scan a larger schedule, choose a future date, or jump back into Today for a specific day.",
-          step4: "Use Reminders for notes that are not tied to one schedule slot but should stay easy to find until you complete them.",
+          step4: "Use Reminders for notes that are not tied to one schedule slot but should stay easy to find until you complete them. When you mark a reminder done, TaskTide confirms that it was completed.",
           step5Desktop: "On desktop, use the left sidebar to move between Reminders, Today, Week, Month, Stats, Help, and the install guide.",
           step5Mobile: "On mobile, use the bottom navigation to move between Reminders, Today, Week, Month, Stats, and Help. The tabs stay visible at the bottom of the screen, fit across the phone width, and leave room for the device safe area.",
           step6Desktop: "If you want TaskTide to open like an app, choose Install app and follow the walkthrough for your browser. If you want task alerts, task start reminders, and daily task check-ins, open Help and choose Enable Task Notifications.",
           step6Mobile: "If you want TaskTide on your home screen, choose Install app and follow the mobile steps for your browser. Then open Help and choose Enable Task Notifications if you want task alerts, task start reminders, and daily task check-ins.",
-          step7Desktop: "If your connection drops, keep editing tasks normally. TaskTide will merge repeated offline edits and sync them when the server is available again. If a page has not loaded on this device yet, TaskTide shows a clear offline message instead of a blank screen.",
-          step7Mobile: "If your connection drops, keep editing tasks normally. TaskTide will merge repeated offline edits and sync them when the server is available again. If a page has not loaded on this device yet, TaskTide shows a clear offline message instead of a blank screen."
+          step7Desktop: "If your connection drops, keep editing tasks normally. TaskTide will merge repeated offline edits and sync them when the server is available again. If a page has not loaded on this device yet, TaskTide shows a clear offline message instead of a blank screen. Heavier areas such as Week, Month, Help, and Updates load when you open them, so the first screen can start sooner. Use Updates to see what changed recently, and use Help when you need the full workflow explained again.",
+          step7Mobile: "If your connection drops, keep editing tasks normally. TaskTide will merge repeated offline edits and sync them when the server is available again. If a page has not loaded on this device yet, TaskTide shows a clear offline message instead of a blank screen. Heavier areas such as Week, Month, Help, and Updates load when you open them, so the first screen can start sooner. Use Updates to see what changed recently, and use Help when you need the full workflow explained again."
         },
         faq: {
           title: "Common Q&A",
@@ -293,7 +301,7 @@ const resources = {
           },
           q2: {
             question: "How do reminders differ from tasks?",
-            answer: "Tasks are planned by date. Reminders are simple notes that stay visible until you mark them done."
+            answer: "Tasks are planned by date. Reminders are simple notes that stay visible until you mark them done. Completing a reminder removes it from the active list and shows a completion message."
           },
           q3: {
             question: "Why does a task need a valid end time?",
@@ -364,6 +372,14 @@ const resources = {
             answer: "Stats shows your task activity for the past 30 days. You can see how many tasks you completed, created, and left overdue, your overall completion rate, and how these compare with the previous 30 days. The page also shows daily trend bars, behaviour insights, and your most and least productive days of the week."
           },
           q20: {
+            question: "How does syllabus import work?",
+            answer: "Click Import Syllabus in the sidebar. Paste your syllabus text or upload a PDF, CSV, or DOCX file, then click Next. Choose how to generate tasks: pick Copy prompt to my AI to get a ready-made prompt you paste into any AI — nothing ever leaves your browser — or pick Analyze with Claude to send your text to Claude directly (a consent screen shows exactly what will be sent before anything is submitted). The AI is asked to include a short useful description for each task and to look for exams, assignments, readings, prep work, and recurring course obligations. If automatic analysis is unavailable, use the manual prompt path with your preferred AI. After the AI produces a JSON list, paste it back and the wizard validates each item, showing specific errors if anything is wrong. Review every extracted task, edit descriptions if needed, remove anything you do not want, then click Import to add them to your planner. If you close the browser mid-import, the wizard saves your progress for 24 hours so you can pick up where you left off."
+          },
+          q21: {
+            question: "Where can I see what changed recently?",
+            answer: "Open Updates to read the latest TaskTide changes. The Help Center also stays aligned with new workflows, so you can return here when a new feature changes how you plan, manage, or complete tasks."
+          },
+          q22: {
             question: "Why do I see an offline page message?",
             answer: "Some pages load only when you open them. If you are offline and the page has not loaded on this device before, TaskTide shows a message instead of a blank screen. Go back online, open the page once, and it will be ready for future visits."
           }
@@ -387,6 +403,8 @@ const resources = {
       dialog: {
         doneMessage: "Mark \"{{title}}\" as done?",
         deleteMessage: "Delete \"{{title}}\"?",
+        deleteSyllabusHint: "This task was imported from a syllabus.",
+        deleteSyllabusAction: "Delete all {{count}} syllabus tasks",
         allDoneMessage: "Mark all tasks for this day as done?",
         allDoneAction: "All done",
         addTaskTitle: "Add task",
@@ -489,6 +507,62 @@ const resources = {
         backlogNeutral: "Neutral",
         currentPeriodRange: "Current: {{start}} – {{end}}",
         previousPeriodRange: "Previous: {{start}} – {{end}}"
+      },
+      syllabus: {
+        importButton: "Import Syllabus",
+        step1Title: "Upload or Paste Syllabus",
+        step2Title: "Tasks Found",
+        pasteLabel: "Paste syllabus text",
+        uploadLabel: "Upload PDF, CSV, or DOCX",
+        analyze: "Analyze",
+        analyzing: "Analyzing…",
+        analyzeError: "Analysis failed. Please try again.",
+        reviewHeader: "{{count}} tasks found — review and confirm.",
+        noDraftsFound: "No tasks could be extracted from this syllabus.",
+        confidenceLow: "Low confidence",
+        editItem: "Edit",
+        deleteItem: "Remove",
+        restoreItem: "Restore",
+        back: "Back",
+        confirmImport_one: "Add {{count}} to Planner",
+        confirmImport_other: "Add {{count}} to Planner",
+        importing: "Importing…",
+        importSuccess_one: "{{count}} task imported",
+        importSuccess_other: "{{count}} tasks imported",
+        confirmError: "Import failed. Please try again.",
+        resumePrompt: "You have an unfinished import from your last session.",
+        resume: "Resume",
+        startFresh: "Start Fresh",
+        consentTitle: "Review before sending to Claude",
+        consentBody: "The following text will be sent to Claude for analysis:",
+        consentConfirm: "Send to Claude",
+        consentCancel: "Cancel",
+        clarifyTitle: "Clarify Ambiguities",
+        clarifyQuestionsHeader: "The AI found these questions about your syllabus:",
+        clarifyAnswerLabel: "Your answers (optional)",
+        clarifySkipHint: "Answer any questions above to improve accuracy, or skip.",
+        clarifyAnalyze: "Analyze",
+        next: "Next",
+        fileTypeError: "Unsupported file type. For Excel files, please export to CSV first.",
+        methodTitle: "How would you like to import tasks?",
+        methodManual: "Copy prompt to my AI",
+        methodManualDesc: "Generate a prompt you paste into any AI. Nothing leaves your browser.",
+        methodAuto: "Analyze with Claude",
+        methodAutoDesc: "Your syllabus text is sent to Claude for analysis.",
+        methodAutoQuality: "High Quality",
+        preferencesTitle: "Study Preferences",
+        preferencesLabel: "Any hints for the AI? (optional)",
+        preferencesPlaceholder: "e.g. remind me 3 days before each exam",
+        preferencesHint: "These instructions are added to the AI prompt.",
+        promptTitle: "Your AI Prompt",
+        promptPrivacy: "Nothing is sent anywhere — paste this prompt into any AI you choose.",
+        promptCopy: "Copy Prompt",
+        promptCopied: "Copied!",
+        promptNext: "I've pasted it — Next",
+        pasteJsonTitle: "Paste AI Response",
+        pasteJsonLabel: "Paste the JSON array from the AI",
+        pasteJsonNext: "Import Tasks",
+        pasteJsonError: "Could not parse the JSON — check the errors below."
       },
       onboarding: {
         title: "Quick tour",
@@ -703,7 +777,10 @@ const resources = {
         taskDone: "任务已完成",
         allTasksDone: "所有任务已完成",
         reminderCreated: "提醒已创建",
-        reminderUpdated: "提醒已更新"
+        reminderUpdated: "提醒已更新",
+        reminderDone: "提醒已完成",
+        syllabusDeleted: "所有课程任务已删除",
+        syllabusDeleteFailed: "课程任务删除失败"
       },
       release: {
         toolbar: "更新",
@@ -772,9 +849,14 @@ const resources = {
             text: "这个 GIF 会演示在 Today 点击导出 ICS、选择筛选条件，以及下载 .ics 文件并在日历应用中打开的完整流程。"
           },
           syllabusAutoClarify: {
-            question: "使用课程大纲自动澄清",
-            title: "how syllabus import auto clarifies tasks.gif",
-            text: "这个 GIF 会演示自动课程大纲导入如何先提出澄清问题，再创建任务草稿。"
+            question: "通过 AI 澄清信息后导入课程大纲",
+            title: "how to import syllabus with clarifications.gif",
+            text: "功能说明：\n自动课程大纲导入会先检查日期、章节信息或重复安排是否不清楚，然后再创建任务。\n\n使用方法：\n1. 点击「导入课程大纲」，添加大纲文本或文件。\n2. 选择「用 Claude 自动分析」。\n3. 检查文本并点击「发送给 Claude」。\n4. 如果出现问题，请回答能确定的问题，也可以留空跳过。\n5. 点击「分析」，然后检查并添加建议任务。"
+          },
+          syllabusManual: {
+            question: "使用自己的 AI 导入课程大纲",
+            title: "how to import syllabus manually.gif",
+            text: "1. 点击侧边栏中的「导入课程大纲」。\n2. 粘贴大纲文本或上传 PDF、CSV 或 DOCX 文件，然后点击「下一步」。\n3. 选择「复制提示词到我的 AI」。\n4. 可选：填写学习偏好（例如「考试前 3 天提醒我」）。\n5. 点击「下一步」查看生成的提示词，用「复制提示词」按钮复制。\n6. 将提示词粘贴到任意 AI（ChatGPT、Claude 等）并复制它返回的 JSON。提示词会要求每个任务都有简短有用的描述。\n7. 将 JSON 粘贴回向导，点击「导入任务」。\n8. 检查提取的任务，按需编辑描述或删除不需要的任务，然后点击确认导入到计划中。"
           }
         },
         taskNotifications: {
@@ -798,13 +880,13 @@ const resources = {
           step1: "如果要规划今天，就从 Today 开始。添加任务，有 ICS 文件时可以导入日历事件，并把列表当作当天的执行计划。每次创建、编辑、完成或删除操作后，屏幕底部都会显示简短的确认提示。",
           step2: "需要整理整周安排时，打开 Week。把任务放进时间段，比较哪些天更忙，并在开始前调整计划。",
           step3: "想查看更大范围、选择未来日期，或进入某一天的 Today 时，使用 Month。",
-          step4: "Reminders 适合记录不绑定具体时间段、但需要一直容易找到直到完成的事项。",
+          step4: "Reminders 适合记录不绑定具体时间段、但需要一直容易找到直到完成的事项。标记提醒完成后，TaskTide 会确认它已完成。",
           step5Desktop: "桌面端可以用左侧边栏切换 Reminders、Today、Week、Month、Stats、Help，并打开安装指引。",
           step5Mobile: "手机端可以用底部导航切换 Reminders、Today、Week、Month、Stats 和 Help。标签会固定在屏幕底部，横向适配手机宽度，并为设备安全区域预留空间。",
           step6Desktop: "如果希望 TaskTide 像应用一样打开，请选择“安装应用”，然后按浏览器演示操作。如果希望收到 task alerts、task start reminders 和 daily task check-ins，请打开 Help 并选择 Enable Task Notifications。",
           step6Mobile: "如果希望 TaskTide 出现在主屏幕，请选择“安装应用”，然后按手机浏览器步骤操作。之后如果希望收到 task alerts、task start reminders 和 daily task check-ins，请打开 Help 并选择 Enable Task Notifications。",
-          step7Desktop: "如果连接中断，可以继续正常编辑任务。TaskTide 会合并重复的离线修改，并在服务器恢复后同步。如果某个页面还没有在这台设备上加载过，TaskTide 会显示清晰的离线提示，而不是空白页面。",
-          step7Mobile: "如果连接中断，可以继续正常编辑任务。TaskTide 会合并重复的离线修改，并在服务器恢复后同步。如果某个页面还没有在这台设备上加载过，TaskTide 会显示清晰的离线提示，而不是空白页面。"
+          step7Desktop: "如果连接中断，可以继续正常编辑任务。TaskTide 会合并重复的离线修改，并在服务器恢复后同步。如果某个页面还没有在这台设备上加载过，TaskTide 会显示清晰的离线提示，而不是空白页面。Week、Month、Help 和 Updates 等较重区域会在打开时加载，让首次进入更快。使用 Updates 查看最近变化，需要重新理解完整流程时可以回到 Help。",
+          step7Mobile: "如果连接中断，可以继续正常编辑任务。TaskTide 会合并重复的离线修改，并在服务器恢复后同步。如果某个页面还没有在这台设备上加载过，TaskTide 会显示清晰的离线提示，而不是空白页面。Week、Month、Help 和 Updates 等较重区域会在打开时加载，让首次进入更快。使用 Updates 查看最近变化，需要重新理解完整流程时可以回到 Help。"
         },
         faq: {
           title: "常见问答",
@@ -814,7 +896,7 @@ const resources = {
           },
           q2: {
             question: "提醒和任务有什么不同？",
-            answer: "任务按日期安排。提醒更像会一直显示的简短备忘。"
+            answer: "任务按日期安排。提醒更像会一直显示的简短备忘。完成提醒后，它会从进行中列表移除，并显示完成提示。"
           },
           q3: {
             question: "为什么结束时间必须有效？",
@@ -885,6 +967,14 @@ const resources = {
             answer: "Stats 页面展示你过去 30 天的任务活动情况，包括已完成、已创建和逾期的任务数量，以及整体完成率，并与前 30 天进行对比。页面还包含每日趋势柱状图、行为洞察，以及一周中效率最高和最低的日期。"
           },
           q20: {
+            question: "课程大纲导入功能是如何工作的？",
+            answer: "点击侧边栏中的「导入课程大纲」，粘贴大纲文本或上传 PDF、CSV 或 DOCX 文件，然后点击「下一步」。选择生成方式：「复制提示词到我的 AI」会生成一段提示词，您可以粘贴到任何 AI 中——数据不会离开您的浏览器；「用 Claude 自动分析」则会将您的文本发送给 Claude，发送前会显示确认界面。AI 会被要求为每个任务提供简短有用的描述，并查找考试、作业、阅读、准备工作和重复课程安排。如果自动分析暂时不可用，可以改用手动提示词路径并选择自己偏好的 AI。AI 返回 JSON 列表后，将其粘贴回向导，系统会逐项校验并在出现问题时给出具体错误提示。核查每条任务草稿，按需编辑描述或删除不需要的任务，然后点击导入加入计划中。如中途关闭浏览器，向导会保存进度 24 小时，重新打开即可继续。"
+          },
+          q21: {
+            question: "在哪里查看最近更新？",
+            answer: "打开 Updates 可以阅读 TaskTide 最近的变化。Help Center 也会随着新流程更新，所以当新功能改变规划、管理或完成任务的方式时，可以回到这里重新查看说明。"
+          },
+          q22: {
             question: "为什么会看到离线页面提示？",
             answer: "有些页面会在你第一次打开时才加载。如果你离线时打开一个还没在这台设备上加载过的页面，TaskTide 会显示提示，而不是空白页面。重新联网后先打开一次该页面，以后访问会更顺畅。"
           }
@@ -908,6 +998,8 @@ const resources = {
       dialog: {
         doneMessage: "将“{{title}}”标记为完成？",
         deleteMessage: "删除“{{title}}”？",
+        deleteSyllabusHint: "此任务由课程大纲批量导入。",
+        deleteSyllabusAction: "删除全部 {{count}} 个课程任务",
         allDoneMessage: "将这一天的所有任务标记为完成？",
         allDoneAction: "全部完成",
         addTaskTitle: "添加任务",
@@ -1010,6 +1102,62 @@ const resources = {
         backlogNeutral: "基本持平",
         currentPeriodRange: "当前：{{start}} – {{end}}",
         previousPeriodRange: "前期：{{start}} – {{end}}"
+      },
+      syllabus: {
+        importButton: "导入课程大纲",
+        step1Title: "上传或粘贴课程大纲",
+        step2Title: "找到的任务",
+        pasteLabel: "粘贴课程大纲文本",
+        uploadLabel: "上传 PDF、CSV 或 DOCX",
+        analyze: "分析",
+        analyzing: "正在分析…",
+        analyzeError: "分析失败，请重试。",
+        reviewHeader: "找到 {{count}} 个任务 — 核对后确认。",
+        noDraftsFound: "未能从该大纲中提取到任何任务。",
+        confidenceLow: "置信度低",
+        editItem: "编辑",
+        deleteItem: "删除",
+        restoreItem: "恢复",
+        back: "返回",
+        confirmImport_one: "加入计划 ({{count}})",
+        confirmImport_other: "加入计划 ({{count}})",
+        importing: "正在导入…",
+        importSuccess_one: "已导入 {{count}} 个任务",
+        importSuccess_other: "已导入 {{count}} 个任务",
+        confirmError: "导入失败，请重试。",
+        resumePrompt: "您有一个上次未完成的导入任务。",
+        resume: "继续",
+        startFresh: "重新开始",
+        consentTitle: "发送前请确认内容",
+        consentBody: "以下文本将发送给 Claude 进行分析：",
+        consentConfirm: "发送给 Claude",
+        consentCancel: "取消",
+        clarifyTitle: "澄清模糊信息",
+        clarifyQuestionsHeader: "AI 对您的课程大纲有以下疑问：",
+        clarifyAnswerLabel: "您的回答（可选）",
+        clarifySkipHint: "回答上述问题可提高准确性，也可跳过。",
+        clarifyAnalyze: "分析",
+        next: "下一步",
+        fileTypeError: "不支持该文件格式。如需导入 Excel 文件，请先导出为 CSV。",
+        methodTitle: "请选择导入方式",
+        methodManual: "复制提示词到我的 AI",
+        methodManualDesc: "生成一段提示词，粘贴到任意 AI。数据不会离开您的浏览器。",
+        methodAuto: "用 Claude 自动分析",
+        methodAutoDesc: "课程大纲文本将发送给 Claude 进行分析。",
+        methodAutoQuality: "高质量",
+        preferencesTitle: "学习偏好",
+        preferencesLabel: "对 AI 有什么特别说明？（选填）",
+        preferencesPlaceholder: "例如：考试前 3 天提醒我",
+        preferencesHint: "这些说明会附加到 AI 提示词中。",
+        promptTitle: "您的 AI 提示词",
+        promptPrivacy: "数据不会发送到任何地方——请将此提示词粘贴到您选择的任意 AI 中。",
+        promptCopy: "复制提示词",
+        promptCopied: "已复制！",
+        promptNext: "已粘贴 — 下一步",
+        pasteJsonTitle: "粘贴 AI 回复",
+        pasteJsonLabel: "将 AI 返回的 JSON 数组粘贴到此处",
+        pasteJsonNext: "导入任务",
+        pasteJsonError: "无法解析 JSON — 请检查以下错误。"
       },
       onboarding: {
         title: "快速引导",

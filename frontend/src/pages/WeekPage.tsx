@@ -37,13 +37,16 @@ import {
   type TaskSaveScope,
 } from "../app/tasks";
 import { getPriorityColors } from "../app/priorities";
+import { deleteSyllabusBatch } from "../app/storage";
 
 export function WeekPage(props: {
   tasks: Task[];
   setTasks: (next: Task[]) => void;
   onTaskDialogVisibilityChange?: (open: boolean) => void;
+  showToast?: (message: string, severity?: "success" | "error" | "info" | "warning") => void;
+  reloadTasks?: () => Promise<void>;
 }) {
-  const { tasks, setTasks, onTaskDialogVisibilityChange } = props;
+  const { tasks, setTasks, onTaskDialogVisibilityChange, showToast, reloadTasks } = props;
   const { t } = useTranslation();
   const navigate = useNavigate();
   const theme = useTheme();
@@ -174,6 +177,18 @@ export function WeekPage(props: {
     );
     setDeleteTask(undefined);
     closeTaskEditor();
+  }
+
+  async function removeSyllabusBatch(batchId: string) {
+    try {
+      await deleteSyllabusBatch(batchId);
+      await reloadTasks?.();
+      setDeleteTask(undefined);
+      closeTaskEditor();
+      showToast?.(t("toast.syllabusDeleted"), "success");
+    } catch {
+      showToast?.(t("toast.syllabusDeleteFailed"), "error");
+    }
   }
 
   const mobilePages = useMemo(() => {
@@ -781,6 +796,16 @@ export function WeekPage(props: {
             );
           }
         }}
+        syllabusTaskCount={
+          deleteTask?.task.syllabusImportBatchId
+            ? tasks.filter((t) => t.syllabusImportBatchId === deleteTask.task.syllabusImportBatchId).length
+            : undefined
+        }
+        onDeleteSyllabus={
+          deleteTask?.task.syllabusImportBatchId
+            ? () => void removeSyllabusBatch(deleteTask.task.syllabusImportBatchId!)
+            : undefined
+        }
       />
     </Box>
   );

@@ -249,8 +249,10 @@ describe("WeekPage behavior", () => {
   });
 
   it("renders one-time multi-day all-day tasks across the whole date range in week view", () => {
-    const rangeStart = dayjs(weekStartMonday(dayjs())).add(1, "day");
-    const rangeEnd = rangeStart.add(2, "day");
+    const weekStart = dayjs(weekStartMonday(dayjs()));
+    const beginDate = weekStart.add(1, "day").format("YYYY-MM-DD");
+    const endDate = weekStart.add(3, "day").format("YYYY-MM-DD");
+    const endPlusOne = weekStart.add(4, "day").format("YYYY-MM-DD");
 
     renderWithProviders(
       <WeekPage
@@ -259,11 +261,11 @@ describe("WeekPage behavior", () => {
             id: "range-1",
             title: "Conference",
             type: "ONCE",
-            beginDate: rangeStart.format("YYYY-MM-DD"),
-            endDate: rangeEnd.format("YYYY-MM-DD"),
-            date: rangeStart.format("YYYY-MM-DD"),
-            createdAt: "2026-04-28T00:00:00.000Z",
-            updatedAt: "2026-04-28T00:00:00.000Z",
+            beginDate,
+            endDate,
+            date: beginDate,
+            createdAt: `${beginDate}T00:00:00.000Z`,
+            updatedAt: `${beginDate}T00:00:00.000Z`,
           },
         ]}
         setTasks={vi.fn()}
@@ -274,8 +276,8 @@ describe("WeekPage behavior", () => {
     const renderedEvent = latestDesktopCalendar.events.find((event) => event.id === "range-1");
 
     expect(renderedEvent).toMatchObject({
-      start: rangeStart.format("YYYY-MM-DD"),
-      end: rangeEnd.add(1, "day").format("YYYY-MM-DD"),
+      start: beginDate,
+      end: endPlusOne,
       allDay: true,
     });
   });

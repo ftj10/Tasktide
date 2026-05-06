@@ -193,7 +193,7 @@ export function getHelpCenterData(t: TFunction): HelpCenterItem[] {
       question: t("help.walkthroughs.syllabusAutoClarify.question"),
       steps: [
         {
-          mediaSrc: "/help-walkthroughs/how syllabus import auto clarifies tasks.gif",
+          mediaSrc: "/help-walkthroughs/how to import syllabus with clarifications.gif",
           mediaAlt: t("help.walkthroughs.syllabusAutoClarify.title"),
           title: t("help.walkthroughs.syllabusAutoClarify.title"),
           text: t("help.walkthroughs.syllabusAutoClarify.text"),

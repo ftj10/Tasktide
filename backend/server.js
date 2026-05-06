@@ -16,6 +16,7 @@ const HelpQuestion = require('./models/HelpQuestion');
 const { getTaskRetentionCutoff, startTaskRetentionScheduler } = require('./taskRetention');
 const { getPushPublicKey } = require('./pushNotifications');
 const { startNotificationScheduler } = require('./notificationScheduler');
+const syllabusAnalysis = require('./syllabusAnalysis');
 
 const app = express();
 const SESSION_COOKIE_NAME = 'tasktide_session';
@@ -551,6 +552,33 @@ app.post('/tasks', authenticateToken, async (req, res) => {
   }
 });
 
+// INPUT: authenticated user id plus an array of tasks
+// OUTPUT: { created: number }
+// EFFECT: Persists multiple task records for the signed-in user in a single request
+const BATCH_IMPORT_MAX = 200;
+
+app.post('/tasks/batch', authenticateToken, async (req, res) => {
+  try {
+    const tasks = Array.isArray(req.body?.tasks) ? req.body.tasks : [];
+    if (tasks.length === 0) return res.status(400).json({ error: 'tasks array is required' });
+    if (tasks.length > BATCH_IMPORT_MAX) return res.status(400).json({ error: `Batch size exceeds maximum of ${BATCH_IMPORT_MAX}` });
+    await cleanupTasksForUser(req.user.userId);
+    await Promise.all(
+      tasks.map((task) => {
+        const taskPayload = normalizeTaskWritePayload(task, req.user.userId);
+        return Task.updateOne(
+          { id: taskPayload.id, userId: req.user.userId },
+          { $set: taskPayload, $unset: { done: 1 } },
+          { upsert: true, runValidators: true, setDefaultsOnInsert: true }
+        );
+      })
+    );
+    res.status(201).json({ created: tasks.length });
+  } catch (err) {
+    res.status(500).json({ error: 'Batch import failed' });
+  }
+});
+
 // INPUT: authenticated user id, task id, and replacement task payload
 // OUTPUT: update confirmation or not-found error
 // EFFECT: Updates one persisted task record for the signed-in user
@@ -569,6 +597,21 @@ app.put('/tasks/:id', authenticateToken, async (req, res) => {
     res.status(200).json({ message: "Updated" });
   } catch (err) {
     res.status(500).json({ error: "Failed to update" });
+  }
+});
+
+// INPUT: authenticated user id and syllabus batch id
+// OUTPUT: { deleted: number }
+// EFFECT: Removes all tasks belonging to one syllabus import batch for the signed-in user
+app.delete('/tasks/batch/:batchId', authenticateToken, async (req, res) => {
+  try {
+    const result = await Task.deleteMany({
+      userId: req.user.userId,
+      syllabusImportBatchId: req.params.batchId,
+    });
+    res.status(200).json({ deleted: result.deletedCount });
+  } catch (err) {
+    res.status(500).json({ error: 'Batch delete failed' });
   }
 });
 
@@ -789,6 +832,49 @@ app.delete('/help-questions/:id', authenticateToken, async (req, res) => {
     res.status(500).json({ error: "Failed to delete" });
   }
 });
+
+// INPUT: authenticated request with syllabus text / OUTPUT: SyllabusTaskDraft[] / EFFECT: calls Claude API to extract schedule events
+app.post('/syllabus/analyze', authenticateToken, async (req, res) => {
+  try {
+    const text = String(req.body?.text ?? '').trim();
+    if (!text) return res.status(400).json({ error: 'text is required' });
+    const drafts = await syllabusAnalysis.analyzeSyllabus(text);
+    res.json(drafts);
+  } catch (err) {
+    if (err.claudeError) return res.status(502).json({ error: 'Claude API is unavailable. Please try the manual path.' });
+    res.status(500).json({ error: 'Analysis failed' });
+  }
+});
+
+// INPUT: authenticated request with extractedText + optional studyPreferences / OUTPUT: validated SyllabusTaskDraft[] / EFFECT: calls Claude API; requires ANTHROPIC_API_KEY in .env
+app.post('/syllabus/generate-drafts', authenticateToken, async (req, res) => {
+  try {
+    const extractedText = String(req.body?.extractedText ?? '').trim();
+    if (!extractedText) return res.status(400).json({ error: 'extractedText is required' });
+    const studyPreferences = String(req.body?.studyPreferences ?? '').trim();
+    const drafts = await syllabusAnalysis.generateDrafts(extractedText, studyPreferences);
+    res.json(drafts);
+  } catch (err) {
+    if (err.validationError) return res.status(422).json({ error: 'Claude response did not match the expected schema' });
+    if (err.claudeError) return res.status(502).json({ error: 'Claude API is unavailable. Please try the manual path.' });
+    res.status(502).json({ error: 'Draft generation failed' });
+  }
+});
+
+async function detectSyllabusAmbiguities(req, res) {
+  try {
+    const extractedText = String(req.body?.extractedText ?? '').trim();
+    if (!extractedText) return res.status(400).json({ error: 'extractedText is required' });
+    const questions = await syllabusAnalysis.detectAmbiguities(extractedText);
+    res.json({ questions });
+  } catch (err) {
+    if (err.claudeError) return res.status(503).json({ error: 'Claude API is unavailable. Please continue without clarifications.' });
+    res.status(500).json({ error: 'Ambiguity detection failed' });
+  }
+}
+
+app.post('/api/syllabus/detect-ambiguities', authenticateToken, detectSyllabusAmbiguities);
+app.post('/syllabus/detect-ambiguities', authenticateToken, detectSyllabusAmbiguities);
 
 const PORT = process.env.PORT || 2676;
 

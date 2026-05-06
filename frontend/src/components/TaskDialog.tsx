@@ -83,7 +83,7 @@ export function TaskDialog(props: {
       },
       occurrenceOverrides: {},
     } satisfies Task;
-  }, [props.defaultDateYmd, props.defaultEndDateYmd, props.defaultEndTime, props.defaultStartTime, props.mode, props.task]);
+  }, [props.defaultDateYmd, props.defaultEndDateYmd, props.defaultEndTime, props.defaultStartTime, props.mode, props.open, props.task]);
 
   const [title, setTitle] = useState(base.title);
   const [beginDate, setBeginDate] = useState(base.beginDate ?? props.defaultDateYmd);

@@ -6,6 +6,8 @@ TaskTide is a full-stack planner for daily tasks, weekly routines, reminders, sh
 
 Contributor guidance is maintained in `AGENTS.md` so automated and human-assisted changes follow the same versioning, documentation, Help Center, development log, and testing expectations.
 
+Contributor guidance is maintained in `AGENTS.md` so automated and human-assisted changes follow the same versioning, documentation, Help Center, development log, and testing expectations.
+
 Deployed Web: TaskTide
 
 ## Features

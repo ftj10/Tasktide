@@ -42,10 +42,12 @@ const taskSchema = new mongoose.Schema({
   mapProvider: { type: String, default: "google" },
   startTime: { type: String, default: "" },
   endTime: { type: String, default: "" },
-  description: { type: String, default: "" }
+  description: { type: String, default: "" },
+  syllabusImportBatchId: { type: String }
 }, { timestamps: true });
 
 taskSchema.index({ userId: 1, id: 1 }, { unique: true });
 taskSchema.index({ userId: 1, completedAt: 1 });
+taskSchema.index({ userId: 1, syllabusImportBatchId: 1 });
 
 module.exports = mongoose.model('Task', taskSchema);

@@ -53,6 +53,7 @@ import {
   saveTaskCollection,
   type TaskSaveScope,
 } from "../app/tasks";
+import { deleteSyllabusBatch } from "../app/storage";
 import { getPriorityAccent } from "../app/priorities";
 import { parseIcsTasks } from "../app/ics";
 import { ExportIcsDialog } from "../components/ExportIcsDialog";
@@ -62,8 +63,9 @@ export function TodayPage(props: {
   setTasks: (next: Task[]) => void;
   onTaskDialogVisibilityChange?: (open: boolean) => void;
   showToast?: (message: string, severity?: "success" | "error" | "info" | "warning") => void;
+  reloadTasks?: () => Promise<void>;
 }) {
-  const { tasks, setTasks, onTaskDialogVisibilityChange, showToast } = props;
+  const { tasks, setTasks, onTaskDialogVisibilityChange, showToast, reloadTasks } = props;
   const { t, i18n } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const urlDate = searchParams.get("date");
@@ -162,6 +164,18 @@ export function TodayPage(props: {
     setDeleteTask(undefined);
     closeTaskEditor();
     showToast?.(t("toast.taskDeleted"), "info");
+  }
+
+  async function removeSyllabusBatch(batchId: string) {
+    try {
+      await deleteSyllabusBatch(batchId);
+      await reloadTasks?.();
+      setDeleteTask(undefined);
+      closeTaskEditor();
+      showToast?.(t("toast.syllabusDeleted"), "success");
+    } catch {
+      showToast?.(t("toast.syllabusDeleteFailed"), "error");
+    }
   }
 
   function doMarkDone(task: Task) {
@@ -780,6 +794,16 @@ export function TodayPage(props: {
             );
           }
         }}
+        syllabusTaskCount={
+          deleteTask?.task.syllabusImportBatchId
+            ? tasks.filter((t) => t.syllabusImportBatchId === deleteTask.task.syllabusImportBatchId).length
+            : undefined
+        }
+        onDeleteSyllabus={
+          deleteTask?.task.syllabusImportBatchId
+            ? () => void removeSyllabusBatch(deleteTask.task.syllabusImportBatchId!)
+            : undefined
+        }
       />
       <ConfirmAllDoneDialog
         open={allDoneOpen}
