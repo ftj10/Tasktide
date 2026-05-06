@@ -112,6 +112,8 @@ export function HelpPage() {
       { question: t("help.faq.q18.question"), answer: t("help.faq.q18.answer"), audience: "all" },
       { question: t("help.faq.q19.question"), answer: t("help.faq.q19.answer"), audience: "all" },
       { question: t("help.faq.q20.question"), answer: t("help.faq.q20.answer"), audience: "all" },
+      { question: t("help.faq.q21.question"), answer: t("help.faq.q21.answer"), audience: "all" },
+      { question: t("help.faq.q22.question"), answer: t("help.faq.q22.answer"), audience: "all" },
     ],
     [t]
   ).filter((item) => item.audience === "all" || item.audience === deviceAudience);

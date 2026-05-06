@@ -189,4 +189,48 @@ describe("TaskDialog behavior", () => {
     expect(onDelete).toHaveBeenCalledTimes(1);
     expect(onDelete).toHaveBeenCalledWith("repeat-delete-1", "single");
   });
+
+  it("generates a fresh task id on each open so consecutive creates do not share the same id", async () => {
+    const user = userEvent.setup();
+    const savedTasks: { id: string }[] = [];
+
+    const { rerender } = renderWithProviders(
+      <TaskDialog
+        open
+        mode="create"
+        defaultDateYmd="2026-05-05"
+        onClose={vi.fn()}
+        onSave={(task) => savedTasks.push({ id: task.id })}
+      />
+    );
+
+    await user.type(screen.getByLabelText("Task name"), "First task");
+    await user.click(screen.getByRole("button", { name: "Add" }));
+
+    rerender(
+      <TaskDialog
+        open={false}
+        mode="create"
+        defaultDateYmd="2026-05-05"
+        onClose={vi.fn()}
+        onSave={(task) => savedTasks.push({ id: task.id })}
+      />
+    );
+
+    rerender(
+      <TaskDialog
+        open
+        mode="create"
+        defaultDateYmd="2026-05-05"
+        onClose={vi.fn()}
+        onSave={(task) => savedTasks.push({ id: task.id })}
+      />
+    );
+
+    await user.type(screen.getByLabelText("Task name"), "Second task");
+    await user.click(screen.getByRole("button", { name: "Add" }));
+
+    expect(savedTasks).toHaveLength(2);
+    expect(savedTasks[0].id).not.toBe(savedTasks[1].id);
+  });
 });

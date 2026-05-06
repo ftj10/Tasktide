@@ -4,29 +4,8 @@
 import { Component } from "react";
 import type { ReactNode } from "react";
 import { Avatar, Stack, Typography } from "@mui/material";
-import { useTranslation } from "react-i18next";
+import { Translation } from "react-i18next";
 import TaskAltRoundedIcon from "@mui/icons-material/TaskAltRounded";
-
-function OfflineFallback() {
-  const { t } = useTranslation();
-  return (
-    <Stack alignItems="center" justifyContent="center" spacing={2} sx={{ minHeight: 320 }}>
-      <Avatar
-        sx={{
-          width: 44,
-          height: 44,
-          background: "linear-gradient(135deg, #4f46e5, #0ea5e9)",
-          boxShadow: "0 10px 24px rgba(79, 70, 229, 0.24)",
-        }}
-      >
-        <TaskAltRoundedIcon fontSize="small" />
-      </Avatar>
-      <Typography variant="body1" color="text.secondary">
-        {t("app.offlinePageUnavailable")}
-      </Typography>
-    </Stack>
-  );
-}
 
 export class ChunkErrorBoundary extends Component<
   { children: ReactNode; resetKey: string },
@@ -46,7 +25,27 @@ export class ChunkErrorBoundary extends Component<
 
   render() {
     if (this.state.failed) {
-      return <OfflineFallback />;
+      return (
+        <Translation>
+          {(t) => (
+            <Stack alignItems="center" justifyContent="center" spacing={2} sx={{ minHeight: 320 }}>
+              <Avatar
+                sx={{
+                  width: 44,
+                  height: 44,
+                  background: "linear-gradient(135deg, #4f46e5, #0ea5e9)",
+                  boxShadow: "0 10px 24px rgba(79, 70, 229, 0.24)",
+                }}
+              >
+                <TaskAltRoundedIcon fontSize="small" />
+              </Avatar>
+              <Typography variant="body1" color="text.secondary">
+                {t("app.offlinePageUnavailable")}
+              </Typography>
+            </Stack>
+          )}
+        </Translation>
+      );
     }
     return this.props.children;
   }

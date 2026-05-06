@@ -46,6 +46,7 @@ export type Task = {
   startTime?: string;
   endTime?: string;
   description?: string;
+  syllabusImportBatchId?: string;
 };
 export type Reminder = {
   id: string;
