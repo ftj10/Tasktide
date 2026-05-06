@@ -187,5 +187,18 @@ export function getHelpCenterData(t: TFunction): HelpCenterItem[] {
         },
       ],
     },
+    {
+      id: "syllabus-auto-clarify",
+      audience: "all",
+      question: t("help.walkthroughs.syllabusAutoClarify.question"),
+      steps: [
+        {
+          mediaSrc: "/help-walkthroughs/how syllabus import auto clarifies tasks.gif",
+          mediaAlt: t("help.walkthroughs.syllabusAutoClarify.title"),
+          title: t("help.walkthroughs.syllabusAutoClarify.title"),
+          text: t("help.walkthroughs.syllabusAutoClarify.text"),
+        },
+      ],
+    },
   ];
 }

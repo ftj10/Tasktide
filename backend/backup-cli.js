@@ -3,13 +3,13 @@
 // EFFECT: Restricts dataset backup and restore control to local CLI usage instead of website-triggered flows
 const { backupDataset, restoreDataset, startDailyBackupScheduler } = require('./backup');
 
-const mode = process.argv[2] || 'once';
-const restoreFilePath = process.argv[3];
-
 // INPUT: backup CLI mode
 // OUTPUT: process exit after command handling
 // EFFECT: Runs one immediate export or starts the persistent daily scheduler from the local terminal
 async function main() {
+  const mode = process.argv[2] || 'once';
+  const restoreFilePath = process.argv[3];
+
   if (mode === 'once') {
     await backupDataset();
     return;
@@ -38,7 +38,11 @@ async function main() {
   throw new Error(`Unsupported backup mode: ${mode}`);
 }
 
-main().catch((error) => {
-  console.error(error.message || error);
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch((error) => {
+    console.error(error.message || error);
+    process.exit(1);
+  });
+}
+
+module.exports = { main };

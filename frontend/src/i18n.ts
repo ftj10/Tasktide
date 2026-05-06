@@ -249,6 +249,11 @@ const resources = {
             question: "Export tasks as a calendar file (.ics)",
             title: "how to export tasks as ics calendar file.gif",
             text: "This GIF shows clicking Export ICS on Today, choosing a filter, and downloading the .ics file to open in a calendar app."
+          },
+          syllabusAutoClarify: {
+            question: "Use automatic syllabus clarification",
+            title: "how syllabus import auto clarifies tasks.gif",
+            text: "This GIF shows automatic syllabus import asking clarification questions before creating task drafts."
           }
         },
         taskNotifications: {
@@ -765,6 +770,11 @@ const resources = {
             question: "将任务导出为日历文件（.ics）",
             title: "how to export tasks as ics calendar file.gif",
             text: "这个 GIF 会演示在 Today 点击导出 ICS、选择筛选条件，以及下载 .ics 文件并在日历应用中打开的完整流程。"
+          },
+          syllabusAutoClarify: {
+            question: "使用课程大纲自动澄清",
+            title: "how syllabus import auto clarifies tasks.gif",
+            text: "这个 GIF 会演示自动课程大纲导入如何先提出澄清问题，再创建任务草稿。"
           }
         },
         taskNotifications: {

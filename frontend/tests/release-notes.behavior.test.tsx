@@ -6,7 +6,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, beforeEach, expect, it } from "vitest";
 
 import i18n from "../src/i18n";
-import { LATEST_RELEASE_ID } from "../src/app/releaseNotes";
+import { LATEST_RELEASE_ID, RELEASE_NOTES } from "../src/app/releaseNotes";
 import { ReleaseNotesCenter } from "../src/components/ReleaseNotesCenter";
 import { renderWithProviders } from "./test-utils";
 
@@ -33,8 +33,8 @@ describe("ReleaseNotesCenter behavior", () => {
   it("shows the latest shipped version in the update dialog", () => {
     renderWithProviders(<ReleaseNotesCenter username="tom" />);
 
-    expect(screen.getByText("v1.25.2")).toBeInTheDocument();
-    expect(screen.getByText("Frontend Build Fix")).toBeInTheDocument();
+    expect(screen.getByText(RELEASE_NOTES[0].version)).toBeInTheDocument();
+    expect(screen.getByText(RELEASE_NOTES[0].title.en)).toBeInTheDocument();
   });
 
   it("keeps the 1.18.3 and 1.18.4 coach-mark updates in history", async () => {
