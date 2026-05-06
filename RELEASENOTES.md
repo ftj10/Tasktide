@@ -1,5 +1,17 @@
 # Release Notes
 
+## Version 2.9.2 – Update Released (2026-05-06)
+
+### What's New
+- Improved: The Install app button now installs TaskTide directly — no extra steps needed on supported browsers.
+
+### Improvements
+- Improved: Quick Walkthrough guides now show clear step-by-step instructions instead of describing what a video shows.
+
+### Fixes
+
+---
+
 Title: Version 2.9.1 – Update Released (2026-05-06)
 
 What’s New

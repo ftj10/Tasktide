@@ -101,7 +101,7 @@ describe("HelpPage behavior", () => {
 
     expect(await screen.findByRole("dialog", { name: "Quick-add a task in Week on desktop" })).toBeInTheDocument();
     expect(screen.getByText("how to quickly add task in weekpage browser.gif")).toBeInTheDocument();
-    expect(screen.getByText("This GIF shows choosing a time in Week and creating a task faster.")).toBeInTheDocument();
+    expect(screen.getByText(/Click any empty time slot on the day you want/i)).toBeInTheDocument();
     fireEvent.error(screen.getByRole("img", { name: "how to quickly add task in weekpage browser.gif" }));
     expect(screen.getByText("GIF placeholder")).toBeInTheDocument();
     expect(screen.getByText("/help-walkthroughs/how to quickly add task in weekpage browser.gif")).toBeInTheDocument();

@@ -14,6 +14,31 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-05-06-install-prompt-walkthrough-steps",
+    version: "v2.9.2",
+    releasedAt: "2026-05-06",
+    title: {
+      en: "One-tap Install and Clearer Walkthroughs",
+      zh: "一键安装与更清晰的操作指引",
+    },
+    summary: {
+      en: "Install app now launches the browser install prompt directly. Quick Walkthrough guides show real step-by-step instructions.",
+      zh: "「安装应用」现在直接触发浏览器安装提示。快捷演示指南改为清晰的逐步操作说明。",
+    },
+    changes: {
+      en: [
+        "Improved: Install app triggers the browser install prompt directly — no extra steps needed on Chrome, Edge, or Android.",
+        "Improved: On iPhone or iPad, tapping Install app shows the exact steps to add TaskTide to your Home Screen.",
+        "Improved: All Quick Walkthrough guides now show clear step-by-step instructions instead of describing what a video shows.",
+      ],
+      zh: [
+        "改进：「安装应用」现在直接触发浏览器安装提示——在 Chrome、Edge 或 Android 上无需额外操作。",
+        "改进：在 iPhone 或 iPad 上点击「安装应用」，会显示将 TaskTide 添加到主屏幕的具体步骤。",
+        "改进：所有快捷演示指南现在改为清晰的逐步操作说明，不再描述视频内容。",
+      ],
+    },
+  },
+  {
     id: "2026-05-06-confirm-delete-dialog-test-fix",
     version: "v2.9.1",
     releasedAt: "2026-05-06",

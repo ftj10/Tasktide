@@ -48,7 +48,12 @@ const resources = {
         logout: "Logout",
         switchLanguage: "Switch language",
         installApp: "Install app",
-        greeting: "Hi, {{name}}!"
+        greeting: "Hi, {{name}}!",
+        installFallback: {
+          title: "Install TaskTide",
+          ios: "To add TaskTide to your Home Screen:\n1. Tap the Share button in Safari (the box with an upward arrow at the bottom of the screen).\n2. Scroll down and tap Add to Home Screen.\n3. Tap Add to confirm.\n\nThen open TaskTide from your Home Screen.",
+          other: "Your browser does not support automatic install, or TaskTide is already installed.\n\nTo install manually:\n1. Open your browser menu (⋮ or ≡ at the top right).\n2. Look for Install TaskTide or Add to Home Screen.\n3. Confirm the install.\n\nIf the option does not appear, TaskTide may already be installed on this device."
+        }
       },
       login: {
         title: {
@@ -216,12 +221,12 @@ const resources = {
           addTaskBrowser: {
             question: "Add a task from Today on desktop",
             title: "how to add task in todaypage in browser.gif",
-            text: "This GIF shows opening Today, clicking Add Task, and saving a new task."
+            text: "1. Open Today from the left sidebar.\n2. Click Add Task.\n3. Enter a task name.\n4. Set the date, start time, and end time if needed.\n5. Click Save."
           },
           quickAddWeekBrowser: {
             question: "Quick-add a task in Week on desktop",
             title: "how to quickly add task in weekpage browser.gif",
-            text: "This GIF shows choosing a time in Week and creating a task faster."
+            text: "1. Open Week from the left sidebar.\n2. Click any empty time slot on the day you want.\n3. Enter the task name in the form that appears.\n4. Adjust the time or date if needed.\n5. Click Save."
           },
           mobileBottomNavigation: {
             question: "Move around TaskTide on mobile",
@@ -231,27 +236,27 @@ const resources = {
           addTaskWeekMobile: {
             question: "Add a task in Week on mobile",
             title: "how to add task in weekpage in mobile.gif",
-            text: "This GIF shows pressing a time slot in mobile Week and adding a task."
+            text: "1. Open Week from the bottom navigation.\n2. Press and hold the time slot you want on the target day.\n3. Enter the task name in the form that appears.\n4. Adjust the time or date if needed.\n5. Tap Save."
           },
           taskMap: {
             question: "Open the map from a task",
             title: "how to enable map function for each task(both mobile and desktop browser).gif",
-            text: "This GIF shows opening the map link from a task on desktop or mobile."
+            text: "1. Open any task by clicking or tapping it.\n2. Find the Location field in the task form.\n3. Type an address or place name.\n4. Click or tap the map icon next to the location field.\n5. The location opens in your default maps app."
           },
           openWebAppPc: {
             question: "Open the planner as a desktop web app",
             title: "how to open a web app in pc.gif",
-            text: "This GIF shows installing or opening the planner as a desktop web app."
+            text: "Chrome or Edge:\n1. Click Install app in the left sidebar.\n2. When the browser prompt appears, click Install.\n3. TaskTide opens as a standalone window and appears in your taskbar or Start menu.\n\nOther browsers:\n1. Open the browser menu (⋮ or ≡ at the top right).\n2. Look for Install TaskTide or Add to apps.\n3. Click it and confirm."
           },
           resetNotificationsPc: {
             question: "Enable or reset Task Notifications",
             title: "how to reset:enable notification in pc.gif",
-            text: "This GIF shows enabling Task Notifications from Help or fixing browser notification settings."
+            text: "To enable:\n1. Open Help from the left sidebar.\n2. Scroll to Task Notifications.\n3. Click Enable Task Notifications.\n4. If your browser asks for permission, click Allow.\n\nIf notifications are blocked:\n1. Click the lock icon or info icon in your browser's address bar.\n2. Find Notifications and change it to Allow.\n3. Reload the page, then try enabling again."
           },
           exportIcs: {
             question: "Export tasks as a calendar file (.ics)",
             title: "how to export tasks as ics calendar file.gif",
-            text: "This GIF shows clicking Export ICS on Today, choosing a filter, and downloading the .ics file to open in a calendar app."
+            text: "1. Open Today.\n2. Click Export ICS near the bottom of the page.\n3. Choose which tasks to include: all tasks, incomplete tasks only, or a specific date range.\n4. Click Download .ics.\n5. Open the downloaded file in Apple Calendar, Google Calendar, Outlook, or any app that supports ICS files."
           },
           syllabusAutoClarify: {
             question: "Import a syllabus with AI clarifications",
@@ -288,8 +293,8 @@ const resources = {
           step4: "Use Reminders for notes that are not tied to one schedule slot but should stay easy to find until you complete them. When you mark a reminder done, TaskTide confirms that it was completed.",
           step5Desktop: "On desktop, use the left sidebar to move between Reminders, Today, Week, Month, Stats, Help, and the install guide.",
           step5Mobile: "On mobile, use the bottom navigation to move between Reminders, Today, Week, Month, Stats, and Help. The tabs stay visible at the bottom of the screen, fit across the phone width, and leave room for the device safe area.",
-          step6Desktop: "If you want TaskTide to open like an app, choose Install app and follow the walkthrough for your browser. If you want task alerts, task start reminders, and daily task check-ins, open Help and choose Enable Task Notifications.",
-          step6Mobile: "If you want TaskTide on your home screen, choose Install app and follow the mobile steps for your browser. Then open Help and choose Enable Task Notifications if you want task alerts, task start reminders, and daily task check-ins.",
+          step6Desktop: "If you want TaskTide to open like an app, click Install app in the sidebar and confirm when the browser prompt appears. If you want task alerts, task start reminders, and daily task check-ins, open Help and choose Enable Task Notifications.",
+          step6Mobile: "If you want TaskTide on your home screen, tap Install app and follow the short instructions. Then open Help and choose Enable Task Notifications if you want task alerts, task start reminders, and daily task check-ins.",
           step7Desktop: "If your connection drops, keep editing tasks normally. TaskTide will merge repeated offline edits and sync them when the server is available again. If a page has not loaded on this device yet, TaskTide shows a clear offline message instead of a blank screen. Heavier areas such as Week, Month, Help, and Updates load when you open them, so the first screen can start sooner. Use Updates to see what changed recently, and use Help when you need the full workflow explained again.",
           step7Mobile: "If your connection drops, keep editing tasks normally. TaskTide will merge repeated offline edits and sync them when the server is available again. If a page has not loaded on this device yet, TaskTide shows a clear offline message instead of a blank screen. Heavier areas such as Week, Month, Help, and Updates load when you open them, so the first screen can start sooner. Use Updates to see what changed recently, and use Help when you need the full workflow explained again."
         },
@@ -643,7 +648,12 @@ const resources = {
         logout: "退出登录",
         switchLanguage: "切换语言",
         installApp: "安装应用",
-        greeting: "你好，{{name}}！"
+        greeting: "你好，{{name}}！",
+        installFallback: {
+          title: "安装 TaskTide",
+          ios: "将 TaskTide 添加到主屏幕：\n1. 在 Safari 中点击屏幕底部的「分享」按钮（带向上箭头的方框）。\n2. 向下滑动，点击「添加到主屏幕」。\n3. 点击「添加」确认。\n\n之后从主屏幕打开 TaskTide 即可。",
+          other: "您的浏览器不支持自动安装，或者 TaskTide 已安装。\n\n如需手动安装：\n1. 打开浏览器菜单（右上角的 ⋮ 或 ≡）。\n2. 找到「安装 TaskTide」或「添加到主屏幕」。\n3. 确认安装。\n\n如果该选项未出现，TaskTide 可能已安装在此设备上。"
+        }
       },
       login: {
         title: {
@@ -811,12 +821,12 @@ const resources = {
           addTaskBrowser: {
             question: "在桌面端从 Today 添加任务",
             title: "how to add task in todaypage in browser.gif",
-            text: "这个 GIF 会演示在桌面浏览器中打开 Today、点击 Add Task，并保存新任务。"
+            text: "1. 从左侧边栏打开 Today。\n2. 点击 Add Task。\n3. 输入任务名称。\n4. 按需设置日期、开始时间和结束时间。\n5. 点击 Save。"
           },
           quickAddWeekBrowser: {
             question: "在桌面端的 Week 快速添加任务",
             title: "how to quickly add task in weekpage browser.gif",
-            text: "这个 GIF 会演示在桌面浏览器的 Week 页面快速选择时间并创建任务。"
+            text: "1. 从左侧边栏打开 Week。\n2. 点击想要日期下方的任意空白时间格。\n3. 在弹出的表单中输入任务名称。\n4. 按需调整时间或日期。\n5. 点击 Save。"
           },
           mobileBottomNavigation: {
             question: "在手机端切换 TaskTide 页面",
@@ -826,27 +836,27 @@ const resources = {
           addTaskWeekMobile: {
             question: "在手机端的 Week 添加任务",
             title: "how to add task in weekpage in mobile.gif",
-            text: "这个 GIF 会演示在手机端的 Week 页面按住时间格并添加任务。"
+            text: "1. 从底部导航打开 Week。\n2. 长按目标日期下方想要的时间格。\n3. 在弹出的表单中输入任务名称。\n4. 按需调整时间或日期。\n5. 点击 Save。"
           },
           taskMap: {
             question: "从任务中打开地图",
             title: "how to enable map function for each task(both mobile and desktop browser).gif",
-            text: "这个 GIF 会演示在手机端或桌面端从任务里打开地图链接。"
+            text: "1. 点击任意任务将其打开。\n2. 在任务表单中找到 Location 字段。\n3. 输入地址或地点名称。\n4. 点击 Location 字段旁的地图图标。\n5. 地点会在默认地图应用中打开。"
           },
           openWebAppPc: {
             question: "在桌面端把计划器作为网页应用打开",
             title: "how to open a web app in pc.gif",
-            text: "这个 GIF 会演示在桌面端安装或打开计划器网页应用。"
+            text: "Chrome 或 Edge：\n1. 点击左侧边栏中的「安装应用」。\n2. 浏览器弹出提示时，点击「安装」。\n3. TaskTide 以独立窗口打开，并出现在任务栏或开始菜单中。\n\n其他浏览器：\n1. 打开浏览器菜单（右上角的 ⋮ 或 ≡）。\n2. 找到「安装 TaskTide」或「添加到应用」。\n3. 点击并确认。"
           },
           resetNotificationsPc: {
             question: "开启或重置 Task Notifications",
             title: "how to reset:enable notification in pc.gif",
-            text: "这个 GIF 会演示从 Help 开启 Task Notifications，或修复浏览器通知设置。"
+            text: "开启通知：\n1. 从左侧边栏打开 Help。\n2. 滚动到 Task Notifications 部分。\n3. 点击 Enable Task Notifications。\n4. 浏览器请求权限时，点击「允许」。\n\n如果通知被阻止：\n1. 点击浏览器地址栏中的锁形或信息图标。\n2. 找到「通知」并将其改为「允许」。\n3. 刷新页面后重新尝试开启。"
           },
           exportIcs: {
             question: "将任务导出为日历文件（.ics）",
             title: "how to export tasks as ics calendar file.gif",
-            text: "这个 GIF 会演示在 Today 点击导出 ICS、选择筛选条件，以及下载 .ics 文件并在日历应用中打开的完整流程。"
+            text: "1. 打开 Today。\n2. 点击页面底部的 Export ICS。\n3. 选择要包含的任务：全部任务、仅未完成任务，或指定日期范围。\n4. 点击 Download .ics。\n5. 用 Apple Calendar、Google Calendar、Outlook 或任何支持 ICS 格式的应用打开下载的文件。"
           },
           syllabusAutoClarify: {
             question: "通过 AI 澄清信息后导入课程大纲",
@@ -883,8 +893,8 @@ const resources = {
           step4: "Reminders 适合记录不绑定具体时间段、但需要一直容易找到直到完成的事项。标记提醒完成后，TaskTide 会确认它已完成。",
           step5Desktop: "桌面端可以用左侧边栏切换 Reminders、Today、Week、Month、Stats、Help，并打开安装指引。",
           step5Mobile: "手机端可以用底部导航切换 Reminders、Today、Week、Month、Stats 和 Help。标签会固定在屏幕底部，横向适配手机宽度，并为设备安全区域预留空间。",
-          step6Desktop: "如果希望 TaskTide 像应用一样打开，请选择“安装应用”，然后按浏览器演示操作。如果希望收到 task alerts、task start reminders 和 daily task check-ins，请打开 Help 并选择 Enable Task Notifications。",
-          step6Mobile: "如果希望 TaskTide 出现在主屏幕，请选择“安装应用”，然后按手机浏览器步骤操作。之后如果希望收到 task alerts、task start reminders 和 daily task check-ins，请打开 Help 并选择 Enable Task Notifications。",
+          step6Desktop: "如果希望 TaskTide 像应用一样打开，请点击侧边栏中的「安装应用」，然后在浏览器弹出提示时确认安装。如果希望收到 task alerts、task start reminders 和 daily task check-ins，请打开 Help 并选择 Enable Task Notifications。",
+          step6Mobile: "如果希望 TaskTide 出现在主屏幕，请点击「安装应用」并按照简短说明操作。之后如果希望收到 task alerts、task start reminders 和 daily task check-ins，请打开 Help 并选择 Enable Task Notifications。",
           step7Desktop: "如果连接中断，可以继续正常编辑任务。TaskTide 会合并重复的离线修改，并在服务器恢复后同步。如果某个页面还没有在这台设备上加载过，TaskTide 会显示清晰的离线提示，而不是空白页面。Week、Month、Help 和 Updates 等较重区域会在打开时加载，让首次进入更快。使用 Updates 查看最近变化，需要重新理解完整流程时可以回到 Help。",
           step7Mobile: "如果连接中断，可以继续正常编辑任务。TaskTide 会合并重复的离线修改，并在服务器恢复后同步。如果某个页面还没有在这台设备上加载过，TaskTide 会显示清晰的离线提示，而不是空白页面。Week、Month、Help 和 Updates 等较重区域会在打开时加载，让首次进入更快。使用 Updates 查看最近变化，需要重新理解完整流程时可以回到 Help。"
         },

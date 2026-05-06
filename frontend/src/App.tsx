@@ -11,6 +11,10 @@ import {
   Box,
   Button,
   Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   IconButton,
   Paper,
   Snackbar,
@@ -126,6 +130,11 @@ function PageLoadingFallback() {
   );
 }
 
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+}
+
 export default function App() {
   const { t, i18n } = useTranslation();
   const location = useLocation();
@@ -137,6 +146,8 @@ export default function App() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [taskDialogOpen, setTaskDialogOpen] = useState(false);
   const [syllabusImportOpen, setSyllabusImportOpen] = useState(false);
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [installFallbackOpen, setInstallFallbackOpen] = useState(false);
   const tasksRef = useRef<Task[]>([]);
   const remindersRef = useRef<Reminder[]>([]);
   const taskSyncQueue = useRef(Promise.resolve());
@@ -170,6 +181,24 @@ export default function App() {
       setOnboardingForceSignal(null);
     }
   }, [location.pathname]);
+
+  useEffect(() => {
+    function handleBeforeInstallPrompt(e: Event) {
+      e.preventDefault();
+      setInstallPrompt(e as BeforeInstallPromptEvent);
+    }
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    return () => window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+  }, []);
+
+  function handleInstallApp() {
+    if (installPrompt) {
+      void installPrompt.prompt();
+      setInstallPrompt(null);
+      return;
+    }
+    setInstallFallbackOpen(true);
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -575,7 +604,7 @@ export default function App() {
             </IconButton>
           </Tooltip>
           <Tooltip title={t("nav.installApp")} placement="bottom">
-            <IconButton id="install-web-app-mobile" data-onboarding="download-app-button" component={Link} to="/help?topic=open-web-app-pc" color="inherit" size="small">
+            <IconButton id="install-web-app-mobile" data-onboarding="download-app-button" color="inherit" size="small" onClick={handleInstallApp}>
               <DownloadRoundedIcon />
             </IconButton>
           </Tooltip>
@@ -708,10 +737,9 @@ export default function App() {
                 <Button
                   id="install-web-app-desktop"
                   data-onboarding="download-app-button"
-                  component={Link}
-                  to="/help?topic=open-web-app-pc"
                   variant="outlined"
                   startIcon={<DownloadRoundedIcon />}
+                  onClick={handleInstallApp}
                   sx={{ borderRadius: 2.5 }}
                 >
                   {t("nav.installApp")}
@@ -883,6 +911,21 @@ export default function App() {
           {toast.message}
         </Alert>
       </Snackbar>
+      <Dialog open={installFallbackOpen} onClose={() => setInstallFallbackOpen(false)} fullWidth maxWidth="sm">
+        <DialogTitle>{t("nav.installFallback.title")}</DialogTitle>
+        <DialogContent>
+          <Typography color="text.secondary" sx={{ whiteSpace: "pre-line" }}>
+            {/iPad|iPhone|iPod/.test(navigator.userAgent)
+              ? t("nav.installFallback.ios")
+              : t("nav.installFallback.other")}
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button variant="contained" onClick={() => setInstallFallbackOpen(false)} sx={{ borderRadius: 2.5 }}>
+            {t("common.close")}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

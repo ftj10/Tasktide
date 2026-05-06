@@ -1,5 +1,34 @@
 # Development Log
 
+## Version 2.9.2
+Update Date: 2026-05-06
+
+### Changes
+
+**`frontend/src/App.tsx`**
+- Added `BeforeInstallPromptEvent` interface and `installPrompt` / `installFallbackOpen` state.
+- Added `useEffect` that captures the `beforeinstallprompt` event and stores it (calling `preventDefault` so the browser doesn't auto-show its own mini-bar).
+- Added `handleInstallApp` function: calls `installPrompt.prompt()` when available, otherwise opens a fallback dialog.
+- Both Install app buttons (mobile `IconButton` and desktop `Button`) now call `handleInstallApp` instead of routing to `/help?topic=open-web-app-pc`.
+- Added `Dialog` fallback at bottom of JSX: detects iOS via `navigator.userAgent` and shows platform-appropriate instructions.
+- Added `Dialog`, `DialogActions`, `DialogContent`, `DialogTitle` to MUI imports.
+
+**`frontend/src/i18n.ts`**
+- Added `nav.installFallback.{title,ios,other}` keys (English + Chinese) for the fallback dialog.
+- Replaced "This GIF shows..." text in `addTaskBrowser`, `quickAddWeekBrowser`, `addTaskWeekMobile`, `taskMap`, `openWebAppPc`, `resetNotificationsPc`, `exportIcs` with numbered step-by-step instructions (English + Chinese).
+- Updated `guides.step6Desktop` and `guides.step6Mobile` to reflect the direct-install flow.
+
+**`package.json`, `frontend/package.json`, `RELEASENOTES.md`, `frontend/src/app/releaseNotes.ts`, `DEVLOG.md`**
+- Bumped version from `2.9.1` to `2.9.2`.
+- Added public and in-app release notes.
+
+### Design decisions
+- `beforeinstallprompt` is captured eagerly on mount so the button works the instant the browser is ready; the event is cleared after `prompt()` to prevent double-trigger.
+- iOS Safari does not support `beforeinstallprompt`; the fallback dialog gives the exact Share → Add to Home Screen steps rather than a generic error.
+- The "already installed" case also falls into the fallback dialog with an explanation, keeping the button usable.
+
+---
+
 ## Version 2.9.1
 Update Date: 2026-05-06
 
