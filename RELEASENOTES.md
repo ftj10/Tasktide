@@ -1,5 +1,17 @@
 # Release Notes
 
+Title: Version 2.9.1 – Update Released (2026-05-06)
+
+What’s New
+
+Improvements
+
+- Improved: Syllabus delete confirmation checks now better match the button text users see on screen.
+
+Fixes
+
+- Fixed: The syllabus batch delete confirmation test now uses the translated action label, keeping release validation reliable.
+
 Title: Version 2.9.0 – Update Released (2026-05-06)
 
 What’s New

@@ -2,10 +2,11 @@
 // OUTPUT: behavior coverage for onboarding and walkthrough definitions
 // EFFECT: Verifies shared Help Center content exposes the expected tour and support entries
 import { describe, expect, it } from "vitest";
+import type { TFunction } from "i18next";
 
 import { getHelpCenterData, getOnboardingSteps, ONBOARDING_STORAGE_KEY } from "../src/app/helpCenter";
 
-const t = (key: string) => key;
+const t = ((key: string) => key) as TFunction;
 
 describe("help center data behavior", () => {
   it("returns seven onboarding steps with required content fields", () => {

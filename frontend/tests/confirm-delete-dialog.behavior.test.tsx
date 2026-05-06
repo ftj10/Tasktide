@@ -56,7 +56,7 @@ describe("ConfirmDeleteDialog behavior", () => {
         onDeleteSyllabus={onDeleteSyllabus}
       />
     );
-    await user.click(screen.getByRole("button", { name: /dialog\.deleteSyllabusAction/i }));
+    await user.click(screen.getByRole("button", { name: "Delete all 3 syllabus tasks" }));
 
     expect(onDeleteSyllabus).toHaveBeenCalledTimes(1);
   });
@@ -64,6 +64,6 @@ describe("ConfirmDeleteDialog behavior", () => {
   it("hides the syllabus delete action when no callback is provided", () => {
     renderWithProviders(<ConfirmDeleteDialog open title="Old task" onCancel={vi.fn()} onConfirm={vi.fn()} />);
 
-    expect(screen.queryByRole("button", { name: /dialog\.deleteSyllabusAction/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /delete all \d+ syllabus tasks/i })).not.toBeInTheDocument();
   });
 });

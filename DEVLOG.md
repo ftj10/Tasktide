@@ -1,5 +1,24 @@
 # Development Log
 
+## Version 2.9.1
+Update Date: 2026-05-06
+
+### Changes
+
+**`frontend/tests/confirm-delete-dialog.behavior.test.tsx`**
+- Updated the syllabus delete action regression test to query the translated accessible button name instead of the i18n key.
+- Updated the hidden-action assertion to look for translated syllabus delete button text.
+
+**`frontend/tests/help-center.behavior.test.ts`, `frontend/tests/reminder-dialog.behavior.test.tsx`**
+- Aligned test helper types with the stricter i18next and UUID typings used by the production build.
+
+**`package.json`, `frontend/package.json`, `frontend/package-lock.json`, `RELEASENOTES.md`, `frontend/src/app/releaseNotes.ts`, `README.md`, `DEVLOG.md`**
+- Bumped the workspace and frontend package versions from `2.9.0` to `2.9.1`.
+- Added public and in-app release notes for the confirmation dialog test fix.
+
+### Debugging observations
+- The dialog correctly rendered `Delete all 3 syllabus tasks`, but the failing test searched for `dialog.deleteSyllabusAction`.
+
 ## Version 2.9.0
 Update Date: 2026-05-06
 

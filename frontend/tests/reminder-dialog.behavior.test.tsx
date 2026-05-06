@@ -38,14 +38,14 @@ describe("ReminderDialog behavior", () => {
   it("enables Save after a title and saves a new reminder", async () => {
     const user = userEvent.setup();
     const onSave = vi.fn();
-    vi.spyOn(crypto, "randomUUID").mockReturnValue("uuid-1");
+    vi.spyOn(crypto, "randomUUID").mockReturnValue("00000000-0000-4000-8000-000000000001");
 
     renderWithProviders(<ReminderDialog open mode="create" onClose={vi.fn()} onSave={onSave} />);
     await user.type(screen.getByLabelText("Title"), "New reminder");
     await user.click(screen.getByRole("button", { name: "Save" }));
 
     expect(onSave).toHaveBeenCalledWith(expect.objectContaining({
-      id: "uuid-1",
+      id: "00000000-0000-4000-8000-000000000001",
       title: "New reminder",
       content: "",
       emergency: 5,

@@ -14,6 +14,29 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-05-06-confirm-delete-dialog-test-fix",
+    version: "v2.9.1",
+    releasedAt: "2026-05-06",
+    title: {
+      en: "Syllabus Delete Confirmation Fix",
+      zh: "课程任务删除确认修复",
+    },
+    summary: {
+      en: "Syllabus delete confirmation checks now match the button text shown to users.",
+      zh: "课程任务删除确认检查现在与用户看到的按钮文字保持一致。",
+    },
+    changes: {
+      en: [
+        "Improved: Syllabus delete confirmation checks now better match the button text users see on screen.",
+        "Fixed: The syllabus batch delete confirmation test now uses the translated action label, keeping release validation reliable.",
+      ],
+      zh: [
+        "改进：课程任务删除确认检查现在更符合用户在屏幕上看到的按钮文字。",
+        "修复：课程批量删除确认测试现在使用已翻译的操作标签，使发布验证更可靠。",
+      ],
+    },
+  },
+  {
     id: "2026-05-06-mobile-navigation-flat-design",
     version: "v2.9.0",
     releasedAt: "2026-05-06",
