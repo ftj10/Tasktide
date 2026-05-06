@@ -16,6 +16,8 @@ import {
   Stack,
   TextField,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
@@ -30,6 +32,8 @@ export function ExportIcsDialog(props: {
   tasks: Task[];
 }) {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const today = ymd(dayjs());
   const [filterType, setFilterType] = useState<"all" | "incomplete" | "dateRange">("all");
   const [startDate, setStartDate] = useState(today);
@@ -55,7 +59,7 @@ export function ExportIcsDialog(props: {
   const isDateRangeInvalid = filterType === "dateRange" && startDate > endDate;
 
   return (
-    <Dialog open={props.open} onClose={props.onClose} fullWidth maxWidth="xs">
+    <Dialog open={props.open} onClose={props.onClose} fullScreen={isMobile} fullWidth maxWidth="sm">
       <DialogTitle>{t("today.exportDialogTitle")}</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ pt: 0.5 }}>
@@ -106,9 +110,9 @@ export function ExportIcsDialog(props: {
           )}
         </Stack>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={props.onClose}>{t("common.cancel")}</Button>
-        <Button variant="contained" onClick={handleExport} disabled={isDateRangeInvalid}>
+      <DialogActions sx={{ flexDirection: { xs: "column", sm: "row" }, gap: 1, px: { xs: 2, sm: 3 }, pb: { xs: 2, sm: 2 } }}>
+        <Button fullWidth={isMobile} onClick={props.onClose}>{t("common.cancel")}</Button>
+        <Button fullWidth={isMobile} variant="contained" onClick={handleExport} disabled={isDateRangeInvalid}>
           {t("today.exportDownload")}
         </Button>
       </DialogActions>

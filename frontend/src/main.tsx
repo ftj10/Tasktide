@@ -46,19 +46,47 @@ const theme = createTheme({
   shape: { borderRadius: 12 },
   typography: {
     fontFamily:
-      '"Inter", "Segoe UI", "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif',
-    h4: { fontWeight: 700, letterSpacing: "-0.02em" },
-    h5: { fontWeight: 700, letterSpacing: "-0.015em" },
-    h6: { fontWeight: 700, letterSpacing: "-0.01em" },
+      '"Plus Jakarta Sans", "Segoe UI", "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif',
+    h4: { fontWeight: 700, letterSpacing: 0 },
+    h5: { fontWeight: 700, letterSpacing: 0 },
+    h6: { fontWeight: 700, letterSpacing: 0 },
+    body1: { fontSize: "1rem" },
+    body2: { fontSize: "0.875rem" },
     button: { textTransform: "none", fontWeight: 600 },
   },
   components: {
     MuiCssBaseline: {
       styleOverrides: {
+        "@import": "url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap')",
+        html: {
+          overflowX: "hidden",
+          backgroundColor: "#f4f6fb",
+        },
         body: {
-          background:
-            "radial-gradient(1200px 600px at 10% -10%, rgba(79, 70, 229, 0.08), transparent 60%), radial-gradient(900px 500px at 110% 10%, rgba(14, 165, 233, 0.08), transparent 60%), #f4f6fb",
-          minHeight: "100vh",
+          background: "#f4f6fb",
+          minHeight: "100dvh",
+          overflowX: "hidden",
+        },
+        "#root": {
+          minHeight: "100dvh",
+          overflowX: "hidden",
+        },
+        "button, [role='button'], a, .MuiButtonBase-root": {
+          cursor: "pointer",
+        },
+        "@media (max-width: 600px)": {
+          ".MuiTypography-body1, .MuiTypography-body2, .MuiInputBase-input, .MuiButton-root": {
+            fontSize: "1rem",
+          },
+        },
+        ".MuiButtonBase-root": {
+          minWidth: 44,
+          minHeight: 44,
+          transition: "background-color 180ms ease, color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease",
+        },
+        ".MuiButtonBase-root.Mui-focusVisible": {
+          outline: "3px solid rgba(79, 70, 229, 0.35)",
+          outlineOffset: 2,
         },
         'body[style*="overflow: hidden"] .mobile-bottom-navigation': {
           display: "none !important",
@@ -81,10 +109,11 @@ const theme = createTheme({
         root: {
           borderRadius: 10,
           paddingInline: 16,
+          minHeight: 44,
         },
         containedPrimary: {
-          boxShadow: "0 8px 20px rgba(79, 70, 229, 0.25)",
-          "&:hover": { boxShadow: "0 12px 26px rgba(79, 70, 229, 0.32)" },
+          boxShadow: "none",
+          "&:hover": { boxShadow: "0 2px 8px rgba(15,23,42,0.08)" },
         },
       },
     },
@@ -98,34 +127,56 @@ const theme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: 16,
-          boxShadow: "0 6px 20px rgba(15, 23, 42, 0.06)",
+          borderRadius: 8,
+          boxShadow: "0 2px 8px rgba(15,23,42,0.08)",
           border: `1px solid ${alpha("#0f172a", 0.06)}`,
         },
+      },
+    },
+    MuiCardContent: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          [theme.breakpoints.down("sm")]: {
+            padding: 16,
+            "&:last-child": {
+              paddingBottom: 16,
+            },
+          },
+        }),
       },
     },
     MuiAppBar: {
       styleOverrides: {
         root: {
-          backdropFilter: "saturate(180%) blur(14px)",
           backgroundImage:
-            "linear-gradient(135deg, rgba(79, 70, 229, 0.95), rgba(14, 165, 233, 0.92))",
-          boxShadow: "0 10px 30px rgba(79, 70, 229, 0.18)",
+            "linear-gradient(135deg, #4f46e5, #0ea5e9)",
+          boxShadow: "0 2px 8px rgba(15,23,42,0.08)",
         },
       },
     },
     MuiBottomNavigation: {
       styleOverrides: {
         root: {
-          background: "rgba(255, 255, 255, 0.96)",
-          backdropFilter: "blur(14px)",
+          width: "100%",
+          minHeight: 64,
+          paddingBottom: "env(safe-area-inset-bottom)",
+          background: "#ffffff",
         },
       },
     },
     MuiBottomNavigationAction: {
       styleOverrides: {
         root: {
+          flex: 1,
+          minWidth: 0,
+          maxWidth: "none",
+          padding: "6px 2px 8px",
           "&.Mui-selected": { color: "#4f46e5" },
+        },
+        label: {
+          fontSize: "0.65rem",
+          lineHeight: 1.15,
+          whiteSpace: "nowrap",
         },
       },
     },
@@ -136,9 +187,17 @@ const theme = createTheme({
     },
     MuiDialog: {
       styleOverrides: {
-        paper: {
+        paper: ({ theme }) => ({
           borderRadius: 18,
-        },
+          [theme.breakpoints.down("sm")]: {
+            width: "100%",
+            maxWidth: "100%",
+            height: "100%",
+            maxHeight: "100%",
+            margin: 0,
+            borderRadius: 0,
+          },
+        }),
       },
     },
     MuiTextField: {
@@ -148,6 +207,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 10,
+          minHeight: 48,
         },
       },
     },
@@ -170,14 +230,13 @@ const theme = createTheme({
       styleOverrides: {
         tooltip: {
           backgroundColor: "rgba(15, 23, 42, 0.9)",
-          backdropFilter: "blur(8px)",
           color: "#f8fafc",
           fontSize: "0.78rem",
           fontWeight: 500,
           padding: "6px 12px",
           borderRadius: 8,
           maxWidth: 200,
-          boxShadow: "0 4px 14px rgba(15, 23, 42, 0.18)",
+          boxShadow: "0 2px 8px rgba(15,23,42,0.08)",
         },
         arrow: {
           color: "rgba(15, 23, 42, 0.9)",

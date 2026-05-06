@@ -1,6 +1,5 @@
 {
   "permissions": {
-    "defaultMode": "auto",
     "allow": [
       "Bash",
       "Read",
@@ -11,7 +10,8 @@
       "Read(backend/.env)",
       "Edit(backend/.env)",
       "Write(backend/.env)"
-    ]
+    ],
+    "defaultMode": "auto"
   },
   "hooks": {
     "SessionStart": [
@@ -27,6 +27,8 @@
     ]
   },
   "enabledPlugins": {
-    "andrej-karpathy-skills@karpathy-skills": true
+    "andrej-karpathy-skills@karpathy-skills": true,
+    "codex@openai-codex": true,
+    "ui-ux-pro-max@ui-ux-pro-max-skill": true
   }
 }

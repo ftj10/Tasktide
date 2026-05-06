@@ -463,23 +463,25 @@ export function WeekPage(props: {
     <Box
       sx={{
         width: "100%",
-        maxWidth: 1200,
+        maxWidth: "lg",
+        minHeight: "100dvh",
         mx: "auto",
-        px: { xs: 1.5, sm: 2, md: 3 },
-        py: { xs: 1, sm: 2 },
+        px: { xs: 0, sm: 2, md: 3 },
+        pt: { xs: 1, sm: 2, md: 3 },
+        pb: { xs: "calc(64px + env(safe-area-inset-bottom))", md: 3 },
+        overflowX: "hidden",
       }}
     >
       <Paper
         elevation={0}
         sx={{
           mb: 2,
-          p: { xs: 1.75, sm: 2.5 },
-          borderRadius: 4,
+          p: { xs: 2, sm: 2.5 },
+          borderRadius: { xs: 0, sm: 2 },
           border: "1px solid",
           borderColor: "divider",
-          background:
-            "linear-gradient(135deg, rgba(79, 70, 229, 0.08), rgba(14, 165, 233, 0.06))",
-          boxShadow: "0 12px 32px rgba(15, 23, 42, 0.06)",
+          background: "#ffffff",
+          boxShadow: "0 2px 8px rgba(15,23,42,0.08)",
         }}
       >
         <Stack direction="row" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={1.5}>
@@ -520,7 +522,7 @@ export function WeekPage(props: {
       </Paper>
 
       {isMobile ? (
-        <Box sx={{ width: "100%" }}>
+        <Box sx={{ width: "100%", overflowX: "hidden" }}>
           <Stack
             direction="row"
             justifyContent="space-between"
@@ -529,11 +531,11 @@ export function WeekPage(props: {
               mb: 1.25,
               px: 1.5,
               py: 1,
-              borderRadius: 3,
+              borderRadius: 2,
               bgcolor: "rgba(255,255,255,0.95)",
               border: "1px solid",
               borderColor: "divider",
-              boxShadow: "0 6px 18px rgba(15, 23, 42, 0.05)",
+              boxShadow: "0 2px 8px rgba(15,23,42,0.08)",
             }}
           >
             <Typography variant="subtitle2" fontWeight={800}>
@@ -564,9 +566,9 @@ export function WeekPage(props: {
             sx={{
               mb: 1.25,
               bgcolor: "rgba(255,255,255,0.95)",
-              borderRadius: 3,
+              borderRadius: 2,
               p: 0.5,
-              boxShadow: "0 6px 18px rgba(15, 23, 42, 0.05)",
+              boxShadow: "0 2px 8px rgba(15,23,42,0.08)",
               "& .MuiToggleButton-root": {
                 border: "none !important",
                 borderRadius: "10px !important",
@@ -627,6 +629,7 @@ export function WeekPage(props: {
             sx={{
               display: "flex",
               overflowX: "auto",
+              overflowY: "hidden",
               scrollSnapType: "x mandatory",
               scrollbarWidth: "none",
               "&::-webkit-scrollbar": { display: "none" },
@@ -644,11 +647,11 @@ export function WeekPage(props: {
                 <Paper
                   elevation={0}
                   sx={{
-                    borderRadius: 3,
+                    borderRadius: 2,
                     bgcolor: "rgba(255,255,255,0.98)",
                     border: "1px solid",
                     borderColor: "divider",
-                    boxShadow: "0 12px 28px rgba(15, 23, 42, 0.06)",
+                    boxShadow: "0 2px 8px rgba(15,23,42,0.08)",
                     p: 1,
                   }}
                 >
@@ -690,11 +693,11 @@ export function WeekPage(props: {
           sx={{
             width: "100%",
             overflowX: "auto",
-            borderRadius: 4,
+            borderRadius: 2,
             bgcolor: "rgba(255,255,255,0.98)",
             border: "1px solid",
             borderColor: "divider",
-            boxShadow: "0 18px 40px rgba(15, 23, 42, 0.08)",
+            boxShadow: "0 2px 8px rgba(15,23,42,0.08)",
             p: 2,
           }}
         >

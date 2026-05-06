@@ -220,6 +220,11 @@ const resources = {
             title: "how to quickly add task in weekpage browser.gif",
             text: "This GIF shows choosing a time in Week and creating a task faster."
           },
+          mobileBottomNavigation: {
+            question: "Move around TaskTide on mobile",
+            title: "how to use mobile bottom navigation.gif",
+            text: "What it does:\nThe bottom navigation keeps Reminders, Today, Week, Month, Stats, and Help visible across the bottom of your phone screen.\n\nHow to use:\n1. Tap a tab to open that section.\n2. Use the top bar for language, syllabus import, install help, and logout.\n3. Scroll normally; the bottom navigation stays available above the safe area."
+          },
           addTaskWeekMobile: {
             question: "Add a task in Week on mobile",
             title: "how to add task in weekpage in mobile.gif",
@@ -269,7 +274,7 @@ const resources = {
           step3: "Use Month when you want to scan a larger schedule, choose a future date, or jump back into Today for a specific day.",
           step4: "Use Reminders for notes that are not tied to one schedule slot but should stay easy to find until you complete them.",
           step5Desktop: "On desktop, use the left sidebar to move between Reminders, Today, Week, Month, Stats, Help, and the install guide.",
-          step5Mobile: "On mobile, use the bottom navigation to move between the main pages — including Stats for your 30-day productivity overview — and the top install button to learn how to add TaskTide to your device.",
+          step5Mobile: "On mobile, use the bottom navigation to move between Reminders, Today, Week, Month, Stats, and Help. The tabs stay visible at the bottom of the screen, fit across the phone width, and leave room for the device safe area.",
           step6Desktop: "If you want TaskTide to open like an app, choose Install app and follow the walkthrough for your browser. If you want task alerts, task start reminders, and daily task check-ins, open Help and choose Enable Task Notifications.",
           step6Mobile: "If you want TaskTide on your home screen, choose Install app and follow the mobile steps for your browser. Then open Help and choose Enable Task Notifications if you want task alerts, task start reminders, and daily task check-ins.",
           step7Desktop: "If your connection drops, keep editing tasks normally. TaskTide will merge repeated offline edits and sync them when the server is available again. If a page has not loaded on this device yet, TaskTide shows a clear offline message instead of a blank screen.",
@@ -299,7 +304,7 @@ const resources = {
           },
           q6: {
             question: "How does the layout change on mobile devices?",
-            answer: "The app uses bottom navigation, a touch-friendly Week view, and full-screen forms on mobile."
+            answer: "The app uses a bottom navigation bar with evenly spaced tabs, touch-friendly pages, horizontal Week scrolling where needed, and full-screen forms on mobile."
           },
           q7: {
             question: "What happens if a save request fails?",
@@ -731,6 +736,11 @@ const resources = {
             title: "how to quickly add task in weekpage browser.gif",
             text: "这个 GIF 会演示在桌面浏览器的 Week 页面快速选择时间并创建任务。"
           },
+          mobileBottomNavigation: {
+            question: "在手机端切换 TaskTide 页面",
+            title: "how to use mobile bottom navigation.gif",
+            text: "功能说明：\n底部导航会把 Reminders、Today、Week、Month、Stats 和 Help 固定在手机屏幕底部，并保持可见。\n\n使用方法：\n1. 点击任一标签打开对应页面。\n2. 使用顶部栏切换语言、导入课程大纲、查看安装帮助或退出登录。\n3. 正常滚动页面；底部导航会留在安全区域上方。"
+          },
           addTaskWeekMobile: {
             question: "在手机端的 Week 添加任务",
             title: "how to add task in weekpage in mobile.gif",
@@ -780,7 +790,7 @@ const resources = {
           step3: "想查看更大范围、选择未来日期，或进入某一天的 Today 时，使用 Month。",
           step4: "Reminders 适合记录不绑定具体时间段、但需要一直容易找到直到完成的事项。",
           step5Desktop: "桌面端可以用左侧边栏切换 Reminders、Today、Week、Month、Stats、Help，并打开安装指引。",
-          step5Mobile: "手机端可以用底部导航切换主要页面（包括查看 30 天效率概览的 Stats 页），也可以用顶部安装按钮学习如何把 TaskTide 加到设备上。",
+          step5Mobile: "手机端可以用底部导航切换 Reminders、Today、Week、Month、Stats 和 Help。标签会固定在屏幕底部，横向适配手机宽度，并为设备安全区域预留空间。",
           step6Desktop: "如果希望 TaskTide 像应用一样打开，请选择“安装应用”，然后按浏览器演示操作。如果希望收到 task alerts、task start reminders 和 daily task check-ins，请打开 Help 并选择 Enable Task Notifications。",
           step6Mobile: "如果希望 TaskTide 出现在主屏幕，请选择“安装应用”，然后按手机浏览器步骤操作。之后如果希望收到 task alerts、task start reminders 和 daily task check-ins，请打开 Help 并选择 Enable Task Notifications。",
           step7Desktop: "如果连接中断，可以继续正常编辑任务。TaskTide 会合并重复的离线修改，并在服务器恢复后同步。如果某个页面还没有在这台设备上加载过，TaskTide 会显示清晰的离线提示，而不是空白页面。",
@@ -810,7 +820,7 @@ const resources = {
           },
           q6: {
             question: "移动设备上的布局会怎样变化？",
-            answer: "手机端会使用底部导航、触控更方便的 Week 视图，以及全屏表单。"
+            answer: "手机端会使用标签平均分布的底部导航、触控更方便的页面、必要时可横向滚动的 Week 视图，以及全屏表单。"
           },
           q7: {
             question: "如果保存请求失败会怎样？",

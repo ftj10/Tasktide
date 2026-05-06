@@ -426,21 +426,21 @@ export function TaskDialog(props: {
             />
           </DialogContent>
 
-          <DialogActions sx={{ px: { xs: 2, sm: 3 }, pb: { xs: 2, sm: 3 } }}>
+          <DialogActions sx={{ flexDirection: { xs: "column", sm: "row" }, gap: 1, px: { xs: 2, sm: 3 }, pb: { xs: 2, sm: 3 } }}>
             {props.mode === "edit" && props.onDelete ? (
-              <Button color="error" onClick={remove}>
+              <Button fullWidth={isMobile} color="error" onClick={remove}>
                 {t("common.delete")}
               </Button>
             ) : null}
             {canMoveTempToToday ? (
-              <Button onClick={moveTempToToday}>{t("common.moveToToday")}</Button>
+              <Button fullWidth={isMobile} onClick={moveTempToToday}>{t("common.moveToToday")}</Button>
             ) : null}
             {canMovePermanentOccurrenceToToday ? (
-              <Button onClick={movePermanentOccurrenceToToday}>{t("common.moveOccurrenceToToday")}</Button>
+              <Button fullWidth={isMobile} onClick={movePermanentOccurrenceToToday}>{t("common.moveOccurrenceToToday")}</Button>
             ) : null}
-            <Box sx={{ flexGrow: 1 }} />
-            <Button onClick={props.onClose}>{t("common.cancel")}</Button>
-            <Button type="submit" variant="contained" disabled={!canSave}>
+            <Box sx={{ flexGrow: 1, display: { xs: "none", sm: "block" } }} />
+            <Button fullWidth={isMobile} onClick={props.onClose}>{t("common.cancel")}</Button>
+            <Button fullWidth={isMobile} type="submit" variant="contained" disabled={!canSave}>
               {props.mode === "create" ? t("common.add") : t("common.save")}
             </Button>
           </DialogActions>
@@ -562,12 +562,12 @@ export function TaskDialog(props: {
             </>
           ) : null}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setRepeatDialogOpen(false)}>{t("common.done")}</Button>
+        <DialogActions sx={{ px: { xs: 2, sm: 3 }, pb: { xs: 2, sm: 2 } }}>
+          <Button fullWidth={isMobile} onClick={() => setRepeatDialogOpen(false)}>{t("common.done")}</Button>
         </DialogActions>
       </Dialog>
 
-      <Dialog open={scopeDialogOpen} onClose={() => setScopeDialogOpen(false)} fullWidth maxWidth="xs">
+      <Dialog open={scopeDialogOpen} onClose={() => setScopeDialogOpen(false)} fullScreen={isMobile} fullWidth maxWidth="sm">
         <DialogTitle>{t("dialog.editSeriesTitle")}</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ pt: 1 }}>
@@ -581,14 +581,14 @@ export function TaskDialog(props: {
             />
           </Stack>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setScopeDialogOpen(false)}>{t("common.cancel")}</Button>
-          <Button onClick={() => saveWithScope("single")}>{t("dialog.thisDayOnly")}</Button>
-          <Button variant="contained" onClick={() => saveWithScope("series")}>{t("dialog.entireSeries")}</Button>
+        <DialogActions sx={{ flexDirection: { xs: "column", sm: "row" }, gap: 1, px: { xs: 2, sm: 3 }, pb: { xs: 2, sm: 2 } }}>
+          <Button fullWidth={isMobile} onClick={() => setScopeDialogOpen(false)}>{t("common.cancel")}</Button>
+          <Button fullWidth={isMobile} onClick={() => saveWithScope("single")}>{t("dialog.thisDayOnly")}</Button>
+          <Button fullWidth={isMobile} variant="contained" onClick={() => saveWithScope("series")}>{t("dialog.entireSeries")}</Button>
         </DialogActions>
       </Dialog>
 
-      <Dialog open={deleteScopeDialogOpen} onClose={() => setDeleteScopeDialogOpen(false)} fullWidth maxWidth="xs">
+      <Dialog open={deleteScopeDialogOpen} onClose={() => setDeleteScopeDialogOpen(false)} fullScreen={isMobile} fullWidth maxWidth="sm">
         <DialogTitle>{t("dialog.deleteSeriesTitle")}</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ pt: 1 }}>
@@ -602,10 +602,10 @@ export function TaskDialog(props: {
             />
           </Stack>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteScopeDialogOpen(false)}>{t("common.cancel")}</Button>
-          <Button color="error" onClick={() => removeWithScope("single")}>{t("dialog.thisDayOnly")}</Button>
-          <Button color="error" variant="contained" onClick={() => removeWithScope("series")}>{t("dialog.entireSeries")}</Button>
+        <DialogActions sx={{ flexDirection: { xs: "column", sm: "row" }, gap: 1, px: { xs: 2, sm: 3 }, pb: { xs: 2, sm: 2 } }}>
+          <Button fullWidth={isMobile} onClick={() => setDeleteScopeDialogOpen(false)}>{t("common.cancel")}</Button>
+          <Button fullWidth={isMobile} color="error" onClick={() => removeWithScope("single")}>{t("dialog.thisDayOnly")}</Button>
+          <Button fullWidth={isMobile} color="error" variant="contained" onClick={() => removeWithScope("series")}>{t("dialog.entireSeries")}</Button>
         </DialogActions>
       </Dialog>
     </>

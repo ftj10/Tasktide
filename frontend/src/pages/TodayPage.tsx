@@ -312,11 +312,11 @@ export function TodayPage(props: {
           mb: 1.25,
           position: "relative",
           overflow: "hidden",
-          borderRadius: 3,
-          transition: "transform 0.2s, box-shadow 0.2s",
+          borderRadius: 2,
+          transition: "transform 180ms ease, box-shadow 180ms ease",
           "&:hover": {
             transform: "translateY(-2px)",
-            boxShadow: "0 16px 36px rgba(15, 23, 42, 0.1)",
+            boxShadow: "0 2px 8px rgba(15,23,42,0.08)",
           },
           "&::before": {
             content: '""',
@@ -488,30 +488,31 @@ export function TodayPage(props: {
     <Box
       sx={{
         width: "100%",
-        maxWidth: 1200,
+        maxWidth: "lg",
+        minHeight: "100dvh",
         mx: "auto",
-        px: { xs: 1.5, sm: 2, md: 3 },
-        py: { xs: 1, sm: 2 },
+        px: { xs: 0, sm: 2, md: 3 },
+        pt: { xs: 1, sm: 2, md: 3 },
+        pb: { xs: "calc(64px + env(safe-area-inset-bottom))", md: 3 },
+        overflowX: "hidden",
       }}
     >
       <Paper
         elevation={0}
         sx={{
           mb: 2.5,
-          p: { xs: 1.75, sm: 2.5 },
-          borderRadius: 4,
+          p: { xs: 2, sm: 2.5 },
+          borderRadius: { xs: 0, sm: 2 },
           border: "1px solid",
           borderColor: "divider",
-          background:
-            "linear-gradient(135deg, rgba(79, 70, 229, 0.06), rgba(14, 165, 233, 0.05))",
-          backdropFilter: "blur(8px)",
+          background: "#ffffff",
         }}
       >
         <Stack
           direction={{ xs: "column", md: "row" }}
           justifyContent="space-between"
           alignItems={{ xs: "stretch", md: "center" }}
-          spacing={2}
+          spacing={{ xs: 2, sm: 3 }}
         >
           <Stack direction="row" alignItems="center" spacing={1.25}>
             <IconButton
@@ -641,10 +642,10 @@ export function TodayPage(props: {
             mt: 4,
             textAlign: "center",
             py: 8,
-            borderRadius: 4,
+            borderRadius: { xs: 0, sm: 2 },
             border: "1px dashed",
             borderColor: "divider",
-            bgcolor: "rgba(255,255,255,0.6)",
+            bgcolor: "#ffffff",
           }}
         >
           <Box sx={{ color: "text.disabled", mb: 1.5, display: "flex", justifyContent: "center" }}>

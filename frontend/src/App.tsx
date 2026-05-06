@@ -111,7 +111,6 @@ function PageLoadingFallback() {
           width: 44,
           height: 44,
           background: "linear-gradient(135deg, #4f46e5, #0ea5e9)",
-          boxShadow: "0 10px 24px rgba(79, 70, 229, 0.24)",
         }}
       >
         <TaskAltRoundedIcon fontSize="small" />
@@ -444,7 +443,7 @@ export default function App() {
     return (
       <Box
         sx={{
-          minHeight: "100vh",
+          minHeight: "100dvh",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -457,7 +456,6 @@ export default function App() {
             width: 56,
             height: 56,
             background: "linear-gradient(135deg, #4f46e5, #0ea5e9)",
-            boxShadow: "0 10px 30px rgba(79, 70, 229, 0.35)",
           }}
         >
           <TaskAltRoundedIcon />
@@ -484,7 +482,7 @@ export default function App() {
     return (
       <Box
         sx={{
-          minHeight: "100vh",
+          minHeight: "100dvh",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -497,7 +495,6 @@ export default function App() {
             width: 56,
             height: 56,
             background: "linear-gradient(135deg, #4f46e5, #0ea5e9)",
-            boxShadow: "0 10px 30px rgba(79, 70, 229, 0.35)",
           }}
         >
           <TaskAltRoundedIcon />
@@ -525,7 +522,7 @@ export default function App() {
   const userInitial = (username || "?").trim().charAt(0).toUpperCase();
 
   return (
-    <Box sx={{ minHeight: "100vh" }}>
+    <Box sx={{ minHeight: "100dvh", overflowX: "hidden" }}>
       <AppBar position="sticky" sx={{ display: { xs: "flex", md: "none" } }}>
         <Toolbar sx={{ minHeight: 64, px: 2, gap: 1 }}>
           <Avatar
@@ -580,7 +577,7 @@ export default function App() {
         </Toolbar>
       </AppBar>
 
-      <Box sx={{ width: "100%", px: { xs: 0, sm: 2, lg: 3 }, py: { xs: 0, md: 3 } }}>
+      <Box sx={{ width: "100%", maxWidth: "100%", overflowX: "hidden", px: { xs: 0, sm: 2, lg: 3 }, py: { xs: 0, md: 3 } }}>
         <Box
           sx={{
             width: "100%",
@@ -598,14 +595,12 @@ export default function App() {
               display: { xs: "none", md: "block" },
               position: "sticky",
               top: 24,
-              borderRadius: 4,
+              borderRadius: 2,
               p: 2.5,
               border: "1px solid",
               borderColor: "divider",
-              background:
-                "linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.75))",
-              backdropFilter: "blur(10px)",
-              boxShadow: "0 12px 40px rgba(15, 23, 42, 0.06)",
+              background: "#ffffff",
+              boxShadow: "0 2px 8px rgba(15,23,42,0.08)",
             }}
           >
             <Stack spacing={2.5}>
@@ -615,7 +610,6 @@ export default function App() {
                     width: 44,
                     height: 44,
                     background: "linear-gradient(135deg, #4f46e5, #0ea5e9)",
-                    boxShadow: "0 10px 24px rgba(79, 70, 229, 0.3)",
                   }}
                 >
                   <TaskAltRoundedIcon fontSize="small" />
@@ -728,7 +722,7 @@ export default function App() {
             </Stack>
           </Paper>
 
-          <Box sx={{ width: "100%", minWidth: 0, pb: { xs: taskDialogOpen ? 0 : 12, md: 0 } }}>
+          <Box sx={{ width: "100%", minWidth: 0, pb: { xs: taskDialogOpen ? 0 : "calc(64px + env(safe-area-inset-bottom))", md: 0 } }}>
             <Container maxWidth={false} disableGutters>
               <Box sx={{ py: { xs: 2, md: 0 } }}>
                 <ChunkErrorBoundary resetKey={location.pathname}>
@@ -787,11 +781,14 @@ export default function App() {
           left: 0,
           right: 0,
           zIndex: mobileNavZIndex,
-          borderTopLeftRadius: 20,
-          borderTopRightRadius: 20,
+          width: "100%",
+          maxWidth: "100vw",
+          borderTopLeftRadius: 0,
+          borderTopRightRadius: 0,
           overflow: "hidden",
           pointerEvents: "auto",
-          boxShadow: "0 -10px 30px rgba(15, 23, 42, 0.12)",
+          boxShadow: "0 -2px 8px rgba(15,23,42,0.08)",
+          paddingBottom: "env(safe-area-inset-bottom)",
         }}
       >
         <BottomNavigation
@@ -803,7 +800,10 @@ export default function App() {
             position: "relative",
             zIndex: mobileNavZIndex,
             pointerEvents: "auto",
-            height: 68,
+            width: "100%",
+            minHeight: 64,
+            height: "auto",
+            overflowX: "hidden",
           }}
         >
           {navigationItems.map((item) => (
@@ -817,6 +817,18 @@ export default function App() {
               label={item.label}
               icon={item.icon}
               sx={{
+                flex: 1,
+                minWidth: 0,
+                maxWidth: "none",
+                px: 0.25,
+                "& .MuiSvgIcon-root": {
+                  fontSize: 21,
+                },
+                "& .MuiBottomNavigationAction-label": {
+                  fontSize: "0.65rem",
+                  lineHeight: 1.1,
+                  whiteSpace: "nowrap",
+                },
                 "&.Mui-selected": {
                   "& .MuiBottomNavigationAction-label": { fontWeight: 700 },
                 },
@@ -836,7 +848,7 @@ export default function App() {
         <Alert
           severity={toast.severity}
           onClose={() => setToast((prev) => ({ ...prev, open: false }))}
-          sx={{ width: "100%", borderRadius: 2.5, boxShadow: "0 8px 24px rgba(15, 23, 42, 0.14)" }}
+          sx={{ width: "100%", borderRadius: 2.5, boxShadow: "0 2px 8px rgba(15,23,42,0.08)" }}
         >
           {toast.message}
         </Alert>

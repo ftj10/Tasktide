@@ -1,11 +1,145 @@
 # Release Notes
 
+Title: Version 2.9.0 – Update Released (2026-05-06)
+
+What’s New
+
+- Added: TaskTide now has a refreshed flat visual design with cleaner cards, clearer buttons, and easier-to-read mobile screens.
+- Added: Mobile help now includes a walkthrough for using the bottom navigation.
+
+Improvements
+
+- Improved: The mobile bottom navigation now fits across the screen, keeps every tab visible, and stays above the phone safe area.
+- Improved: Pages and dialogs now feel better on phones, with full-screen forms, larger touch targets, and safer spacing near the bottom navigation.
+
+Fixes
+
+- Fixed: Bottom navigation tabs are no longer cut off on small mobile screens.
+
+Title: Version 2.8.1 – Update Released (2026-05-06)
+
+What’s New
+
+Improvements
+
+Fixes
+
+- Fixed: Automatic syllabus import now asks which course section applies when a syllabus includes multiple sections with different schedules.
+
+Title: Version 2.8.0 – Update Released (2026-05-06)
+
+What’s New
+
+- Added: Automatic syllabus import can now ask up to five clarification questions before creating tasks, helping you resolve unclear dates, sections, or repeating patterns.
+- Added: The Analyze with Claude option now shows a High Quality label so the recommended automatic path is easier to recognize.
+
+Improvements
+
+- Improved: Syllabus task generation now uses a shorter, more focused request so large imports can finish with less unnecessary AI output.
+- Improved: The manual AI prompt now guides students through a clarify-first workflow before extracting tasks.
+
+Fixes
+
+## Version 2.7.3 – Update Released (2026-05-05)
+
+### What's New
+
+### Improvements
+
+### Fixes
+- Fixed: Automatic syllabus analysis now reliably extracts all your course events, even for large syllabi with many assignments, lectures, and recurring obligations.
+
+Title: Version 2.7.2 – Update Released (2026-05-05)
+
+What’s New
+
+Improvements
+- Improved: Automatic syllabus import now looks for a wider range of academic planning items, including assignments, readings, prep work, and recurring course obligations.
+
+Fixes
+- Fixed: Analyze with Claude now uses the stronger draft-generation flow, making empty imports less likely when the syllabus contains usable coursework details.
+
+Title: Version 2.7.1 – Update Released (2026-05-05)
+
+What’s New
+
+Improvements
+
+Fixes
+- Fixed: Automatic syllabus analysis now connects to Claude correctly when an API key is configured, so task generation no longer fails from an invalid AI request.
+
+Title: Version 2.7.0 – Update Released (2026-05-05)
+
+What’s New
+
+Improvements
+- Improved: Syllabus Import now asks AI tools to include a short useful description for every generated task, making imported tasks easier to understand after they are added to your planner.
+
+Fixes
+
+## Version 2.6.0 – Update Released (2026-05-05)
+
+### What's New
+- Added: The Syllabus Import wizard now accepts Word documents (.docx) alongside PDFs and CSVs.
+- Added: You can now upload multiple files at once — mix and match .docx, .pdf, and .csv files in a single import. Each file appears as a removable chip so you can review before proceeding.
+- Added: Paste your own text and attach files at the same time. All sources are combined automatically when you click Next.
+
+## Version 2.5.2 – Update Released (2026-05-05)
+
+What’s New
+
+Improvements
+
+Fixes
+- Fixed: Completing a reminder no longer shows a mistaken "Reminder created" message.
+
+## Version 2.5.1 – Update Released (2026-05-05)
+
+### Fixes
+- Fixed: Adding a task after a previous task was just created no longer silently replaces the first task.
+
+## Version 2.5.0 – Update Released (2026-05-05)
+
+### What's New
+- Added: The Syllabus Import wizard now supports a fully manual path — generate a ready-made AI prompt, copy it into any AI of your choice (ChatGPT, Claude, etc.), then paste the JSON response back. Nothing is sent anywhere when using this path.
+- Added: A new Study Preferences step lets you add hints for the AI before the prompt is generated (e.g. "remind me 3 days before exams").
+- Added: When pasting AI output, the wizard validates every item against the task schema and shows specific field-level errors so you know exactly what to fix — without losing your pasted content.
+- Added: Uploading an unsupported file type (e.g. Excel) now shows a clear error with a tip to export to CSV first.
+
+## Version 2.4.1 – Update Released (2026-05-05)
+
+### Improvements
+- Improved: TaskTide now has clearer contributor guidance, helping future updates stay consistent across release notes, Help Center guidance, README documentation, development logs, and tests.
+
+## Version 2.4.0 – Update Released (2026-05-04)
+
+### What's New
+- Added: When you delete a task that came from a syllabus import, you now have the option to delete all tasks from that same import in one step — no need to remove them one by one.
+
+## Version 2.3.0 – Update Released (2026-05-04)
+
+### What's New
+- Added: The Syllabus Import wizard now shows a review screen where you can inspect every extracted task before it is added to your planner — edit, remove, or restore any item before confirming.
+- Added: Before your syllabus text is sent to AI for analysis, a consent screen shows you exactly what will be sent and asks you to confirm. Nothing is sent until you say so.
+- Added: Your unfinished import is automatically saved for 24 hours. If you close the browser mid-import, you can pick up exactly where you left off when you reopen.
+- Added: Importing a batch of tasks now has a 200-task safety limit to keep imports fast and reliable.
+
+## Version 2.2.0 – Update Released (2026-05-04)
+
+### What's New
+- Added: A new "Import Syllabus" button now appears in the sidebar on desktop and in the top bar on mobile. Paste your course syllabus or upload a PDF or CSV file, click Analyze, and TaskTide will extract your schedule events as task drafts ready for your review.
+
+## Version 2.1.0 – Update Released (2026-05-04)
+
+### What's New
+- Added: The app can now send your syllabus text to an AI for analysis. This is the engine behind the upcoming Syllabus Import feature — once the full import flow is complete, you will be able to drop in a course outline and have your tasks created automatically.
+
+## Version 2.0.0 – Update Released (2026-05-04)
+
+### What's New
+- Added: Course Syllabus Import is on its way. Behind the scenes, support has been added for reading PDF and CSV syllabus files directly in your browser, so your course documents never leave your device.
+
 ## Version 1.25.2 – Update Released (2026-05-04)
-
-Version: 1.25.2
-Update Date: 2026-05-04
-
-Title: Version 1.25.2 – Update Released (2026-05-04)
 
 ### What’s New
 - Added: Help Center now explains why an offline page message may appear and what to do next.

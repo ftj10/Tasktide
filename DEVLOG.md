@@ -1,5 +1,604 @@
 # Development Log
 
+## Version 2.9.0
+Update Date: 2026-05-06
+
+### Changes
+
+**`frontend/src/App.tsx`**
+- Fixed the mobile bottom navigation width and item distribution with full-width layout, equal tab flex, smaller labels, safe-area padding, and a higher fixed layer above page content.
+- Replaced `100vh` loading shells with `100dvh` and constrained the app shell against horizontal overflow.
+
+**`frontend/src/main.tsx`**
+- Replaced Inter with Plus Jakarta Sans through the global CSS baseline.
+- Flattened the body background to `#f4f6fb`.
+- Reduced MUI Card, Button, AppBar, BottomNavigation, Dialog, CardContent, input, focus, and touch-target defaults for the new flat design pass.
+
+**`frontend/src/pages/TodayPage.tsx`, `frontend/src/pages/WeekPage.tsx`, `frontend/src/pages/MonthPage.tsx`, `frontend/src/pages/ReminderPage.tsx`, `frontend/src/pages/StatsPage.tsx`, `frontend/src/pages/HelpPage.tsx`**
+- Updated page shells to use `100dvh`, `lg` desktop width, mobile zero side gutters where needed, and bottom padding for the fixed mobile navigation.
+- Reduced heavy gradients and shadows on page sections and cards.
+- Added mobile-safe overflow handling, including the Week mobile horizontal calendar pager.
+
+**`frontend/src/components/TaskDialog.tsx`, `frontend/src/components/ReminderDialog.tsx`, `frontend/src/components/ConfirmDeleteDialog.tsx`, `frontend/src/components/ConfirmDoneDialog.tsx`, `frontend/src/components/ConfirmAllDoneDialog.tsx`, `frontend/src/components/ExportIcsDialog.tsx`, `frontend/src/components/HelpWalkthroughModal.tsx`, `frontend/src/pages/SyllabusImportDialog.tsx`**
+- Standardized mobile dialogs to fullscreen behavior below `sm`.
+- Updated dialog actions so buttons use 44px+ targets and stack full-width on phones.
+
+**`frontend/src/pages/LoginPage.tsx`**
+- Centered the auth card at a 400px maximum width.
+- Set login fields to 48px minimum height and kept the submit button full-width at 48px.
+
+**`frontend/src/app/helpCenter.ts`, `frontend/src/i18n.ts`**
+- Added a mobile bottom navigation walkthrough.
+- Updated the guided website steps and mobile layout Q&A to describe the fixed bottom navigation, safe-area spacing, horizontal Week behavior, and fullscreen mobile forms.
+
+**`package.json`, `frontend/package.json`, `RELEASENOTES.md`, `frontend/src/app/releaseNotes.ts`, `README.md`, `DEVLOG.md`**
+- Bumped the workspace and frontend package versions from `2.8.1` to `2.9.0`.
+- Added public and in-app release notes for the mobile navigation fix and flat design refresh.
+
+### Design decisions
+- Kept the existing MUI component stack and route structure to avoid changing planner behavior, data models, API calls, or synchronization.
+- Used theme-level defaults for repeated touch-target, focus, card, dialog, and typography behavior so page-level changes stay narrow.
+- Preserved the mobile bottom navigation while adding safe-area spacing instead of replacing the navigation pattern.
+
+### Trade-offs
+- Some dense calendar labels and navigation labels remain smaller than normal body copy so the grid and six-tab mobile navigation can fit without horizontal page scroll.
+
+## Version 2.8.1
+Update Date: 2026-05-06
+
+### Changes
+
+**`backend/syllabusAnalysis.js`**
+- Added deterministic section ambiguity detection before parsing Claude's ambiguity response.
+- When syllabus text contains more than one section-like identifier, ambiguity detection now includes `Which section are you enrolled in?`.
+- Tightened the Claude ambiguity prompt to explicitly ask which section applies when multiple sections, labs, tutorials, or section-specific schedules are present.
+- Merges the deterministic section question with Claude questions, de-duplicates, and keeps the existing five-question cap.
+
+**`backend/tests/syllabusAnalysis.detectAmbiguities.test.js`**
+- Added regression coverage for multi-section syllabi where Claude returns `[]`.
+- Added prompt coverage that section selection is explicitly prioritized.
+
+**`frontend/src/app/releaseNotes.ts`**
+- Added the in-app v2.8.1 update note for the section clarification fix.
+
+**`README.md`, `RELEASENOTES.md`, `package.json`, `backend/package.json`, `backend/package-lock.json`, `frontend/package.json`, `frontend/package-lock.json`**
+- Bumped version from `2.8.0` to `2.8.1` and documented the user-facing fix.
+
+### Debugging observations
+- The route was working, but ambiguity detection depended on Claude deciding that multiple sections were ambiguous.
+- A syllabus with `Section A01` and `Section B02` could return no questions if Claude considered the excerpt clear enough.
+
+### Design decision
+- Section selection is now handled as a deterministic pre-check because choosing the wrong section directly changes generated lecture, lab, tutorial, and exam tasks.
+
+## Version 2.8.0
+Update Date: 2026-05-06
+
+### Changes
+
+**`backend/syllabusAnalysis.js`**
+- Added `detectAmbiguities(text, overrideClient)` using `claude-haiku-4-5-20251001` with `max_tokens: 512`.
+- Parses Claude text output as a JSON array of question strings and returns `[]` when parsing fails.
+- Changed `generateDrafts()` from `claude-opus-4-7` at `32768` tokens to `claude-sonnet-4-6` at `8192` tokens.
+- Replaced the draft-generation prompt with the shorter academic planning item extraction prompt requested for token optimization.
+- Left `analyzeSyllabus()` unchanged.
+
+**`backend/server.js`**
+- Added authenticated ambiguity detection handlers for `POST /api/syllabus/detect-ambiguities` and the proxy-stripped `POST /syllabus/detect-ambiguities` path.
+- Returns `{ questions }`, validates missing `extractedText` as `400`, and maps Claude provider errors to `503`.
+
+**`frontend/src/pages/SyllabusImportDialog.tsx`**
+- Added the `clarify` wizard step between consent and review.
+- Automatic import now calls ambiguity detection before draft generation.
+- If questions are returned, the wizard shows them with an optional clarification answer field and passes the answers into draft generation as `Clarifications: ...`.
+- If ambiguity detection returns no questions or fails, automatic import continues directly to draft generation.
+- Added the High Quality chip to the Analyze with Claude method option.
+
+**`frontend/src/app/syllabusPrompt.ts`**
+- Replaced the manual prompt with a two-step clarify-then-extract workflow.
+
+**`frontend/src/app/syllabusJson.ts`**
+- Moved pasted JSON validation out of the dialog module so the dialog file only exports the React component and still shares validation with tests.
+
+**`frontend/src/App.tsx`**
+- Added the stable toast setter to the `showToast` callback dependency list to satisfy the React hooks lint rule without changing callback behavior.
+
+**`frontend/src/components/ChunkErrorBoundary.tsx`**
+- Replaced the local fallback component function with a `Translation` render prop inside the existing class boundary so fast-refresh linting passes while preserving the offline chunk fallback UI.
+
+**`frontend/eslint.config.js`**
+- Allowed the class-based `ChunkErrorBoundary` export name for the fast-refresh rule because error boundaries must remain class components.
+
+**`frontend/tests/syllabus-extraction.behavior.test.ts`**
+- Removed an unused mock argument so the frontend lint command exits cleanly.
+
+**Tests**
+- Added `backend/tests/syllabusAnalysis.detectAmbiguities.test.js`.
+- Added `frontend/src/pages/SyllabusImportDialog.behavior.test.tsx`.
+- Updated prompt and auto-import behavior tests for the new clarify-first flow.
+- Added direct coverage for `/syllabus/detect-ambiguities` because Vite rewrites frontend `/api/syllabus/detect-ambiguities` requests to that backend path in local development.
+
+**Documentation and release metadata**
+- Bumped frontend, backend, and workspace package versions to `2.8.0`.
+- Updated release notes, in-app release notes, Help Center walkthrough content, README, and this development log.
+
+### Design decisions
+- Registered both `/api/syllabus/detect-ambiguities` and `/syllabus/detect-ambiguities` so direct backend tests and the Vite `/api` proxy path both resolve correctly.
+- Kept clarification answers as appended study preferences to avoid expanding the draft-generation API contract.
+
+## Version 2.7.3
+Update Date: 2026-05-05
+
+### Changes
+
+**`backend/syllabusAnalysis.js`**
+- Increased `max_tokens` from `8192` to `32768` in both `analyzeSyllabus` and `generateDrafts`. Root cause: the Claude API was hitting the token limit mid-way through generating the JSON tool input, returning `stop_reason: 'max_tokens'` with a truncated/empty `input: {}`. The SDK cannot parse the partial JSON, so `toolUse.input.tasks` was always `undefined`, producing `[]` silently.
+- Added explicit `stop_reason === 'max_tokens'` guard after the API call in both functions. If truncation still occurs (e.g., for an extreme input), the route now returns 502 with a clear error instead of silently returning `[]`.
+
+**`backend/tests/syllabus-analysis.behavior.test.js`**
+- Added test: `analyzeSyllabus - max_tokens truncation throws claudeError`.
+
+**`backend/tests/syllabus-generate.behavior.test.js`**
+- Added test: `generateDrafts - max_tokens truncation throws claudeError`.
+
+- Switched both functions from `client.messages.create()` to `client.messages.stream().finalMessage()`. Root cause: the Anthropic SDK v0.92 enforces a pre-request check — `(60min × max_tokens) / 128000 > 10min` — and throws "Streaming is required" before sending any request. With `max_tokens: 32768` the estimated time is ~15 min, triggering the guard. Using `.stream().finalMessage()` satisfies the SDK and returns an identical `Message` object with no parsing changes required.
+
+### Design decision
+`max_tokens: 32768` gives comfortable headroom for syllabi with ~100+ entries at ~200 tokens/task. The `.stream().finalMessage()` pattern is the SDK-recommended approach for large outputs; it streams internally and resolves to the same `Message` type so no response-parsing code changes were needed. The `stop_reason === 'max_tokens'` guard remains as a safety net for pathologically large inputs.
+
+## Version 2.7.2
+Update Date: 2026-05-05
+
+### Changes
+
+**`frontend/src/pages/SyllabusImportDialog.tsx`**
+- Replaced the automatic Claude path request from `POST /api/syllabus/analyze` to `POST /api/syllabus/generate-drafts`.
+- Sends `{ extractedText, studyPreferences }` so the automatic path uses the same stronger draft-generation backend flow as the newer syllabus import endpoint.
+
+**`backend/syllabusAnalysis.js`**
+- Broadened both AI prompts from "schedule events" to "academic planning items".
+- Prompt now explicitly asks for exams, assignments, projects, quizzes, readings, labs, tutorials, lectures, office hours, prep work, and dated or recurring course obligations.
+
+**`frontend/tests/syllabus-import.behavior.test.tsx`**
+- Added regression coverage that automatic analysis posts to `/api/syllabus/generate-drafts` with `extractedText` and `studyPreferences`.
+
+**`backend/tests/syllabus-analysis.behavior.test.js`**
+- Added regression coverage that the legacy analysis prompt asks for broad academic planning items.
+
+**`backend/tests/syllabus-generate.behavior.test.js`**
+- Added regression coverage that draft generation asks for broad academic planning items.
+
+**`frontend/src/i18n.ts`**
+- Updated Help Center syllabus import Q&A copy in English and Chinese to explain the broader extraction scope.
+
+**`frontend/src/app/releaseNotes.ts`**
+- Added the in-app v2.7.2 update note for better automatic syllabus extraction.
+
+**`README.md`**
+- Updated the syllabus feature overview to mention the broader extraction scope.
+
+**`RELEASENOTES.md`**
+- Added the v2.7.2 client-facing release note.
+
+**`package.json`, `backend/package.json`, `backend/package-lock.json`, `frontend/package.json`, `frontend/package-lock.json`**
+- Bumped version from `2.7.1` to `2.7.2`.
+
+### Design decisions
+- Kept `/syllabus/analyze` in place for backward compatibility, but stopped using it from the current wizard automatic path.
+- The stronger endpoint is preferred because it already accepts study preferences and was designed for draft generation rather than the earlier minimal analysis flow.
+
+## Version 2.7.1
+Update Date: 2026-05-05
+
+### Changes
+
+**`backend/syllabusAnalysis.js`**
+- Loads `backend/.env` from the module directory so syllabus analysis sees `ANTHROPIC_API_KEY` even when the module is called outside `server.js`.
+- Creates Anthropic clients with an explicit `apiKey` instead of relying on implicit environment discovery.
+- Removed `thinking: { type: 'adaptive' }` from forced tool-use syllabus requests because Anthropic rejects thinking when `tool_choice` forces a tool call.
+- `analyzeSyllabus()` now wraps Claude request failures with `claudeError` and preserves upstream status for route handling.
+
+**`backend/server.js`**
+- `/syllabus/analyze` now returns `502` for Claude provider failures instead of collapsing them into the generic `500` analysis failure response.
+
+**`backend/tests/syllabus-analysis.behavior.test.js`**
+- Updated provider failure coverage for `/syllabus/analyze` to expect `502`.
+- Added regression coverage that forced tool-use requests do not include `thinking`.
+
+**`backend/tests/syllabus-generate.behavior.test.js`**
+- Added regression coverage that `generateDrafts()` forced tool-use requests do not include `thinking`.
+
+**`frontend/src/app/releaseNotes.ts`**
+- Added the in-app v2.7.1 update note for the syllabus auto-analysis fix.
+
+**`frontend/src/i18n.ts`**
+- Updated Help Center Q&A copy in English and Chinese to point users to the manual prompt path when automatic syllabus analysis is unavailable.
+
+**`README.md`**
+- Added `ANTHROPIC_API_KEY` to the backend `.env` setup example.
+
+**`RELEASENOTES.md`**
+- Added the v2.7.1 client-facing release note.
+
+**`package.json`, `backend/package.json`, `backend/package-lock.json`, `frontend/package.json`, `frontend/package-lock.json`**
+- Bumped version from `2.7.0` to `2.7.1`.
+
+### Debugging observations
+- `backend/.env` contained `ANTHROPIC_API_KEY`, and a direct SDK call succeeded after loading dotenv.
+- The failing syllabus request returned Anthropic HTTP 400: thinking cannot be enabled when tool use is forced.
+- After removing `thinking`, a live minimal syllabus analysis returned one draft with a description.
+
+## Version 2.7.0
+Update Date: 2026-05-05
+
+### Changes
+
+**`frontend/src/app/syllabusPrompt.ts`**
+- Added an explicit prompt rule requiring every generated syllabus task to include a concise `description`.
+- Description guidance asks for one useful sentence drawn from syllabus context, including topics, deliverables, grading weight, preparation, location context, or confident AI-suggested study context.
+
+**`backend/syllabusAnalysis.js`**
+- Added `DESCRIPTION_REQUIREMENT` and injected it into both `analyzeSyllabus()` and `generateDrafts()` Claude prompts.
+- Keeps manual prompt and backend prompt behavior aligned without changing the `SyllabusTaskDraft` schema or task transformation.
+
+**`frontend/tests/syllabus-prompt.behavior.test.ts`**
+- Added regression coverage that the manual prompt requires a concise description for every extracted task.
+
+**`backend/tests/syllabus-analysis.behavior.test.js`**
+- Added regression coverage that `/syllabus/analyze` prompt construction requires concise descriptions.
+
+**`backend/tests/syllabus-generate.behavior.test.js`**
+- Added regression coverage that `generateDrafts()` prompt construction requires concise descriptions.
+
+**`frontend/src/i18n.ts`**
+- Updated Help Center manual syllabus walkthrough and Q&A copy in English and Chinese to explain that AI-generated tasks should include short descriptions and can be edited during review.
+
+**`frontend/src/app/releaseNotes.ts`**
+- Added the in-app v2.7.0 update note for clearer syllabus task details.
+
+**`README.md`**
+- Updated the feature overview to mention concise AI-generated task descriptions during syllabus import.
+
+**`RELEASENOTES.md`**
+- Added the v2.7.0 client-facing release note.
+
+**`package.json`, `backend/package.json`, `backend/package-lock.json`, `frontend/package.json`, `frontend/package-lock.json`**
+- Bumped version from `2.6.0` to `2.7.0`.
+
+### Design decisions
+- `description` remains schema-optional so older pasted JSON and existing saved drafts still validate.
+- The fix is prompt-level because the observed failure is AI output omission, not task transformation loss. Existing transformation already preserves `draft.description` when present.
+
+## Version 2.6.0
+Update Date: 2026-05-05
+
+### Changes
+
+**`.claude/skills/tasktide-agent-workflow/SKILL.md`**
+- Changed the quick-start workflow so implementation and test work must route to Codex.
+- Changed the Claude Code Codex plugin guidance so `/codex:rescue --background` is required for implementation, bug investigation, and tests when the plugin is available.
+- Changed the no-plugin fallback so running the generated Codex prompt remains the required next action.
+
+**`.claude/skills/tasktide-agent-workflow/REFERENCE.md`**
+- Updated the detailed TDD and Codex handoff rules so Claude must not treat Codex execution as optional for implementation or tests.
+- Updated the unavailable-plugin fallback to require manual Codex execution as the next action.
+
+**`backend/tests/agents-doc.behavior.test.js`**
+- Added regression coverage for mandatory Codex execution wording in the TaskTide agent workflow skill and reference.
+
+**`frontend/package.json`**
+- Added `mammoth` dependency for client-side Word document (.docx) text extraction.
+
+**`frontend/src/app/syllabusExtraction.ts`**
+- Added `extractDocx(file)` using `mammoth.extractRawText` with `arrayBuffer` input (browser-compatible path).
+- Routed `.docx` extension to `extractDocx` in the `extract` dispatch function.
+
+**`frontend/src/pages/SyllabusImportDialog.tsx`**
+- Added `uploadedFiles: File[]` state to track queued files separately from paste text.
+- Removed immediate navigation on file select — files now appear as removable `Chip` elements; extraction and navigation happen on Next click.
+- `handleFileChange` is now synchronous: validates extensions immediately, adds valid files to `uploadedFiles`, shows `fileTypeError` for unsupported types without calling `extract`.
+- `handleContinueUpload` is now async: extracts all queued files in parallel via `Promise.all`, combines results with paste text using `\n---\n` separator, then navigates to method step.
+- "Next" button disabled when both `uploadedFiles` is empty and `pasteText` is blank.
+- File input updated to `accept=".pdf,.csv,.docx"` and `multiple`.
+- `handleClose` resets `uploadedFiles` and `extracting` state.
+
+**`frontend/src/i18n.ts`**
+- Updated English and Chinese syllabus import copy so the upload button, walkthrough, and Q&A mention PDF, CSV, and DOCX files.
+
+**`frontend/tests/syllabus-extraction.behavior.test.ts`**
+- Added `vi.mock("mammoth", ...)` returning mocked `extractRawText`.
+- Replaced the "DOCX throws" test with a "DOCX extracts plain text" test.
+- Kept the "xlsx throws" test.
+
+**`frontend/tests/syllabus-import.behavior.test.tsx`**
+- Updated "triggers auto analysis when file uploaded" test to click Next after upload (file no longer auto-navigates).
+- Updated "shows file type error" test to remove the `extract` mock (error is now thrown from extension check, not from extract).
+- Added coverage for the upload button copy listing PDF, CSV, and DOCX support.
+- Added: "Next button enabled when a file is queued but paste text is empty".
+- Added: "uploaded files appear as removable chips; removing a chip disables Next again".
+
+### Design decisions
+- Files are not extracted on select to keep the UI responsive. Extraction runs on Next click, allowing the user to review their queue first.
+- Unsupported types are rejected at the extension-check level (in the dialog), not at the extraction level. This gives immediate feedback without an async round-trip.
+- `pasteText` state tracks only what the user typed; `extractedText` holds the combined result after Next is clicked. This keeps the two sources independent and makes draft serialization straightforward (File objects can't be serialized to localStorage; combined text can).
+
+## Version 2.5.2
+Update Date: 2026-05-05
+
+### Changes
+
+**`frontend/src/pages/ReminderPage.tsx`**
+- Split reminder completion away from the create/edit `upsert` helper.
+- Root cause: completing a reminder reused `upsert`, which derived the toast from dialog edit state. When no edit dialog was active, completion was classified as create and showed "Reminder created".
+- Fix: completion now updates the matching reminder directly and shows a dedicated completion toast.
+
+**`frontend/src/i18n.ts`**
+- Added `toast.reminderDone` in English and Chinese.
+
+**`frontend/tests/reminder-page.behavior.test.tsx`**
+- Added regression coverage asserting reminder completion shows "Reminder completed" and does not show "Reminder created".
+
+## Version 2.5.1
+Update Date: 2026-05-05
+
+### Changes
+
+**`frontend/src/components/TaskDialog.tsx`**
+- Added `props.open` to the `base` `useMemo` dependency array.
+- Root cause: the `base` memo computed a fresh UUID for create mode once and cached it. When the dialog closed and reopened with no other prop changes, `base` did not recompute, so the same UUID was reused. `saveTaskCollection` then filtered out the existing task with that UUID before appending the "new" task, silently replacing the previously created task.
+- Fix: adding `props.open` forces `base` to recompute on every open, guaranteeing a unique id per create session.
+
+**`frontend/tests/task-dialog.behavior.test.tsx`**
+- Added regression test: opens the dialog twice in create mode (simulate close → reopen) and asserts that each saved task gets a distinct id.
+
+## Version 2.5.0
+Update Date: 2026-05-05
+
+### Changes
+
+**`frontend/src/pages/SyllabusImportDialog.tsx`**
+- Refactored step model from `number + consentText` to a named `WizardStep` union type: `upload | method | preferences | prompt | paste | consent | review`.
+- Added `method` step: two option buttons let the user pick Manual (copy prompt) or Automatic (send to Claude).
+- Added `preferences` step (manual path): optional free-text field appended to the generated prompt.
+- Added `prompt` step (manual path): displays the full generated prompt in a scrollable `<pre>`, with a one-click copy button and a privacy disclosure ("Nothing is sent anywhere").
+- Added `paste` step (manual path): JSON textarea + `validatePastedJson` (exported pure function) that runs `SyllabusTaskDraftSchema.safeParse` per item and surfaces field-level errors without clearing input.
+- Fixed silent swallow of `extract()` errors on file upload — unsupported types (e.g. `.xlsx`) now display the error message from `syllabusExtraction.ts` in an `Alert`.
+- `goBack()` tracks `wizardMode` ("manual" | "auto") so Back from review returns to `paste` (manual) or `consent` (auto).
+- `SavedDraft` shape extended: `wizardStep: WizardStep`, `extractedText`, `studyPreferences` fields added; `step: number` removed.
+
+**`frontend/src/app/syllabusPrompt.ts`**
+- `buildSyllabusPrompt(text, preferences?)` — added optional `preferences` parameter injected as a "User preferences:" block before the syllabus text.
+
+**`frontend/src/i18n.ts`**
+- Added 16 new en+zh key pairs under `syllabus.*`: `next`, `fileTypeError`, `methodTitle`, `methodManual`, `methodManualDesc`, `methodAuto`, `methodAutoDesc`, `preferencesTitle`, `preferencesLabel`, `preferencesPlaceholder`, `preferencesHint`, `promptTitle`, `promptPrivacy`, `promptCopy`, `promptCopied`, `promptNext`, `pasteJsonTitle`, `pasteJsonLabel`, `pasteJsonNext`, `pasteJsonError`.
+- Updated `q20` answer (en + zh) to describe both manual and auto paths.
+- Added `walkthroughs.syllabusManual` (en + zh): step-by-step guide for the manual import flow.
+
+**`frontend/tests/syllabus-wizard.behavior.test.ts`**
+- Updated `SavedDraft` type to match new schema (`wizardStep`, `extractedText`, `studyPreferences`).
+- Added `validatePastedJson` test suite: covers invalid JSON syntax, non-array top-level, missing required fields, mixed valid/invalid items, fully valid arrays, and empty arrays.
+
+**`frontend/tests/syllabus-import.behavior.test.tsx`**
+- Rewrote `analyzeWithConsent` helper to go through the new method-select step.
+- Updated all existing auto-path tests to use "Next" → "Analyze with Claude" → "Send to Claude" flow.
+- Added test: Back from review (auto) returns to consent; Back from review (manual) returns to paste.
+- Added manual path describe block: walks preferences → prompt → paste; tests privacy disclosure, clipboard write, invalid JSON errors (field-level), schema validation errors, valid JSON advancing to review.
+- Added test: unsupported file type (`.xlsx`) shows the "export to CSV first" error alert.
+
+## Version 2.4.1
+Update Date: 2026-05-05
+
+### Changes
+
+**`AGENTS.md`**
+- Added root Codex agent instructions covering comment format, versioning, release notes, Help Center structure, README expectations, development log expectations, and test requirements.
+
+**`package.json`** / **`frontend/package.json`** / **`backend/package.json`**
+- Aligned package versions to `2.4.1`.
+
+**`frontend/package-lock.json`** / **`backend/package-lock.json`**
+- Aligned root package metadata versions to `2.4.1`.
+
+**`RELEASENOTES.md`**
+- Added the `2.4.1` client-facing update entry.
+
+**`frontend/src/app/releaseNotes.ts`**
+- Added the in-app `v2.4.1` release history entry.
+
+**`frontend/src/i18n.ts`**
+- Improved the Help Center website flow copy to point users back to Updates and Help when workflows change.
+- Added a Common Q&A entry explaining where users can see recent updates.
+
+**`frontend/src/pages/HelpPage.tsx`**
+- Added the syllabus import and recent updates FAQ entries to the rendered Help Center FAQ list.
+
+**`backend/tests/agents-doc.behavior.test.js`**
+- Added behavior coverage that verifies `AGENTS.md` exists and retains the required operating sections.
+
+### Design decisions
+- Used `AGENTS.md` as the canonical filename because Codex agents discover that file convention automatically.
+- Treated the missing agent instruction file as a patch-level process/documentation fix.
+- Kept the Help Center update user-facing by directing users to Updates and Help instead of exposing internal implementation details.
+
+### Known limitations
+- `AGENTS.md` documents repository expectations but cannot enforce every required update by itself; tests cover its presence and required sections.
+
+## Version 2.4.0
+Update Date: 2026-05-04
+
+### Changes
+
+**`backend/models/Task.js`**
+- Added `syllabusImportBatchId: { type: String }` field to task schema.
+- Added compound index `{ userId: 1, syllabusImportBatchId: 1 }` for efficient batch-scoped queries.
+
+**`backend/server.js`**
+- Added `DELETE /tasks/batch/:batchId` route (JWT required). Calls `Task.deleteMany({ userId, syllabusImportBatchId: batchId })` and returns `{ deleted: N }`. Placed before `DELETE /tasks/:id` so Express route precedence is correct.
+
+**`frontend/src/types.ts`**
+- Added `syllabusImportBatchId?: string` to the `Task` type.
+
+**`frontend/src/app/storage.ts`**
+- Exported `deleteSyllabusBatch(batchId: string)` — calls `DELETE /api/tasks/batch/:batchId`, throws on non-ok so callers handle errors explicitly (no offline retry queue for batch ops).
+
+**`frontend/src/pages/SyllabusImportDialog.tsx`**
+- `handleConfirm()` now generates `crypto.randomUUID()` and stamps each task with `syllabusImportBatchId` before calling `callBatchImport`. UUID is frontend-generated so no backend changes were needed to the import route.
+
+**`frontend/src/components/ConfirmDeleteDialog.tsx`**
+- Added optional props `syllabusTaskCount?: number` and `onDeleteSyllabus?: () => void`. When `onDeleteSyllabus` is provided, a "Delete all N syllabus tasks" warning button appears between Cancel and Delete. This does not affect the existing delete flow for non-syllabus tasks.
+
+**`frontend/src/pages/TodayPage.tsx`** / **`frontend/src/pages/WeekPage.tsx`**
+- Added `reloadTasks?: () => Promise<void>` prop to both pages (wired from App.tsx's `reloadTasksFromServer`).
+- Added `removeSyllabusBatch(batchId)` function: calls `deleteSyllabusBatch`, then `reloadTasks()` to replace local state from server — avoids queue-poisoning that would occur if `setTasks` were used after bulk server-side delete.
+- `ConfirmDeleteDialog` now receives `syllabusTaskCount` (count of tasks in same batch) and `onDeleteSyllabus` (calls `removeSyllabusBatch`) when the selected task has `syllabusImportBatchId`.
+
+**`frontend/src/App.tsx`**
+- Passes `showToast` and `reloadTasks={reloadTasksFromServer}` to `WeekPage` (previously missing both).
+- Passes `reloadTasks={reloadTasksFromServer}` to `TodayPage`.
+
+**`frontend/src/i18n.ts`**
+- Added `dialog.deleteSyllabusHint`, `dialog.deleteSyllabusAction` (en + zh).
+- Added `toast.syllabusDeleted`, `toast.syllabusDeleteFailed` (en + zh).
+
+### Design decisions
+- **Frontend UUID generation**: Avoids changing the batch import API shape and keeps the implementation minimal.
+- **`reloadTasks` after batch delete**: If we instead called `setTasks(tasks.filter(...))`, App.tsx would diff and fire `DELETE /tasks/:id` for each removed task. Those tasks are already gone (→ 404), which `deleteTask()` handles by enqueuing a retry — poisoning the offline sync queue. Reload from server sidesteps this entirely.
+- **Route ordering**: `DELETE /tasks/batch/:batchId` must be registered before `DELETE /tasks/:id` so Express does not match the literal string `batch` as the `:id` parameter.
+
+## Version 2.3.0
+Update Date: 2026-05-04
+
+### Changes
+
+**`backend/server.js`**
+- Added `POST /syllabus/generate-drafts` (JWT required). Receives `{ extractedText, studyPreferences }`, calls `syllabusAnalysis.generateDrafts()`, returns validated `SyllabusTaskDraft[]`. Returns 400 on missing body, 422 on schema validation failure, 502 on Claude API error. Distinct from `/syllabus/analyze` (no studyPreferences, generic 500).
+- Added `BATCH_IMPORT_MAX = 200` constant and guard to `POST /tasks/batch` — returns 400 with message if exceeded.
+
+**`backend/syllabusAnalysis.js`**
+- Added `generateDrafts(extractedText, studyPreferences, overrideClient)` — includes studyPreferences in prompt, generates prep tasks for high-priority items. Throws `{ claudeError: true }` on Anthropic API failure, `{ validationError: true }` when all returned tasks fail schema validation.
+- Exported `generateDrafts` alongside existing `analyzeSyllabus`.
+
+**`frontend/src/pages/SyllabusImportDialog.tsx`** (updated)
+- Full review screen (step 1): one `Card` per `ReviewItem` showing `sourceText`, `sourceType` chip, `confidence: "low"` chip, title, Edit (opens `TaskDialog`), and Delete/Restore toggle.
+- Consent gate: clicking Analyze sets `consentText` state — shows the full text to be sent before any API call fires. Confirmed → `runAnalyze(text)`. Cancelled → returns to step 0, no fetch.
+- LocalStorage persistence: `saveDraft()` called after successful analyze (step→1), `clearDraft()` called on confirm success and on close/cancel. `loadDraft()` on open checks 24h TTL — expired drafts silently removed. `pendingResume` state shows Alert with Resume/Start Fresh buttons.
+- `handleConfirm()` calls `clearDraft()` before the batch API request succeeds.
+- `handleClose()` clears all state including `consentText` and `pendingResume`.
+
+**`backend/tests/batch-import.behavior.test.js`** (updated)
+- Added stub for `Task.deleteMany` in tests that call the batch route (needed because `cleanupTasksForUser` runs before `updateOne`).
+- Added test: batch exceeding 200 tasks returns 400.
+
+**`backend/tests/syllabus-generate.behavior.test.js`** (new)
+- 5 behavior tests: unauthenticated 401, missing extractedText 400, successful response 200, Claude API failure 502, schema validation failure 422.
+
+**`frontend/tests/syllabus-import.behavior.test.tsx`** (updated)
+- Added `analyzeWithConsent()` helper — clicks Analyze, waits for consent gate, clicks "Send to Claude".
+- Added 2 new tests: consent gate shows text before API call; cancelling consent gate returns to step 1 without calling fetch.
+- Updated all existing flow tests to go through the consent gate.
+- Added `localStorage.clear()` in `beforeEach` to prevent resume prompt from appearing in unrelated tests.
+
+**`frontend/tests/syllabus-wizard.behavior.test.ts`** (new)
+- 6 unit tests for `loadDraft`/`saveDraft`/`clearDraft` logic: null when empty, returns within TTL, discards after 24h, clears on remove, persists step-1 state, handles invalid JSON.
+
+**`frontend/src/i18n.ts`** (updated)
+- Added syllabus keys: `reviewHeader`, `confidenceLow`, `editItem`, `deleteItem`, `restoreItem`, `confirmImport_one/other`, `importing`, `importSuccess_one/other`, `confirmError`, `resumePrompt`, `resume`, `startFresh`, `consentTitle`, `consentBody`, `consentConfirm`, `consentCancel` (en + zh).
+- Updated `q20` help center answer (en + zh) to describe consent gate, review screen, and 24h session save.
+
+## Version 2.2.0
+Update Date: 2026-05-04
+
+### Changes
+
+**`frontend/src/pages/SyllabusImportDialog.tsx`** (new)
+- Two-step wizard dialog: step 0 accepts paste text or file upload; step 1 shows the extracted draft count (placeholder for full review in #8).
+- `callAnalyze(text)` — `POST /api/syllabus/analyze`, throws on non-ok responses.
+- `handleAnalyze(input: string | File)` — calls `extract()` when input is a File, then `callAnalyze()`; sets `drafts` and advances to step 1 on success; sets `error` string on failure.
+- `handleFileChange` — triggered by hidden `<input type="file" accept=".pdf,.csv">`, delegates to `handleAnalyze`.
+- Step 0 actions: Cancel (closes + resets), Analyze (disabled while empty or loading, shows CircularProgress spinner).
+- Step 1 actions: Back (returns to step 0 with state intact), Close.
+- All strings via i18n `syllabus.*` keys.
+
+**`frontend/src/App.tsx`**
+- Added `MenuBookRoundedIcon` import.
+- Lazy-imported `SyllabusImportDialog`.
+- Added `syllabusImportOpen` state.
+- Desktop sidebar: "Import Syllabus" button added to the utility `Stack` above ReleaseNotesCenter.
+- Mobile AppBar: `MenuBookRoundedIcon` IconButton added before Install App.
+- `<Suspense><SyllabusImportDialog /></Suspense>` rendered at root level.
+
+**`frontend/src/i18n.ts`**
+- Added `syllabus` section (en + zh): `importButton`, `step1Title`, `step2Title`, `pasteLabel`, `uploadLabel`, `analyze`, `analyzing`, `analyzeError`, `draftsFound`, `noDraftsFound`, `back`.
+- Added `help.faq.q20` (en + zh): syllabus import explainer FAQ.
+
+**`frontend/tests/syllabus-import.behavior.test.tsx`** (new)
+- 7 tests: renders step 1 heading, analyze button disabled on empty text, paste→analyze→step 2 draft count, API failure shows error, Back returns to step 1, empty API array shows no-drafts message, file upload triggers analysis with mocked `extract`.
+
+### Design notes
+- `extract` is mocked at module level in the test file so file-upload tests don't depend on pdfjs-dist or papaparse.
+- Dialog state resets fully on close (`handleClose`) so re-opening always starts at step 0.
+- Lazy-loaded at root so it doesn't inflate the initial bundle.
+- No GIF walkthrough added to helpCenter.ts yet; deferred until the full review flow (#8) is shipped.
+
+## Version 2.1.0
+Update Date: 2026-05-04
+
+### Changes
+
+**`backend/syllabusAnalysis.js`** (new)
+- `analyzeSyllabus(text, overrideClient?) → Promise<SyllabusTaskDraft[]>` — calls `claude-opus-4-7` with `thinking: {type: "adaptive"}` and `tool_choice` forced to `submit_syllabus_tasks`, filters out any returned drafts missing required fields before returning.
+- `SUBMIT_TOOL` — exported tool definition with full JSON schema for the 12-field `SyllabusTaskDraft` item shape; used by both the route and tests.
+- `overrideClient` parameter allows test injection without a real API key.
+
+**`backend/server.js`**
+- Added `require('./syllabusAnalysis')` and `POST /syllabus/analyze` route: auth-protected via `authenticateToken`, validates non-empty `text` body, delegates to `syllabusAnalysis.analyzeSyllabus`, returns draft array.
+
+**`backend/tests/syllabus-analysis.behavior.test.js`** (new)
+- 7 tests: 401 for unauthenticated, 400 for missing/empty text, 200 with mocked drafts, 500 on API error, draft filtering (invalid items removed), empty array when no `tool_use` block returned.
+
+**`frontend/src/app/syllabusPrompt.ts`** (new)
+- `buildSyllabusPrompt(text: string): string` — builds the user-facing Claude prompt encoding all `SyllabusTaskDraftSchema` constraints: 12 sourceTypes with descriptions, confidence rules, YYYY-MM-DD date format, HH:MM 24-hour time format, weekday numbering (1=Mon…7=Sun), once vs recurring rules, verbatim `sourceText` requirement.
+
+**`frontend/tests/syllabus-prompt.behavior.test.ts`** (new)
+- 6 tests: verbatim text inclusion, all 12 sourceTypes present, YYYY-MM-DD mentioned, all 3 confidence levels present, weekday convention (1=Monday, 7=Sunday), non-empty output for empty input.
+
+**Dependencies added:** `@anthropic-ai/sdk` (backend)
+
+### Design notes
+- Backend uses tool_choice forcing to guarantee structured JSON output rather than prompt-based JSON extraction, which is more robust against preamble/fence leakage.
+- `overrideClient` injection pattern avoids module-level client construction at import time, so tests run without `ANTHROPIC_API_KEY` present.
+- Prompt generator lives in the frontend to keep schema knowledge co-located with `syllabusSchema.ts`; the backend route uses its own inline prompt for the actual Claude call.
+
+## Version 2.0.0
+Update Date: 2026-05-04
+
+### Changes
+
+**`frontend/src/app/syllabusSchema.ts`** (new)
+- `SyllabusTaskDraftSchema` — Zod v4 schema for the `SyllabusTaskDraft` type. Single source of truth for AI output validation, TypeScript inference, and tests.
+- `transformDraft(draft) → Task` — pure function mapping a validated draft to a `Task`. Covers all 12 `sourceType → emergency` defaults, `excludedDates → occurrenceOverrides` with `deleted: true`, `type: "recurring" → RECURRING + TaskRecurrence` (WEEKLY when `weekdays` present, DAILY otherwise), `type: "once" → ONCE`.
+- Exported types: `SyllabusTaskDraft`, `SyllabusImportDraftResult`.
+
+**`frontend/src/app/syllabusExtraction.ts`** (new)
+- `extract(input: string | File): Promise<string>` — client-side extractor. Plain text passthrough; PDF via `pdfjs-dist`; CSV via `papaparse` (rows joined with ` | `). Throws a descriptive error for unsupported types with an Excel → CSV hint.
+- Worker URL assignment is wrapped in try/catch so it degrades gracefully in test environments.
+
+**`frontend/tests/syllabus-draft.behavior.test.ts`** (new)
+- 44 tests covering schema validation (valid drafts, invalid fields, all 12 source types) and all `transformDraft` output cases.
+
+**`frontend/tests/syllabus-extraction.behavior.test.ts`** (new)
+- 7 tests covering text passthrough, CSV extraction from a fixture file, PDF extraction with a mocked `pdfjs-dist`, and unsupported-type error messages.
+
+**`frontend/tests/fixtures/sample-syllabus.csv`** (new)
+- Fixture CSV used by extraction tests.
+
+**Dependencies added:** `zod@^4`, `pdfjs-dist@^5`, `papaparse@^5`, `@types/papaparse` (dev).
+
+### Design notes
+- Excel support excluded from MVP. Users with `.xlsx` schedules see an error with a "export to CSV first" hint.
+- `pdfjs-dist` worker URL uses `import.meta.url` for Vite compatibility; fails silently in jsdom so no test shim is needed.
+- `transformDraft` is intentionally pure — no side effects — so the review screen can call it once on mount and let `TaskDialog` own edits from that point.
+
 ## Version 1.25.2
 Version: 1.25.2
 Update Date: 2026-05-04

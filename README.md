@@ -1,14 +1,17 @@
 # TaskTide Application
 
-Current version: `v1.25.2`
+Current version: `v2.9.0`
 
-TaskTide is a full-stack planner for daily tasks, weekly routines, reminders, shared help questions, and calendar-based scheduling.
+TaskTide is a full-stack planner for daily tasks, weekly routines, reminders, shared help questions, calendar-based scheduling, and mobile-first weekly organization.
+
+Contributor guidance is maintained in `AGENTS.md` so automated and human-assisted changes follow the same versioning, documentation, Help Center, development log, and testing expectations.
 
 Deployed Web: TaskTide
 
 ## Features
 
-- Task and reminder CRUD actions — create, update, complete, delete — each confirm with a brief toast notification at the bottom of the screen. ICS import results also appear as toasts instead of inline banners.
+- A Syllabus Import wizard lets you paste a course syllabus or upload one or more files — PDF, CSV, and Word (.docx) are all supported. You can mix file types and paste text together; all sources are combined before analysis. The AI prompt asks for concise task descriptions and looks for exams, assignments, readings, prep work, recurring course obligations, and other academic planning items. Before sending to Claude, a consent gate shows you exactly what text will be shared. Automatic import checks for ambiguous syllabus details first, lets you answer optional clarification questions, then creates task drafts with the high-quality analysis path. Extracted task drafts appear on a review screen where you can edit, remove, or restore each item before confirming. The wizard saves your progress for 24 hours so a closed browser does not mean starting over. Batch imports are capped at 200 tasks. Access it from the sidebar on desktop or the top bar on mobile.
+- Task and reminder CRUD actions — create, update, complete, delete — each confirm with a brief toast notification at the bottom of the screen, including a correct completion message when reminders are marked done. ICS import results also appear as toasts instead of inline banners.
 - Secure registration and login with HttpOnly cookie sessions and persisted `USER` / `ADMIN` roles.
 - Registration now trims usernames, prevents duplicate-looking username casing, and requires stronger passwords before an account is created.
 - Cookie-backed write requests are checked against trusted TaskTide origins so signed-in planner changes stay protected from cross-site request attempts.
@@ -17,7 +20,7 @@ Deployed Web: TaskTide
 - Offline task sync now merges repeated edits for the same task and checks server update timestamps before replaying queued changes.
 - Project, web-app, install, notification, storage, and backup identifiers now use the TaskTide name.
 - Login and registration screens support an `EN` / `中文` switch before authentication.
-- Today, Week, and Month planning views for one-time and recurring tasks.
+- Today, Week, and Month planning views for one-time and recurring tasks, with a flatter visual system, larger touch targets, and safer mobile spacing.
 - Week, Month, Help Center, Reminders, and Updates are loaded only when needed so the first app screen downloads less JavaScript.
 - If a page has not loaded on the current device before and the browser is offline, the app shows a clear offline message instead of a blank screen.
 - Today reschedule shortcuts now follow the selected day in the header, so moving a one-time task to `Today` or `Tomorrow` works correctly even while you are browsing future dates.
@@ -48,8 +51,8 @@ Deployed Web: TaskTide
 - Help-question posting now keeps the draft visible if the request fails instead of showing a false success state.
 - Week view now respects one-day recurring-task time overrides when placing events on the calendar.
 - Week view now generates recurring events only for the visible range and reuses cached occurrence windows for repeated range renders.
-- Responsive application shell with a desktop sidebar, mobile bottom navigation, and full-screen mobile task and reminder forms.
-- The mobile bottom navigation hides automatically while add-task and edit-task dialogs are open, then returns after the task dialog closes.
+- Responsive application shell with a desktop sidebar, full-width mobile bottom navigation, and full-screen mobile task and reminder forms.
+- The mobile bottom navigation fits all tabs evenly across small screens, respects the device safe area, hides automatically while add-task and edit-task dialogs are open, then returns after the task dialog closes.
 - Idempotent save routes and client-side recovery that reload persisted planner data after a failed task or reminder sync.
 - Map links for task locations plus explicit Task Notifications for task alerts, task start reminders, and daily task check-ins.
 - Desktop browsers can receive Task Notifications through a service worker after the user opens Help, chooses `Enable Task Notifications`, confirms the explanation, and grants browser permission.
@@ -81,6 +84,7 @@ Backend `.env`:
 PORT=2676
 MONGODB_URI=your_mongodb_connection_string_here
 JWT_SECRET=your_secure_random_secret_string
+ANTHROPIC_API_KEY=your_anthropic_api_key_for_syllabus_analysis
 ADMIN_USERNAMES=comma_separated_admin_usernames
 CORS_ORIGIN=http://127.0.0.1:5173
 SESSION_COOKIE_SAME_SITE=optional_lax_strict_or_none

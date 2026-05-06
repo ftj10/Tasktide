@@ -113,16 +113,27 @@ export function MonthPage(props: { tasks: Task[] }) {
   }
 
   return (
-    <Box sx={{ width: "100%", maxWidth: 1200, mx: "auto", px: { xs: 1, sm: 2, md: 3 }, py: { xs: 0.75, sm: 2 } }}>
+    <Box
+      sx={{
+        width: "100%",
+        maxWidth: "lg",
+        minHeight: "100dvh",
+        mx: "auto",
+        px: { xs: 0, sm: 2, md: 3 },
+        pt: { xs: 0.75, sm: 2, md: 3 },
+        pb: { xs: "calc(64px + env(safe-area-inset-bottom))", md: 3 },
+        overflowX: "hidden",
+      }}
+    >
       <Paper
         elevation={0}
         sx={{
           mb: 2,
-          p: { xs: 1.25, sm: 2 },
-          borderRadius: 4,
+          p: { xs: 2, sm: 2 },
+          borderRadius: { xs: 0, sm: 2 },
           border: "1px solid",
           borderColor: "divider",
-          background: "linear-gradient(135deg, rgba(79, 70, 229, 0.06), rgba(14, 165, 233, 0.05))",
+          background: "#ffffff",
         }}
       >
         <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1}>
@@ -178,12 +189,12 @@ export function MonthPage(props: { tasks: Task[] }) {
       <Paper
         elevation={0}
         sx={{
-          p: { xs: 0.75, sm: 1.25 },
-          borderRadius: 4,
+          p: { xs: 1, sm: 1.25 },
+          borderRadius: { xs: 0, sm: 2 },
           border: "1px solid",
           borderColor: "divider",
-          bgcolor: "rgba(255,255,255,0.96)",
-          boxShadow: "0 14px 36px rgba(15, 23, 42, 0.06)",
+          bgcolor: "#ffffff",
+          boxShadow: "0 2px 8px rgba(15,23,42,0.08)",
         }}
       >
         <Box
@@ -272,11 +283,11 @@ export function MonthPage(props: { tasks: Task[] }) {
                   transition: "transform 0.18s, background-color 0.18s, box-shadow 0.18s",
                   borderColor: isToday ? alpha("#4f46e5", 0.4) : "rgba(15, 23, 42, 0.08)",
                   borderWidth: isToday ? 2 : 1,
-                  boxShadow: isToday ? "0 10px 24px rgba(79, 70, 229, 0.15)" : "none",
+                  boxShadow: isToday ? "0 2px 8px rgba(15,23,42,0.08)" : "none",
                   "&:hover": {
                     bgcolor: alpha("#4f46e5", 0.06),
                     transform: "translateY(-1px)",
-                    boxShadow: "0 10px 24px rgba(15, 23, 42, 0.08)",
+                    boxShadow: "0 2px 8px rgba(15,23,42,0.08)",
                   },
                 }}
                 onClick={() => navigate(`/?date=${dateStr}`)}

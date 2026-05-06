@@ -118,9 +118,9 @@ export function ReminderDialog({ open, mode, reminder, onClose, onSave }: Props)
                     </FormControl>
                 </Stack>
             </DialogContent>
-            <DialogActions>
-                <Button onClick={onClose} color="inherit">{t("common.cancel")}</Button>
-                <Button onClick={handleSave} variant="contained" disabled={!title.trim()}>{t("common.save")}</Button>
+            <DialogActions sx={{ flexDirection: { xs: "column", sm: "row" }, gap: 1, px: { xs: 2, sm: 3 }, pb: { xs: 2, sm: 2 } }}>
+                <Button fullWidth={isMobile} onClick={onClose} color="inherit">{t("common.cancel")}</Button>
+                <Button fullWidth={isMobile} onClick={handleSave} variant="contained" disabled={!title.trim()}>{t("common.save")}</Button>
             </DialogActions>
         </Dialog>
     );

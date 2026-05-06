@@ -273,22 +273,24 @@ export function HelpPage() {
     <Box
       sx={{
         width: "100%",
-        maxWidth: 1200,
+        maxWidth: "lg",
+        minHeight: "100dvh",
         mx: "auto",
-        px: { xs: 1.5, sm: 2, md: 3 },
-        py: { xs: 1, sm: 2 },
+        px: { xs: 0, sm: 2, md: 3 },
+        pt: { xs: 1, sm: 2, md: 3 },
+        pb: { xs: "calc(64px + env(safe-area-inset-bottom))", md: 3 },
+        overflowX: "hidden",
       }}
     >
       <Paper
         elevation={0}
         sx={{
           mb: 3,
-          p: { xs: 2.5, sm: 3.5 },
-          borderRadius: 4,
+          p: { xs: 2, sm: 3 },
+          borderRadius: { xs: 0, sm: 2 },
           border: "1px solid",
           borderColor: "divider",
-          background:
-            "linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(14, 165, 233, 0.08))",
+          background: "#ffffff",
           overflow: "hidden",
           position: "relative",
         }}
@@ -299,7 +301,6 @@ export function HelpPage() {
               width: 56,
               height: 56,
               background: "linear-gradient(135deg, #4f46e5, #0ea5e9)",
-              boxShadow: "0 12px 28px rgba(79, 70, 229, 0.3)",
             }}
           >
             <HelpOutlineIcon sx={{ fontSize: 30 }} />
@@ -308,14 +309,14 @@ export function HelpPage() {
             <Typography
               variant="h4"
               fontWeight={800}
-              sx={{ mb: 0.5, fontSize: { xs: "1.4rem", sm: "2rem" }, letterSpacing: "-0.02em" }}
+              sx={{ mb: 0.5, fontSize: { xs: "1.4rem", sm: "2rem" }, letterSpacing: 0 }}
             >
               {t("help.title")}
             </Typography>
             <Typography
               variant="body1"
               color="text.secondary"
-              sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}
+              sx={{ fontSize: { xs: "1rem", sm: "1rem" } }}
             >
               {t(isAdmin ? "help.subtitleAdmin" : "help.subtitleUser")}
             </Typography>
@@ -323,7 +324,7 @@ export function HelpPage() {
         </Stack>
       </Paper>
 
-      <Stack spacing={2.5}>
+      <Stack spacing={{ xs: 2, sm: 2.5 }}>
         <Card>
           <CardContent>
             {sectionHeader(<MenuBookRoundedIcon />, t("help.guides.title"), "#4f46e5")}
@@ -347,7 +348,7 @@ export function HelpPage() {
                   >
                     {index + 1}
                   </Box>
-                  <Typography variant="body1" sx={{ pt: 0.25 }}>
+                  <Typography variant="body1" sx={{ pt: 0.25, fontSize: { xs: "1rem", sm: "1rem" } }}>
                     {step}
                   </Typography>
                 </Stack>
@@ -374,6 +375,7 @@ export function HelpPage() {
                     px: 2,
                     py: 1.5,
                     textTransform: "none",
+                    gap: 1,
                   }}
                 >
                   <Typography fontWeight={700} textAlign="left">
@@ -570,19 +572,26 @@ export function HelpPage() {
           setSearchParams({});
         }}
       />
-      <Dialog open={notificationDialogOpen} onClose={() => setNotificationDialogOpen(false)} fullWidth maxWidth="sm">
+      <Dialog
+        open={notificationDialogOpen}
+        onClose={() => setNotificationDialogOpen(false)}
+        fullScreen={isMobile}
+        fullWidth
+        maxWidth="sm"
+      >
         <DialogTitle>{t("help.taskNotifications.dialogTitle")}</DialogTitle>
         <DialogContent>
           <Typography color="text.secondary">
             {t("help.taskNotifications.explanation")}
           </Typography>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setNotificationDialogOpen(false)}>
+        <DialogActions sx={{ flexDirection: { xs: "column", sm: "row" }, gap: 1, px: { xs: 2, sm: 3 }, pb: { xs: 2, sm: 2 } }}>
+          <Button fullWidth={isMobile} onClick={() => setNotificationDialogOpen(false)}>
             {t("common.cancel")}
           </Button>
           <Button
             variant="contained"
+            fullWidth={isMobile}
             onClick={() => void handleEnableTaskNotifications()}
             disabled={isNotificationActionRunning}
           >

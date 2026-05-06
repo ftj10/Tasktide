@@ -107,7 +107,7 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
   return (
     <Box
       sx={{
-        minHeight: "100vh",
+        minHeight: "100dvh",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -120,14 +120,12 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
         sx={{
           p: { xs: 3, sm: 5 },
           width: "100%",
-          maxWidth: 440,
-          borderRadius: 5,
+          maxWidth: 400,
+          borderRadius: 2,
           border: "1px solid",
           borderColor: "divider",
-          background:
-            "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.92))",
-          backdropFilter: "blur(14px)",
-          boxShadow: "0 30px 60px rgba(15, 23, 42, 0.12)",
+          background: "#ffffff",
+          boxShadow: "0 2px 8px rgba(15,23,42,0.08)",
         }}
       >
         <Stack spacing={3}>
@@ -137,7 +135,6 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
                 width: 48,
                 height: 48,
                 background: "linear-gradient(135deg, #4f46e5, #0ea5e9)",
-                boxShadow: "0 12px 24px rgba(79, 70, 229, 0.3)",
               }}
             >
               <TaskAltRoundedIcon />
@@ -175,6 +172,7 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
+                sx={{ "& .MuiInputBase-root": { minHeight: 48 } }}
               />
               <TextField
                 fullWidth
@@ -183,6 +181,7 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                sx={{ "& .MuiInputBase-root": { minHeight: 48 } }}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
@@ -200,12 +199,13 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
                 size="large"
                 sx={{
                   py: 1.3,
+                  minHeight: 48,
                   fontSize: "1rem",
                   background: "linear-gradient(135deg, #4f46e5, #0ea5e9)",
-                  boxShadow: "0 12px 24px rgba(79, 70, 229, 0.3)",
+                  boxShadow: "none",
                   "&:hover": {
                     background: "linear-gradient(135deg, #4338ca, #0284c7)",
-                    boxShadow: "0 14px 28px rgba(79, 70, 229, 0.36)",
+                    boxShadow: "0 2px 8px rgba(15,23,42,0.08)",
                   },
                 }}
                 disabled={isLoading}

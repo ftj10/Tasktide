@@ -186,7 +186,7 @@ export function StatsPage({ tasks }: { tasks: Task[] }) {
 
   const summaryCardSx = {
     p: { xs: 1.5, sm: 2 },
-    borderRadius: 3,
+    borderRadius: 2,
     border: "1px solid",
     borderColor: alpha("#0f172a", 0.08),
     background: "rgba(255,255,255,0.9)",
@@ -198,22 +198,24 @@ export function StatsPage({ tasks }: { tasks: Task[] }) {
     <Box
       sx={{
         width: "100%",
-        maxWidth: 1200,
+        maxWidth: "lg",
+        minHeight: "100dvh",
         mx: "auto",
-        px: { xs: 1.5, sm: 2, md: 3 },
-        py: { xs: 1, sm: 2 },
+        px: { xs: 0, sm: 2, md: 3 },
+        pt: { xs: 1, sm: 2, md: 3 },
+        pb: { xs: "calc(64px + env(safe-area-inset-bottom))", md: 3 },
+        overflowX: "hidden",
       }}
     >
-      {/* Page header */}
       <Paper
         elevation={0}
         sx={{
           mb: 2.5,
-          p: { xs: 1.75, sm: 2.5 },
-          borderRadius: 4,
+          p: { xs: 2, sm: 2.5 },
+          borderRadius: { xs: 0, sm: 2 },
           border: "1px solid",
           borderColor: "divider",
-          background: "linear-gradient(135deg, rgba(79, 70, 229, 0.06), rgba(14, 165, 233, 0.05))",
+          background: "#ffffff",
         }}
       >
         <Stack direction="row" spacing={1.5} alignItems="center">
@@ -242,17 +244,16 @@ export function StatsPage({ tasks }: { tasks: Task[] }) {
         </Stack>
       </Paper>
 
-      {/* Empty state */}
       {!hasEnoughData && (
         <Paper
           elevation={0}
           sx={{
             textAlign: "center",
             py: 8,
-            borderRadius: 4,
+            borderRadius: { xs: 0, sm: 2 },
             border: "1px dashed",
             borderColor: "divider",
-            bgcolor: "rgba(255,255,255,0.6)",
+            bgcolor: "#ffffff",
           }}
         >
           <Box sx={{ color: "text.disabled", mb: 1.5, display: "flex", justifyContent: "center" }}>
@@ -268,16 +269,15 @@ export function StatsPage({ tasks }: { tasks: Task[] }) {
       )}
 
       {hasEnoughData && (
-        <Stack spacing={2.5}>
-          {/* Section 1: Summary Cards */}
+        <Stack spacing={{ xs: 2, sm: 2.5 }}>
           <Paper
             elevation={0}
             sx={{
               p: { xs: 1.5, sm: 2 },
-              borderRadius: 4,
+              borderRadius: { xs: 0, sm: 2 },
               border: "1px solid",
               borderColor: alpha("#10b981", 0.18),
-              background: "linear-gradient(135deg, rgba(16,185,129,0.06), rgba(255,255,255,0.95))",
+              background: "#ffffff",
             }}
           >
             <Typography variant="subtitle1" fontWeight={800} sx={{ mb: 1.5 }}>
@@ -343,12 +343,11 @@ export function StatsPage({ tasks }: { tasks: Task[] }) {
             </Stack>
           </Paper>
 
-          {/* Section 2: 30-Day Trend Chart */}
           <Paper
             elevation={0}
             sx={{
               p: { xs: 1.5, sm: 2 },
-              borderRadius: 4,
+              borderRadius: { xs: 0, sm: 2 },
               border: "1px solid",
               borderColor: alpha("#0f172a", 0.08),
               background: "rgba(255,255,255,0.92)",
@@ -448,12 +447,11 @@ export function StatsPage({ tasks }: { tasks: Task[] }) {
             </Box>
           </Paper>
 
-          {/* Section 3: Compare With Previous 30 Days */}
           <Paper
             elevation={0}
             sx={{
               p: { xs: 1.5, sm: 2 },
-              borderRadius: 4,
+              borderRadius: { xs: 0, sm: 2 },
               border: "1px solid",
               borderColor: alpha("#0f172a", 0.08),
               background: "rgba(255,255,255,0.92)",
@@ -522,16 +520,15 @@ export function StatsPage({ tasks }: { tasks: Task[] }) {
             </Stack>
           </Paper>
 
-          {/* Section 4: Behaviour Insights */}
           {insights.length > 0 && (
             <Paper
               elevation={0}
               sx={{
                 p: { xs: 1.5, sm: 2 },
-                borderRadius: 4,
+                borderRadius: { xs: 0, sm: 2 },
                 border: "1px solid",
                 borderColor: alpha("#f59e0b", 0.2),
-                background: "linear-gradient(135deg, rgba(245,158,11,0.05), rgba(255,255,255,0.95))",
+                background: "#ffffff",
               }}
             >
               <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.25 }}>
@@ -562,12 +559,11 @@ export function StatsPage({ tasks }: { tasks: Task[] }) {
             </Paper>
           )}
 
-          {/* Section 5: Details */}
           <Paper
             elevation={0}
             sx={{
               p: { xs: 1.5, sm: 2 },
-              borderRadius: 4,
+              borderRadius: { xs: 0, sm: 2 },
               border: "1px solid",
               borderColor: alpha("#0f172a", 0.08),
               background: "rgba(255,255,255,0.92)",
@@ -640,7 +636,6 @@ export function StatsPage({ tasks }: { tasks: Task[] }) {
             </Stack>
           </Paper>
 
-          {/* Period date range footer */}
           <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap>
             <Chip
               size="small"

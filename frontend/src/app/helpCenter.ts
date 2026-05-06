@@ -110,6 +110,19 @@ export function getHelpCenterData(t: TFunction): HelpCenterItem[] {
       ],
     },
     {
+      id: "mobile-bottom-navigation",
+      audience: "mobile",
+      question: t("help.walkthroughs.mobileBottomNavigation.question"),
+      steps: [
+        {
+          mediaSrc: "/help-walkthroughs/how to use mobile bottom navigation.gif",
+          mediaAlt: t("help.walkthroughs.mobileBottomNavigation.title"),
+          title: t("help.walkthroughs.mobileBottomNavigation.title"),
+          text: t("help.walkthroughs.mobileBottomNavigation.text"),
+        },
+      ],
+    },
+    {
       id: "add-task-week-mobile",
       audience: "mobile",
       question: t("help.walkthroughs.addTaskWeekMobile.question"),

@@ -123,16 +123,17 @@ export function HelpWalkthroughModal(props: {
           </Box>
         </Stack>
       </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2.5 }}>
+      <DialogActions sx={{ flexDirection: { xs: "column", sm: "row" }, gap: 1, px: { xs: 2, sm: 3 }, pb: { xs: 2, sm: 2.5 } }}>
         {stepIndex > 0 ? (
-          <Button onClick={() => setStepIndex((value) => value - 1)}>
+          <Button fullWidth={isMobile} onClick={() => setStepIndex((value) => value - 1)}>
             {t("help.previous")}
           </Button>
         ) : (
-          <Button onClick={props.onClose}>{t("common.close")}</Button>
+          <Button fullWidth={isMobile} onClick={props.onClose}>{t("common.close")}</Button>
         )}
         <Button
           variant="contained"
+          fullWidth={isMobile}
           onClick={() => {
             if (isLastStep) {
               props.onClose();
