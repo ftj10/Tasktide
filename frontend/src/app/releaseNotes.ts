@@ -370,6 +370,29 @@ export const RELEASE_NOTES: ReleaseNote[] = [
     }
   },
   {
+    id: "2026-05-04-frontend-build-fix",
+    version: "v1.25.2",
+    releasedAt: "2026-05-04",
+    title: {
+      en: "Frontend Build Fix",
+      zh: "修复前端构建问题"
+    },
+    summary: {
+      en: "The frontend build is stable again after the offline fallback test update.",
+      zh: "离线提示测试更新后，前端构建已恢复稳定。"
+    },
+    changes: {
+      en: [
+        "Fixed: The frontend build can complete again, so new planner updates can be released normally.",
+        "Improved: Help Center now explains why an offline page message may appear instead of a blank screen."
+      ],
+      zh: [
+        "修复：前端构建现在可以正常完成，新的计划器更新可以顺利发布。",
+        "改进：帮助中心现在说明为什么离线时可能会看到页面提示，而不是空白页面。"
+      ]
+    }
+  },
+  {
     id: "2026-05-03-offline-blank-page-fix",
     version: "v1.25.1",
     releasedAt: "2026-05-03",

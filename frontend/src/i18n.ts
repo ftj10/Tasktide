@@ -285,8 +285,8 @@ const resources = {
           step5Mobile: "On mobile, use the bottom navigation to move between the main pages — including Stats for your 30-day productivity overview — and the top install button to learn how to add TaskTide to your device.",
           step6Desktop: "If you want TaskTide to open like an app, choose Install app and follow the walkthrough for your browser. If you want task alerts, task start reminders, and daily task check-ins, open Help and choose Enable Task Notifications.",
           step6Mobile: "If you want TaskTide on your home screen, choose Install app and follow the mobile steps for your browser. Then open Help and choose Enable Task Notifications if you want task alerts, task start reminders, and daily task check-ins.",
-          step7Desktop: "If your connection drops, keep editing tasks normally. TaskTide will merge repeated offline edits and sync them when the server is available again. Heavier areas such as Week, Month, Help, and Updates load when you open them, so the first screen can start sooner. Use Updates to see what changed recently, and use Help when you need the full workflow explained again.",
-          step7Mobile: "If your connection drops, keep editing tasks normally. TaskTide will merge repeated offline edits and sync them when the server is available again. Heavier areas such as Week, Month, Help, and Updates load when you open them, so the first screen can start sooner. Use Updates to see what changed recently, and use Help when you need the full workflow explained again."
+          step7Desktop: "If your connection drops, keep editing tasks normally. TaskTide will merge repeated offline edits and sync them when the server is available again. If a page has not loaded on this device yet, TaskTide shows a clear offline message instead of a blank screen. Heavier areas such as Week, Month, Help, and Updates load when you open them, so the first screen can start sooner. Use Updates to see what changed recently, and use Help when you need the full workflow explained again.",
+          step7Mobile: "If your connection drops, keep editing tasks normally. TaskTide will merge repeated offline edits and sync them when the server is available again. If a page has not loaded on this device yet, TaskTide shows a clear offline message instead of a blank screen. Heavier areas such as Week, Month, Help, and Updates load when you open them, so the first screen can start sooner. Use Updates to see what changed recently, and use Help when you need the full workflow explained again."
         },
         faq: {
           title: "Common Q&A",
@@ -373,6 +373,10 @@ const resources = {
           q21: {
             question: "Where can I see what changed recently?",
             answer: "Open Updates to read the latest TaskTide changes. The Help Center also stays aligned with new workflows, so you can return here when a new feature changes how you plan, manage, or complete tasks."
+          },
+          q22: {
+            question: "Why do I see an offline page message?",
+            answer: "Some pages load only when you open them. If you are offline and the page has not loaded on this device before, TaskTide shows a message instead of a blank screen. Go back online, open the page once, and it will be ready for future visits."
           }
         },
         ask: {
@@ -871,8 +875,8 @@ const resources = {
           step5Mobile: "手机端可以用底部导航切换主要页面（包括查看 30 天效率概览的 Stats 页），也可以用顶部安装按钮学习如何把 TaskTide 加到设备上。",
           step6Desktop: "如果希望 TaskTide 像应用一样打开，请选择“安装应用”，然后按浏览器演示操作。如果希望收到 task alerts、task start reminders 和 daily task check-ins，请打开 Help 并选择 Enable Task Notifications。",
           step6Mobile: "如果希望 TaskTide 出现在主屏幕，请选择“安装应用”，然后按手机浏览器步骤操作。之后如果希望收到 task alerts、task start reminders 和 daily task check-ins，请打开 Help 并选择 Enable Task Notifications。",
-          step7Desktop: "如果连接中断，可以继续正常编辑任务。TaskTide 会合并重复的离线修改，并在服务器恢复后同步。Week、Month、Help 和 Updates 等较重区域会在打开时加载，让首次进入更快。使用 Updates 查看最近变化，需要重新理解完整流程时可以回到 Help。",
-          step7Mobile: "如果连接中断，可以继续正常编辑任务。TaskTide 会合并重复的离线修改，并在服务器恢复后同步。Week、Month、Help 和 Updates 等较重区域会在打开时加载，让首次进入更快。使用 Updates 查看最近变化，需要重新理解完整流程时可以回到 Help。"
+          step7Desktop: "如果连接中断，可以继续正常编辑任务。TaskTide 会合并重复的离线修改，并在服务器恢复后同步。如果某个页面还没有在这台设备上加载过，TaskTide 会显示清晰的离线提示，而不是空白页面。Week、Month、Help 和 Updates 等较重区域会在打开时加载，让首次进入更快。使用 Updates 查看最近变化，需要重新理解完整流程时可以回到 Help。",
+          step7Mobile: "如果连接中断，可以继续正常编辑任务。TaskTide 会合并重复的离线修改，并在服务器恢复后同步。如果某个页面还没有在这台设备上加载过，TaskTide 会显示清晰的离线提示，而不是空白页面。Week、Month、Help 和 Updates 等较重区域会在打开时加载，让首次进入更快。使用 Updates 查看最近变化，需要重新理解完整流程时可以回到 Help。"
         },
         faq: {
           title: "常见问答",
@@ -959,6 +963,10 @@ const resources = {
           q21: {
             question: "在哪里查看最近更新？",
             answer: "打开 Updates 可以阅读 TaskTide 最近的变化。Help Center 也会随着新流程更新，所以当新功能改变规划、管理或完成任务的方式时，可以回到这里重新查看说明。"
+          },
+          q22: {
+            question: "为什么会看到离线页面提示？",
+            answer: "有些页面会在你第一次打开时才加载。如果你离线时打开一个还没在这台设备上加载过的页面，TaskTide 会显示提示，而不是空白页面。重新联网后先打开一次该页面，以后访问会更顺畅。"
           }
         },
         ask: {

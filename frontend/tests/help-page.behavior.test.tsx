@@ -112,7 +112,9 @@ describe("HelpPage behavior", () => {
 
     expect(await screen.findByText("How do I get Task Notifications on phone and computer?")).toBeInTheDocument();
     expect(screen.getByText("Can I use tasks offline in the installed web app?")).toBeInTheDocument();
+    expect(screen.getByText("Why do I see an offline page message?")).toBeInTheDocument();
     expect(screen.getByText(/add tasks, edit tasks, mark tasks done, and delete tasks while offline/i)).toBeInTheDocument();
+    expect(screen.getByText(/shows a message instead of a blank screen/i)).toBeInTheDocument();
     expect(screen.getByText(/1\. Open Help\./i)).toBeInTheDocument();
     expect(screen.getByText(/Settings > Notifications > TaskTide/i)).toBeInTheDocument();
     expect(screen.getByText(/Settings > Apps > TaskTide or your browser > Notifications/i)).toBeInTheDocument();

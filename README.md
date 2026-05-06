@@ -22,6 +22,7 @@ Deployed Web: TaskTide
 - Login and registration screens support an `EN` / `中文` switch before authentication.
 - Today, Week, and Month planning views for one-time and recurring tasks.
 - Week, Month, Help Center, Reminders, and Updates are loaded only when needed so the first app screen downloads less JavaScript.
+- If a page has not loaded on the current device before and the browser is offline, the app shows a clear offline message instead of a blank screen.
 - Today reschedule shortcuts now follow the selected day in the header, so moving a one-time task to `Today` or `Tomorrow` works correctly even while you are browsing future dates.
 - Today can now import `.ics` calendar files into planner tasks, including multi-day all-day events, timed events, and supported daily, weekly, monthly, and yearly repeats.
 - Today can now export tasks as a `.ics` calendar file compatible with Apple Calendar, Google Calendar, Outlook, and any standard calendar app. Export options include all tasks, incomplete tasks only, or tasks within a specified date range. The file is generated entirely in the browser with no backend request.
@@ -44,6 +45,7 @@ Deployed Web: TaskTide
 - Reminder tracking with priority ordering and completion flow.
 - Role-based help center with FAQ content, append-only user questions, admin-wide review access, and admin-only question deletion.
 - Help Center now includes `Quick Walkthroughs`: short question-driven modal guides with GIF-ready media slots for adding tasks, opening Week, finding saved tasks, drag-to-add, and Task Notifications setup.
+- Help Center includes a start-to-finish website guide, focused walkthroughs, and clickable Q&A entries, including offline page guidance.
 - Help Center now explains mobile notification setup, mobile web-app installation, and browser-specific installed-app behavior for iPhone, iPad, and Android.
 - The app shell includes an Install app entry point that opens the Help Center walkthrough for adding TaskTide as a web app.
 - Help-question posting now keeps the draft visible if the request fails instead of showing a false success state.

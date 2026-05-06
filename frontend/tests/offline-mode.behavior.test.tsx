@@ -2,6 +2,7 @@
 // OUTPUT: behavior coverage for stable offline mode
 // EFFECT: Verifies the planner survives network absence without logging out, crashing pages, or showing blank screens
 import { act, screen, waitFor } from "@testing-library/react";
+import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import i18n from "../src/i18n";
@@ -58,7 +59,7 @@ describe("offline mode behavior", () => {
   it("shows the offline fallback message when a page chunk fails to load", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
 
-    function BrokenPage() {
+    function BrokenPage(): ReactNode {
       throw new TypeError("Failed to fetch dynamically imported module");
       return null;
     }
