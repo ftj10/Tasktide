@@ -28,6 +28,17 @@ function stubAuth() {
     callback(null, { userId: '507f1f77bcf86cd799439011', username: 'tom', role: 'USER' });
 }
 
+function makeStreamClient(responseOrFn) {
+  return {
+    messages: {
+      stream: (params) => ({
+        finalMessage: async () =>
+          typeof responseOrFn === 'function' ? responseOrFn(params) : responseOrFn,
+      }),
+    },
+  };
+}
+
 test('behavior: syllabus/analyze - unauthenticated request returns 401', async () => {
   const result = await invokeApp(app, '/syllabus/analyze', {
     method: 'POST',
@@ -89,11 +100,13 @@ test('behavior: syllabus/analyze - happy path returns drafts as JSON with status
   assert.deepEqual(result.json, mockDrafts);
 });
 
-test('behavior: syllabus/analyze - API failure returns 500', async () => {
+test('behavior: syllabus/analyze - Claude API failure returns 502', async () => {
   stubAuth();
 
   syllabusAnalysis.analyzeSyllabus = async () => {
-    throw new Error('API error');
+    const err = new Error('Claude API call failed');
+    err.claudeError = true;
+    throw err;
   };
 
   const result = await invokeApp(app, '/syllabus/analyze', {
@@ -102,8 +115,8 @@ test('behavior: syllabus/analyze - API failure returns 500', async () => {
     headers: { Authorization: 'Bearer valid-token' },
   });
 
-  assert.equal(result.statusCode, 500);
-  assert.deepEqual(result.json, { error: 'Analysis failed' });
+  assert.equal(result.statusCode, 502);
+  assert.ok(result.json.error.toLowerCase().includes('claude'));
 });
 
 test('behavior: analyzeSyllabus - filters out drafts missing required fields', async () => {
@@ -144,26 +157,22 @@ test('behavior: analyzeSyllabus - filters out drafts missing required fields', a
     confidence: 'low',
   };
 
-  const mockClient = {
-    messages: {
-      create: async () => ({
-        content: [
-          {
-            type: 'tool_use',
-            input: {
-              tasks: [
-                validDraft,
-                missingTitle,
-                missingSourceType,
-                missingConfidence,
-                missingSourceText,
-              ],
-            },
-          },
-        ],
-      }),
-    },
-  };
+  const mockClient = makeStreamClient({
+    content: [
+      {
+        type: 'tool_use',
+        input: {
+          tasks: [
+            validDraft,
+            missingTitle,
+            missingSourceType,
+            missingConfidence,
+            missingSourceText,
+          ],
+        },
+      },
+    ],
+  });
 
   const result = await syllabusAnalysis.analyzeSyllabus('some text', mockClient);
 
@@ -172,15 +181,63 @@ test('behavior: analyzeSyllabus - filters out drafts missing required fields', a
 });
 
 test('behavior: analyzeSyllabus - returns empty array when no tool_use block in response', async () => {
-  const mockClient = {
-    messages: {
-      create: async () => ({
-        content: [{ type: 'text', text: 'I cannot parse this.' }],
-      }),
-    },
-  };
+  const mockClient = makeStreamClient({
+    content: [{ type: 'text', text: 'I cannot parse this.' }],
+  });
 
   const result = await syllabusAnalysis.analyzeSyllabus('unrecognizable text', mockClient);
 
   assert.deepEqual(result, []);
+});
+
+test('behavior: analyzeSyllabus - prompt requires concise descriptions', async () => {
+  let capturedPrompt;
+  const mockClient = makeStreamClient((params) => {
+    capturedPrompt = params.messages[0].content;
+    return { content: [{ type: 'tool_use', input: { tasks: [] } }] };
+  });
+
+  await syllabusAnalysis.analyzeSyllabus('Midterm Oct 15', mockClient);
+
+  assert.match(capturedPrompt, /Include a description for every event/i);
+  assert.match(capturedPrompt, /one concise sentence/i);
+});
+
+test('behavior: analyzeSyllabus - prompt asks for broad academic planning items', async () => {
+  let capturedPrompt;
+  const mockClient = makeStreamClient((params) => {
+    capturedPrompt = params.messages[0].content;
+    return { content: [{ type: 'tool_use', input: { tasks: [] } }] };
+  });
+
+  await syllabusAnalysis.analyzeSyllabus('Assignment 1 due Oct 15', mockClient);
+
+  assert.match(capturedPrompt, /academic planning items/i);
+  assert.match(capturedPrompt, /assignments/i);
+  assert.match(capturedPrompt, /readings/i);
+});
+
+test('behavior: analyzeSyllabus - max_tokens truncation throws claudeError', async () => {
+  const mockClient = makeStreamClient({
+    stop_reason: 'max_tokens',
+    content: [{ type: 'tool_use', input: {} }],
+  });
+
+  await assert.rejects(
+    () => syllabusAnalysis.analyzeSyllabus('some syllabus text', mockClient),
+    (err) => err.claudeError === true,
+  );
+});
+
+test('behavior: analyzeSyllabus - forced tool request does not enable thinking', async () => {
+  let capturedPayload;
+  const mockClient = makeStreamClient((params) => {
+    capturedPayload = params;
+    return { content: [{ type: 'tool_use', input: { tasks: [] } }] };
+  });
+
+  await syllabusAnalysis.analyzeSyllabus('Midterm Oct 15', mockClient);
+
+  assert.equal(capturedPayload.tool_choice.type, 'tool');
+  assert.equal(capturedPayload.thinking, undefined);
 });

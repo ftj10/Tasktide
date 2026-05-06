@@ -28,6 +28,17 @@ function stubAuth() {
     callback(null, { userId: '507f1f77bcf86cd799439011', username: 'tom', role: 'USER' });
 }
 
+function makeStreamClient(responseOrFn) {
+  return {
+    messages: {
+      stream: (params) => ({
+        finalMessage: async () =>
+          typeof responseOrFn === 'function' ? responseOrFn(params) : responseOrFn,
+      }),
+    },
+  };
+}
+
 const SAMPLE_DRAFT = {
   title: 'Midterm',
   sourceType: 'midterm',
@@ -145,4 +156,56 @@ test('behavior: syllabus/generate-drafts - omitting studyPreferences passes empt
 
   assert.equal(result.statusCode, 200);
   assert.equal(capturedPreferences, '');
+});
+
+test('behavior: generateDrafts - prompt requires concise descriptions', async () => {
+  let capturedPrompt;
+  const mockClient = makeStreamClient((params) => {
+    capturedPrompt = params.messages[0].content;
+    return { content: [{ type: 'tool_use', input: { tasks: [] } }] };
+  });
+
+  await syllabusAnalysis.generateDrafts('CSCI 101 syllabus', 'study before exams', mockClient);
+
+  assert.match(capturedPrompt, /Include a description for every event/i);
+  assert.match(capturedPrompt, /one concise sentence/i);
+});
+
+test('behavior: generateDrafts - prompt asks for broad academic planning items', async () => {
+  let capturedPrompt;
+  const mockClient = makeStreamClient((params) => {
+    capturedPrompt = params.messages[0].content;
+    return { content: [{ type: 'tool_use', input: { tasks: [] } }] };
+  });
+
+  await syllabusAnalysis.generateDrafts('Assignment 1 due Oct 15', '', mockClient);
+
+  assert.match(capturedPrompt, /academic planning items/i);
+  assert.match(capturedPrompt, /assignments/i);
+  assert.match(capturedPrompt, /readings/i);
+});
+
+test('behavior: generateDrafts - max_tokens truncation throws claudeError', async () => {
+  const mockClient = makeStreamClient({
+    stop_reason: 'max_tokens',
+    content: [{ type: 'tool_use', input: {} }],
+  });
+
+  await assert.rejects(
+    () => syllabusAnalysis.generateDrafts('CSCI 101 syllabus', '', mockClient),
+    (err) => err.claudeError === true,
+  );
+});
+
+test('behavior: generateDrafts - forced tool request does not enable thinking', async () => {
+  let capturedPayload;
+  const mockClient = makeStreamClient((params) => {
+    capturedPayload = params;
+    return { content: [{ type: 'tool_use', input: { tasks: [] } }] };
+  });
+
+  await syllabusAnalysis.generateDrafts('CSCI 101 syllabus', '', mockClient);
+
+  assert.equal(capturedPayload.tool_choice.type, 'tool');
+  assert.equal(capturedPayload.thinking, undefined);
 });

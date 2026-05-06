@@ -840,7 +840,8 @@ app.post('/syllabus/analyze', authenticateToken, async (req, res) => {
     if (!text) return res.status(400).json({ error: 'text is required' });
     const drafts = await syllabusAnalysis.analyzeSyllabus(text);
     res.json(drafts);
-  } catch {
+  } catch (err) {
+    if (err.claudeError) return res.status(502).json({ error: 'Claude API is unavailable. Please try the manual path.' });
     res.status(500).json({ error: 'Analysis failed' });
   }
 });

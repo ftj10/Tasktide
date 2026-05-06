@@ -41,6 +41,12 @@ describe("buildSyllabusPrompt", () => {
     expect(prompt).toContain("low");
   });
 
+  it("requires a concise description for every extracted task", () => {
+    const prompt = buildSyllabusPrompt("test");
+    expect(prompt).toMatch(/description is required for every object/i);
+    expect(prompt).toMatch(/one concise sentence/i);
+  });
+
   it("documents weekday convention: 1=Monday and 7=Sunday", () => {
     const prompt = buildSyllabusPrompt("test");
     expect(prompt).toMatch(/1[=\s]+Mon(day)?/i);

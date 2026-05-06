@@ -1,5 +1,42 @@
 # Release Notes
 
+## Version 2.7.3 – Update Released (2026-05-05)
+
+### What's New
+
+### Improvements
+
+### Fixes
+- Fixed: Automatic syllabus analysis now reliably extracts all your course events, even for large syllabi with many assignments, lectures, and recurring obligations.
+
+Title: Version 2.7.2 – Update Released (2026-05-05)
+
+What’s New
+
+Improvements
+- Improved: Automatic syllabus import now looks for a wider range of academic planning items, including assignments, readings, prep work, and recurring course obligations.
+
+Fixes
+- Fixed: Analyze with Claude now uses the stronger draft-generation flow, making empty imports less likely when the syllabus contains usable coursework details.
+
+Title: Version 2.7.1 – Update Released (2026-05-05)
+
+What’s New
+
+Improvements
+
+Fixes
+- Fixed: Automatic syllabus analysis now connects to Claude correctly when an API key is configured, so task generation no longer fails from an invalid AI request.
+
+Title: Version 2.7.0 – Update Released (2026-05-05)
+
+What’s New
+
+Improvements
+- Improved: Syllabus Import now asks AI tools to include a short useful description for every generated task, making imported tasks easier to understand after they are added to your planner.
+
+Fixes
+
 ## Version 2.6.0 – Update Released (2026-05-05)
 
 ### What's New

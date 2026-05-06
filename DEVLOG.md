@@ -1,5 +1,148 @@
 # Development Log
 
+## Version 2.7.3
+Update Date: 2026-05-05
+
+### Changes
+
+**`backend/syllabusAnalysis.js`**
+- Increased `max_tokens` from `8192` to `32768` in both `analyzeSyllabus` and `generateDrafts`. Root cause: the Claude API was hitting the token limit mid-way through generating the JSON tool input, returning `stop_reason: 'max_tokens'` with a truncated/empty `input: {}`. The SDK cannot parse the partial JSON, so `toolUse.input.tasks` was always `undefined`, producing `[]` silently.
+- Added explicit `stop_reason === 'max_tokens'` guard after the API call in both functions. If truncation still occurs (e.g., for an extreme input), the route now returns 502 with a clear error instead of silently returning `[]`.
+
+**`backend/tests/syllabus-analysis.behavior.test.js`**
+- Added test: `analyzeSyllabus - max_tokens truncation throws claudeError`.
+
+**`backend/tests/syllabus-generate.behavior.test.js`**
+- Added test: `generateDrafts - max_tokens truncation throws claudeError`.
+
+- Switched both functions from `client.messages.create()` to `client.messages.stream().finalMessage()`. Root cause: the Anthropic SDK v0.92 enforces a pre-request check — `(60min × max_tokens) / 128000 > 10min` — and throws "Streaming is required" before sending any request. With `max_tokens: 32768` the estimated time is ~15 min, triggering the guard. Using `.stream().finalMessage()` satisfies the SDK and returns an identical `Message` object with no parsing changes required.
+
+### Design decision
+`max_tokens: 32768` gives comfortable headroom for syllabi with ~100+ entries at ~200 tokens/task. The `.stream().finalMessage()` pattern is the SDK-recommended approach for large outputs; it streams internally and resolves to the same `Message` type so no response-parsing code changes were needed. The `stop_reason === 'max_tokens'` guard remains as a safety net for pathologically large inputs.
+
+## Version 2.7.2
+Update Date: 2026-05-05
+
+### Changes
+
+**`frontend/src/pages/SyllabusImportDialog.tsx`**
+- Replaced the automatic Claude path request from `POST /api/syllabus/analyze` to `POST /api/syllabus/generate-drafts`.
+- Sends `{ extractedText, studyPreferences }` so the automatic path uses the same stronger draft-generation backend flow as the newer syllabus import endpoint.
+
+**`backend/syllabusAnalysis.js`**
+- Broadened both AI prompts from "schedule events" to "academic planning items".
+- Prompt now explicitly asks for exams, assignments, projects, quizzes, readings, labs, tutorials, lectures, office hours, prep work, and dated or recurring course obligations.
+
+**`frontend/tests/syllabus-import.behavior.test.tsx`**
+- Added regression coverage that automatic analysis posts to `/api/syllabus/generate-drafts` with `extractedText` and `studyPreferences`.
+
+**`backend/tests/syllabus-analysis.behavior.test.js`**
+- Added regression coverage that the legacy analysis prompt asks for broad academic planning items.
+
+**`backend/tests/syllabus-generate.behavior.test.js`**
+- Added regression coverage that draft generation asks for broad academic planning items.
+
+**`frontend/src/i18n.ts`**
+- Updated Help Center syllabus import Q&A copy in English and Chinese to explain the broader extraction scope.
+
+**`frontend/src/app/releaseNotes.ts`**
+- Added the in-app v2.7.2 update note for better automatic syllabus extraction.
+
+**`README.md`**
+- Updated the syllabus feature overview to mention the broader extraction scope.
+
+**`RELEASENOTES.md`**
+- Added the v2.7.2 client-facing release note.
+
+**`package.json`, `backend/package.json`, `backend/package-lock.json`, `frontend/package.json`, `frontend/package-lock.json`**
+- Bumped version from `2.7.1` to `2.7.2`.
+
+### Design decisions
+- Kept `/syllabus/analyze` in place for backward compatibility, but stopped using it from the current wizard automatic path.
+- The stronger endpoint is preferred because it already accepts study preferences and was designed for draft generation rather than the earlier minimal analysis flow.
+
+## Version 2.7.1
+Update Date: 2026-05-05
+
+### Changes
+
+**`backend/syllabusAnalysis.js`**
+- Loads `backend/.env` from the module directory so syllabus analysis sees `ANTHROPIC_API_KEY` even when the module is called outside `server.js`.
+- Creates Anthropic clients with an explicit `apiKey` instead of relying on implicit environment discovery.
+- Removed `thinking: { type: 'adaptive' }` from forced tool-use syllabus requests because Anthropic rejects thinking when `tool_choice` forces a tool call.
+- `analyzeSyllabus()` now wraps Claude request failures with `claudeError` and preserves upstream status for route handling.
+
+**`backend/server.js`**
+- `/syllabus/analyze` now returns `502` for Claude provider failures instead of collapsing them into the generic `500` analysis failure response.
+
+**`backend/tests/syllabus-analysis.behavior.test.js`**
+- Updated provider failure coverage for `/syllabus/analyze` to expect `502`.
+- Added regression coverage that forced tool-use requests do not include `thinking`.
+
+**`backend/tests/syllabus-generate.behavior.test.js`**
+- Added regression coverage that `generateDrafts()` forced tool-use requests do not include `thinking`.
+
+**`frontend/src/app/releaseNotes.ts`**
+- Added the in-app v2.7.1 update note for the syllabus auto-analysis fix.
+
+**`frontend/src/i18n.ts`**
+- Updated Help Center Q&A copy in English and Chinese to point users to the manual prompt path when automatic syllabus analysis is unavailable.
+
+**`README.md`**
+- Added `ANTHROPIC_API_KEY` to the backend `.env` setup example.
+
+**`RELEASENOTES.md`**
+- Added the v2.7.1 client-facing release note.
+
+**`package.json`, `backend/package.json`, `backend/package-lock.json`, `frontend/package.json`, `frontend/package-lock.json`**
+- Bumped version from `2.7.0` to `2.7.1`.
+
+### Debugging observations
+- `backend/.env` contained `ANTHROPIC_API_KEY`, and a direct SDK call succeeded after loading dotenv.
+- The failing syllabus request returned Anthropic HTTP 400: thinking cannot be enabled when tool use is forced.
+- After removing `thinking`, a live minimal syllabus analysis returned one draft with a description.
+
+## Version 2.7.0
+Update Date: 2026-05-05
+
+### Changes
+
+**`frontend/src/app/syllabusPrompt.ts`**
+- Added an explicit prompt rule requiring every generated syllabus task to include a concise `description`.
+- Description guidance asks for one useful sentence drawn from syllabus context, including topics, deliverables, grading weight, preparation, location context, or confident AI-suggested study context.
+
+**`backend/syllabusAnalysis.js`**
+- Added `DESCRIPTION_REQUIREMENT` and injected it into both `analyzeSyllabus()` and `generateDrafts()` Claude prompts.
+- Keeps manual prompt and backend prompt behavior aligned without changing the `SyllabusTaskDraft` schema or task transformation.
+
+**`frontend/tests/syllabus-prompt.behavior.test.ts`**
+- Added regression coverage that the manual prompt requires a concise description for every extracted task.
+
+**`backend/tests/syllabus-analysis.behavior.test.js`**
+- Added regression coverage that `/syllabus/analyze` prompt construction requires concise descriptions.
+
+**`backend/tests/syllabus-generate.behavior.test.js`**
+- Added regression coverage that `generateDrafts()` prompt construction requires concise descriptions.
+
+**`frontend/src/i18n.ts`**
+- Updated Help Center manual syllabus walkthrough and Q&A copy in English and Chinese to explain that AI-generated tasks should include short descriptions and can be edited during review.
+
+**`frontend/src/app/releaseNotes.ts`**
+- Added the in-app v2.7.0 update note for clearer syllabus task details.
+
+**`README.md`**
+- Updated the feature overview to mention concise AI-generated task descriptions during syllabus import.
+
+**`RELEASENOTES.md`**
+- Added the v2.7.0 client-facing release note.
+
+**`package.json`, `backend/package.json`, `backend/package-lock.json`, `frontend/package.json`, `frontend/package-lock.json`**
+- Bumped version from `2.6.0` to `2.7.0`.
+
+### Design decisions
+- `description` remains schema-optional so older pasted JSON and existing saved drafts still validate.
+- The fix is prompt-level because the observed failure is AI output omission, not task transformation loss. Existing transformation already preserves `draft.description` when present.
+
 ## Version 2.6.0
 Update Date: 2026-05-05
 

@@ -117,7 +117,7 @@ describe("SyllabusImportDialog behavior", () => {
 
   it("moves to review and shows draft count after successful auto analysis", async () => {
     const user = userEvent.setup();
-    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
       ok: true,
       json: async () => [
         {
@@ -150,6 +150,16 @@ describe("SyllabusImportDialog behavior", () => {
     expect(
       screen.getByRole("heading", { name: /tasks found/i })
     ).toBeInTheDocument();
+    expect(fetchSpy).toHaveBeenCalledWith(
+      "/api/syllabus/generate-drafts",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({
+          extractedText: "CSCI 101 syllabus",
+          studyPreferences: "",
+        }),
+      })
+    );
   });
 
   it("shows error message when auto API call fails", async () => {
@@ -221,7 +231,7 @@ describe("SyllabusImportDialog behavior", () => {
 
   it("triggers auto analysis with extracted text when a file is uploaded", async () => {
     const user = userEvent.setup();
-    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
       ok: true,
       json: async () => [
         {
@@ -264,6 +274,15 @@ describe("SyllabusImportDialog behavior", () => {
 
     await waitFor(() =>
       expect(screen.getByText(/1 task/i)).toBeInTheDocument()
+    );
+    expect(fetchSpy).toHaveBeenCalledWith(
+      "/api/syllabus/generate-drafts",
+      expect.objectContaining({
+        body: JSON.stringify({
+          extractedText: "extracted pdf text",
+          studyPreferences: "",
+        }),
+      })
     );
   });
 

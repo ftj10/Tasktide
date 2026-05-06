@@ -1,6 +1,6 @@
 // INPUT: open/close state, import-success callback, toast notifier
 // OUTPUT: multi-step wizard — upload → method select → manual path (preferences → prompt → paste JSON) or auto path (consent → analyze) → review → batch import
-// EFFECT: manual path generates a local AI prompt with no data leaving the browser; auto path calls POST /api/syllabus/analyze; review calls POST /api/tasks/batch; wizard state persisted to localStorage with 24h TTL
+// EFFECT: manual path generates a local AI prompt with no data leaving the browser; auto path calls POST /api/syllabus/generate-drafts; review calls POST /api/tasks/batch; wizard state persisted to localStorage with 24h TTL
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -134,11 +134,14 @@ async function copyToClipboard(text: string): Promise<void> {
   }
 }
 
-async function callAnalyze(text: string): Promise<SyllabusTaskDraft[]> {
-  const res = await fetch("/api/syllabus/analyze", {
+async function callGenerateDrafts(
+  extractedText: string,
+  studyPreferences: string
+): Promise<SyllabusTaskDraft[]> {
+  const res = await fetch("/api/syllabus/generate-drafts", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text }),
+    body: JSON.stringify({ extractedText, studyPreferences }),
   });
   if (!res.ok) throw new Error("analyze failed");
   return res.json() as Promise<SyllabusTaskDraft[]>;
@@ -374,7 +377,7 @@ export function SyllabusImportDialog(props: {
     setLoading(true);
     setAnalyzeError(null);
     try {
-      const drafts = await callAnalyze(extractedText);
+      const drafts = await callGenerateDrafts(extractedText, studyPreferences);
       setReviewItems(
         drafts.map((draft) => ({
           draft,

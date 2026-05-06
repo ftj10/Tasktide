@@ -32,6 +32,7 @@ Each object must conform exactly to this shape:
 Rules:
 - confidence: "high" if date/time is explicitly stated; "medium" if inferred from context (e.g. "weekly on Tuesdays"); "low" if ambiguous or date is missing
 - sourceType choices: final=final exam, midterm=midterm exam, assignment=homework/assignment, quiz=quiz, project=project/group work, prep=preparation task, lecture=lecture session, lab=lab session, tutorial=tutorial/recitation, office_hour=office hours, reading=reading, other=anything else
+- description is required for every object. Write one concise sentence with useful details from the syllabus, such as topic, deliverable, grading weight, required preparation, location context, or AI-suggested study context when confident.
 - sourceText must be copied verbatim from the input
 - Omit fields that are not applicable; do not include null values
 - Dates always in YYYY-MM-DD format; times always in HH:MM 24-hour format

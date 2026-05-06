@@ -3,6 +3,8 @@
 // EFFECT: calls Claude API with structured tool use to parse schedule events
 const AnthropicModule = require('@anthropic-ai/sdk');
 const Anthropic = AnthropicModule.default ?? AnthropicModule;
+const path = require('node:path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const SUBMIT_TOOL = {
   name: 'submit_syllabus_tasks',
@@ -54,6 +56,21 @@ const SUBMIT_TOOL = {
 };
 
 const REQUIRED_FIELDS = ['title', 'sourceType', 'type', 'confidence', 'sourceText'];
+const DESCRIPTION_REQUIREMENT = 'Include a description for every event: one concise sentence with useful details from the syllabus, such as topic, deliverable, grading weight, required preparation, location context, or AI-suggested study context when confident.';
+
+function getAnthropicApiKey() {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    const error = new Error('ANTHROPIC_API_KEY is required for syllabus analysis');
+    error.configError = true;
+    throw error;
+  }
+  return apiKey;
+}
+
+function createAnthropicClient() {
+  return new Anthropic({ apiKey: getAnthropicApiKey() });
+}
 
 function isValidDraft(draft) {
   return REQUIRED_FIELDS.every(
@@ -61,22 +78,40 @@ function isValidDraft(draft) {
   );
 }
 
-async function analyzeSyllabus(text, overrideClient) {
-  const client = overrideClient ?? new Anthropic();
+// INPUT: client + params / OUTPUT: Message / EFFECT: streams the response to handle large outputs without hitting the non-streaming timeout guard
+async function streamMessage(client, params) {
+  return client.messages.stream(params).finalMessage();
+}
 
-  const response = await client.messages.create({
-    model: 'claude-opus-4-7',
-    max_tokens: 8192,
-    thinking: { type: 'adaptive' },
-    tool_choice: { type: 'tool', name: 'submit_syllabus_tasks' },
-    tools: [SUBMIT_TOOL],
-    messages: [
-      {
-        role: 'user',
-        content: `Extract all schedule events from the following course syllabus. For each event, determine whether it is a one-time occurrence or a recurring pattern.\n\n${text}`,
-      },
-    ],
-  });
+async function analyzeSyllabus(text, overrideClient) {
+  const client = overrideClient ?? createAnthropicClient();
+
+  let response;
+  try {
+    response = await streamMessage(client, {
+      model: 'claude-opus-4-7',
+      max_tokens: 32768,
+      tool_choice: { type: 'tool', name: 'submit_syllabus_tasks' },
+      tools: [SUBMIT_TOOL],
+      messages: [
+        {
+          role: 'user',
+          content: `Extract all academic planning items from the following course syllabus, including exams, assignments, projects, quizzes, readings, labs, tutorials, lectures, office hours, prep work, and any dated or recurring course obligations. For each item, determine whether it is a one-time occurrence or a recurring pattern. ${DESCRIPTION_REQUIREMENT}\n\n${text}`,
+        },
+      ],
+    });
+  } catch (err) {
+    const error = new Error('Claude API call failed');
+    error.claudeError = true;
+    error.status = err.status;
+    throw error;
+  }
+
+  if (response.stop_reason === 'max_tokens') {
+    const error = new Error('Claude API response was truncated');
+    error.claudeError = true;
+    throw error;
+  }
 
   const toolUse = response.content.find((block) => block.type === 'tool_use');
   if (!toolUse) return [];
@@ -87,7 +122,7 @@ async function analyzeSyllabus(text, overrideClient) {
 
 // INPUT: extractedText + optional studyPreferences string / OUTPUT: validated SyllabusTaskDraft[] / EFFECT: calls Claude API; throws {claudeError: true} on API failure, {validationError: true} on invalid schema
 async function generateDrafts(extractedText, studyPreferences, overrideClient) {
-  const client = overrideClient ?? new Anthropic();
+  const client = overrideClient ?? createAnthropicClient();
 
   const prefNote = studyPreferences
     ? `\n\nStudent study preferences to guide prep task generation: ${studyPreferences}`
@@ -95,21 +130,26 @@ async function generateDrafts(extractedText, studyPreferences, overrideClient) {
 
   let response;
   try {
-    response = await client.messages.create({
+    response = await streamMessage(client, {
       model: 'claude-opus-4-7',
-      max_tokens: 8192,
-      thinking: { type: 'adaptive' },
+      max_tokens: 32768,
       tool_choice: { type: 'tool', name: 'submit_syllabus_tasks' },
       tools: [SUBMIT_TOOL],
       messages: [
         {
           role: 'user',
-          content: `Extract all schedule events from the following course syllabus. For each event, determine whether it is a one-time occurrence or a recurring pattern. Generate prep tasks for high-priority items (exams, major assignments).${prefNote}\n\n${extractedText}`,
+          content: `Extract all academic planning items from the following course syllabus, including exams, assignments, projects, quizzes, readings, labs, tutorials, lectures, office hours, prep work, and any dated or recurring course obligations. For each item, determine whether it is a one-time occurrence or a recurring pattern. Generate prep tasks for high-priority items (exams, major assignments). ${DESCRIPTION_REQUIREMENT}${prefNote}\n\n${extractedText}`,
         },
       ],
     });
   } catch (err) {
     const error = new Error('Claude API call failed');
+    error.claudeError = true;
+    throw error;
+  }
+
+  if (response.stop_reason === 'max_tokens') {
+    const error = new Error('Claude API response was truncated');
     error.claudeError = true;
     throw error;
   }
@@ -129,4 +169,4 @@ async function generateDrafts(extractedText, studyPreferences, overrideClient) {
   return valid;
 }
 
-module.exports = { analyzeSyllabus, generateDrafts, SUBMIT_TOOL };
+module.exports = { analyzeSyllabus, generateDrafts, getAnthropicApiKey, SUBMIT_TOOL };
