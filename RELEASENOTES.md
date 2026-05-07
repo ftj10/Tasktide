@@ -1,5 +1,18 @@
 # Release Notes
 
+Title: Version 2.10.1 – Update Released (2026-05-07)
+
+What’s New
+
+- Added: Settings now shows whether your account is an Admin or User beside your username.
+- Added: Admins can now send an email broadcast to subscribed users directly from Settings.
+
+Improvements
+
+- Improved: Admin account tools are easier to find because they now live inside the account settings area.
+
+Fixes
+
 Title: Version 2.10.0 – Update Released (2026-05-06)
 
 What’s New

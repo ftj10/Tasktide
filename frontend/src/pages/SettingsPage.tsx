@@ -41,6 +41,7 @@ import {
   addSavedAccount,
   getSavedAccounts,
   getUsername,
+  isAdminUser,
   removeSavedAccount,
   setAuth,
 } from "../app/storage";
@@ -97,8 +98,12 @@ export function SettingsPage({
   const [email, setEmail] = useState("");
   const [emailNotifications, setEmailNotifications] = useState(false);
   const [emailError, setEmailError] = useState("");
+  const [broadcastSubject, setBroadcastSubject] = useState("");
+  const [broadcastHtml, setBroadcastHtml] = useState("");
+  const [broadcastStatus, setBroadcastStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const currentLanguage = i18n.resolvedLanguage?.startsWith("zh") ? "zh" : "en";
   const username = getUsername() || t("settings.account.unknownUser");
+  const isAdmin = isAdminUser();
 
   function handleLanguageToggle() {
     void i18n.changeLanguage(currentLanguage === "en" ? "zh" : "en");
@@ -325,6 +330,26 @@ export function SettingsPage({
     showToast(t("settings.email.saved"), "success");
   }
 
+  async function handleEmailBroadcast(event: FormEvent) {
+    event.preventDefault();
+    setBroadcastStatus("sending");
+    try {
+      const response = await fetch(`${API_URL}/admin/email-broadcast`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject: broadcastSubject, html: broadcastHtml }),
+      });
+      if (!response.ok) throw new Error();
+      await response.json() as { sent: number };
+      setBroadcastStatus("sent");
+      setBroadcastSubject("");
+      setBroadcastHtml("");
+    } catch {
+      setBroadcastStatus("error");
+    }
+  }
+
   return (
     <Box sx={{ px: { xs: 2, md: 0 }, pb: 3 }}>
       <Stack spacing={2.5}>
@@ -364,6 +389,12 @@ export function SettingsPage({
                 </Box>
                 <Stack spacing={0.5}>
                   <Chip label={t("settings.account.username", { username })} sx={{ alignSelf: "flex-start" }} />
+                  <Chip
+                    label={isAdmin ? t("settings.account.role.admin") : t("settings.account.role.user")}
+                    color={isAdmin ? "warning" : "default"}
+                    size="small"
+                    sx={{ alignSelf: "flex-start" }}
+                  />
                   {avatarUrl && (
                     <Button size="small" color="error" onClick={() => void handleRemoveAvatar()} disabled={avatarUploading}>
                       {t("settings.account.avatar.remove")}
@@ -415,6 +446,39 @@ export function SettingsPage({
                   </Box>
                 </AccordionDetails>
               </Accordion>
+              {isAdmin && (
+                <Accordion variant="outlined">
+                  <AccordionSummary expandIcon={<ExpandMoreRoundedIcon />}>
+                    <Typography fontWeight={700}>{t("settings.admin.emailBroadcast.title")}</Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <Stack component="form" spacing={2} onSubmit={(event) => void handleEmailBroadcast(event)}>
+                      <TextField
+                        label={t("settings.admin.emailBroadcast.subject")}
+                        value={broadcastSubject}
+                        onChange={(event) => setBroadcastSubject(event.target.value)}
+                        required
+                        fullWidth
+                      />
+                      <TextField
+                        label={t("settings.admin.emailBroadcast.body")}
+                        value={broadcastHtml}
+                        onChange={(event) => setBroadcastHtml(event.target.value)}
+                        required
+                        fullWidth
+                        multiline
+                        minRows={4}
+                        placeholder={t("settings.admin.emailBroadcast.bodyPlaceholder")}
+                      />
+                      {broadcastStatus === "sent" && <Alert severity="success">{t("settings.admin.emailBroadcast.sent")}</Alert>}
+                      {broadcastStatus === "error" && <Alert severity="error">{t("settings.admin.emailBroadcast.error")}</Alert>}
+                      <Button type="submit" variant="contained" color="warning" disabled={broadcastStatus === "sending"}>
+                        {broadcastStatus === "sending" ? t("settings.admin.emailBroadcast.sending") : t("settings.admin.emailBroadcast.send")}
+                      </Button>
+                    </Stack>
+                  </AccordionDetails>
+                </Accordion>
+              )}
             </Stack>
           </CardContent>
         </Card>

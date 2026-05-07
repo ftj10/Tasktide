@@ -140,6 +140,22 @@ const resources = {
             removed: "Profile photo removed",
             tooLarge: "Image is too large. Max ~200KB.",
             invalidFormat: "Please upload a JPG, PNG, or WebP image."
+          },
+          role: {
+            admin: "Admin",
+            user: "User"
+          }
+        },
+        admin: {
+          emailBroadcast: {
+            title: "Email Broadcast",
+            subject: "Subject",
+            body: "Message (HTML)",
+            bodyPlaceholder: "<p>Your message here</p>",
+            send: "Send to All Subscribers",
+            sending: "Sending…",
+            sent: "Broadcast sent successfully",
+            error: "Failed to send broadcast"
           }
         },
         language: {
@@ -898,6 +914,22 @@ const resources = {
             removed: "头像已移除",
             tooLarge: "图片过大，最大约 200KB。",
             invalidFormat: "请上传 JPG、PNG 或 WebP 图片。"
+          },
+          role: {
+            admin: "管理员",
+            user: "普通用户"
+          }
+        },
+        admin: {
+          emailBroadcast: {
+            title: "邮件群发",
+            subject: "主题",
+            body: "内容（HTML）",
+            bodyPlaceholder: "<p>在此输入内容</p>",
+            send: "发送给所有订阅用户",
+            sending: "发送中…",
+            sent: "群发成功",
+            error: "群发失败"
           }
         },
         language: {

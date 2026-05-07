@@ -1,5 +1,34 @@
 # Development Log
 
+## Version 2.10.1
+Update Date: 2026-05-07
+
+### Changes
+
+**`frontend/src/pages/SettingsPage.tsx`**
+- Added an account role chip beside the username chip using the existing stored session role helper.
+- Added an admin-only Email Broadcast accordion inside the Account card after Change Password.
+- Added broadcast subject, HTML body, and send-status state, then posts admin broadcasts to `/admin/email-broadcast` with included credentials.
+
+**`frontend/src/i18n.ts`**
+- Added English and Chinese account role labels.
+- Added English and Chinese Settings admin email broadcast labels, placeholders, and status messages.
+
+**`frontend/src/pages/SettingsPage.behavior.test.tsx`**
+- Added role badge coverage for admin and non-admin sessions.
+- Added admin broadcast submission coverage for endpoint, method, credentials, headers, and JSON body.
+- Added non-admin coverage confirming the broadcast accordion is hidden.
+
+**`package.json`, `frontend/package.json`, `frontend/package-lock.json`, `RELEASENOTES.md`, `frontend/src/app/releaseNotes.ts`, `DEVLOG.md`**
+- Bumped workspace and frontend package versions from `2.10.0` to `2.10.1`.
+- Added public and in-app release notes for Settings role visibility and admin broadcasts.
+
+### Design decisions
+- The broadcast tool is nested in the existing Account card because it is role-scoped account administration, while regular email preferences remain a separate user settings card.
+- The broadcast form clears after successful send and keeps a local success or error state so admins get immediate feedback without changing other Settings workflows.
+
+---
+
 ## Version 2.10.0
 Update Date: 2026-05-06
 

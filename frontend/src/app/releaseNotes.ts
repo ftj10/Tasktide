@@ -14,6 +14,31 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-05-07-settings-admin-account-tools",
+    version: "v2.10.1",
+    releasedAt: "2026-05-07",
+    title: {
+      en: "Settings Admin Tools",
+      zh: "设置中的管理员工具",
+    },
+    summary: {
+      en: "Settings now shows your account role and gives admins a direct email broadcast tool.",
+      zh: "「设置」现在会显示账号角色，并为管理员提供直接邮件群发工具。",
+    },
+    changes: {
+      en: [
+        "Added: Settings now shows whether your account is an Admin or User beside your username.",
+        "Added: Admins can now send an email broadcast to subscribed users directly from Settings.",
+        "Improved: Admin account tools are easier to find because they now live inside the account settings area.",
+      ],
+      zh: [
+        "新增：「设置」现在会在用户名旁显示账号是管理员还是普通用户。",
+        "新增：管理员现在可以直接在「设置」中向订阅用户发送邮件群发。",
+        "改进：管理员账号工具现在位于账号设置区域，更容易找到。",
+      ],
+    },
+  },
+  {
     id: "2026-05-06-settings-center",
     version: "v2.10.0",
     releasedAt: "2026-05-06",
