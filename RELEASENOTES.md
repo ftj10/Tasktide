@@ -1,5 +1,25 @@
 # Release Notes
 
+Title: Version 2.10.0 – Update Released (2026-05-06)
+
+What’s New
+
+- Added: Settings now gives you one place to manage account actions, language, app installation, task imports, and calendar exports.
+- Added: Task import and export tools are now available from Settings, making them easier to find on desktop and mobile.
+- Added: You can now change your password from Settings after confirming your current password.
+- Added: Settings can remember up to five account usernames so switching accounts is faster without saving passwords.
+- Added: You can add an email address in Settings and opt in to occasional task-related email notifications.
+- Added: Forgot password now supports emailed reset links when email is configured for the server.
+
+Improvements
+
+- Improved: The main toolbar and sidebar are cleaner, with daily navigation separated from account and setup tools.
+- Improved: Mobile users can now find install and language options in Settings instead of crowded top-bar icons.
+- Improved: Account switching now asks for the selected account password each time, keeping saved account shortcuts safer.
+- Improved: Help now explains where to find language, install, account, email, import, export, and password reset workflows.
+
+Fixes
+
 ## Version 2.9.2 – Update Released (2026-05-06)
 
 ### What's New

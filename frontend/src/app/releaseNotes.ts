@@ -14,6 +14,43 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-05-06-settings-center",
+    version: "v2.10.0",
+    releasedAt: "2026-05-06",
+    title: {
+      en: "Settings Center",
+      zh: "设置中心",
+    },
+    summary: {
+      en: "Account actions, language, install help, import tools, and export tools now live together in Settings.",
+      zh: "账号操作、语言、安装帮助、导入工具和导出工具现在集中在「设置」中。",
+    },
+    changes: {
+      en: [
+        "Added: Settings now gives you one place to manage account actions, language, app installation, task imports, and calendar exports.",
+        "Added: Task import and export tools are now available from Settings, making them easier to find on desktop and mobile.",
+        "Added: You can now change your password from Settings after confirming your current password.",
+        "Added: Settings can remember up to five account usernames so switching accounts is faster without saving passwords.",
+        "Added: You can add an email address in Settings and opt in to occasional task-related email notifications.",
+        "Added: Forgot password now supports emailed reset links when email is configured for the server.",
+        "Improved: The main toolbar and sidebar are cleaner, with daily navigation separated from account and setup tools.",
+        "Improved: Account switching now asks for the selected account password each time, keeping saved account shortcuts safer.",
+        "Improved: Help now explains where to find language, install, account, email, import, export, and password reset workflows.",
+      ],
+      zh: [
+        "新增：「设置」现在集中管理账号操作、语言、应用安装、任务导入和日历导出。",
+        "新增：任务导入和导出工具现在可在「设置」中使用，桌面和移动端都更容易找到。",
+        "新增：现在可以在「设置」中确认当前密码后修改密码。",
+        "新增：「设置」最多可记住五个账号用户名，切换账号更快且不会保存密码。",
+        "新增：现在可以在「设置」中添加邮箱，并选择接收任务相关邮件通知。",
+        "新增：当服务器已配置邮件时，忘记密码流程可通过邮件发送重置链接。",
+        "改进：主工具栏和侧边栏更清爽，日常导航与账号、设置工具分开。",
+        "改进：切换账号时每次都需要输入所选账号的密码，账号快捷入口更安全。",
+        "改进：Help 现在说明语言、安装、账号、邮件、导入、导出和密码重置流程的位置。",
+      ],
+    },
+  },
+  {
     id: "2026-05-06-install-prompt-walkthrough-steps",
     version: "v2.9.2",
     releasedAt: "2026-05-06",

@@ -11,16 +11,10 @@ import {
   Box,
   Button,
   Container,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  IconButton,
   Paper,
   Snackbar,
   Stack,
   Toolbar,
-  Tooltip,
   Typography,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
@@ -33,11 +27,8 @@ import ViewWeekOutlinedIcon from "@mui/icons-material/ViewWeekOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import BarChartRoundedIcon from "@mui/icons-material/BarChartRounded";
-import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
-import LanguageRoundedIcon from "@mui/icons-material/LanguageRounded";
 import TaskAltRoundedIcon from "@mui/icons-material/TaskAltRounded";
-import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
-import MenuBookRoundedIcon from "@mui/icons-material/MenuBookRounded";
+import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
 
 import type { Task, Reminder } from "./types";
 import {
@@ -90,11 +81,17 @@ const HelpPage = lazy(() =>
 const StatsPage = lazy(() =>
   import("./pages/StatsPage").then((module) => ({ default: module.StatsPage }))
 );
+const SettingsPage = lazy(() =>
+  import("./pages/SettingsPage").then((module) => ({ default: module.SettingsPage }))
+);
+const ResetPasswordPage = lazy(() =>
+  import("./pages/ResetPasswordPage").then((module) => ({ default: module.ResetPasswordPage }))
+);
+const AdminEmailPage = lazy(() =>
+  import("./pages/AdminEmailPage").then((module) => ({ default: module.AdminEmailPage }))
+);
 const ReleaseNotesCenter = lazy(() =>
   import("./components/ReleaseNotesCenter").then((module) => ({ default: module.ReleaseNotesCenter }))
-);
-const SyllabusImportDialog = lazy(() =>
-  import("./pages/SyllabusImportDialog").then((module) => ({ default: module.SyllabusImportDialog }))
 );
 
 function areRemindersEqual(source: Reminder, target: Reminder) {
@@ -145,9 +142,8 @@ export default function App() {
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [taskDialogOpen, setTaskDialogOpen] = useState(false);
-  const [syllabusImportOpen, setSyllabusImportOpen] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [installFallbackOpen, setInstallFallbackOpen] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const tasksRef = useRef<Task[]>([]);
   const remindersRef = useRef<Reminder[]>([]);
   const taskSyncQueue = useRef(Promise.resolve());
@@ -190,15 +186,6 @@ export default function App() {
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
     return () => window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
   }, []);
-
-  function handleInstallApp() {
-    if (installPrompt) {
-      void installPrompt.prompt();
-      setInstallPrompt(null);
-      return;
-    }
-    setInstallFallbackOpen(true);
-  }
 
   useEffect(() => {
     let cancelled = false;
@@ -257,7 +244,21 @@ export default function App() {
         setIsLoaded(true);
       }
     }
+
+    async function fetchUserProfile() {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || "/api";
+        const res = await fetch(`${apiUrl}/user/me`, { credentials: "include" });
+        if (!res.ok) return;
+        const data = await res.json() as { avatar?: string | null };
+        setAvatarUrl(data.avatar ?? null);
+      } catch {
+        // non-critical — avatar just stays unset
+      }
+    }
+
     fetchInitialData();
+    void fetchUserProfile();
   }, [isAuthenticated]);
 
   function queueTaskSync(prevTasks: Task[], nextTasks: Task[]) {
@@ -463,11 +464,13 @@ export default function App() {
     setTasks([]);
     setReminders([]);
     setIsLoaded(false);
+    setAvatarUrl(null);
   };
 
-  function handleLanguageToggle() {
-    void i18n.changeLanguage(currentLanguage === "en" ? "zh" : "en");
-  }
+  const handleLoginSuccess = () => {
+    setIsAuthenticated(true);
+    setIsLoaded(false);
+  };
 
   function handleTaskDialogVisibilityChange(open: boolean) {
     setTaskDialogOpen(open);
@@ -501,13 +504,18 @@ export default function App() {
     );
   }
 
+  if (location.pathname === "/reset-password") {
+    return (
+      <Suspense fallback={<PageLoadingFallback />}>
+        <ResetPasswordPage />
+      </Suspense>
+    );
+  }
+
   if (!isAuthenticated) {
     return (
       <Container maxWidth="sm">
-        <LoginPage onLoginSuccess={() => {
-          setIsAuthenticated(true);
-          setIsLoaded(false);
-        }} />
+        <LoginPage onLoginSuccess={handleLoginSuccess} />
       </Container>
     );
   }
@@ -547,6 +555,7 @@ export default function App() {
     { to: "/month", label: t("nav.month"), icon: <CalendarMonthOutlinedIcon />, id: "nav-month", dataOnboarding: undefined as string | undefined },
     { to: "/stats", label: t("nav.stats"), icon: <BarChartRoundedIcon />, id: "nav-stats", dataOnboarding: undefined as string | undefined },
     { to: "/help", label: t("nav.help"), icon: <HelpOutlineIcon />, id: "nav-help", dataOnboarding: "help-center-button" },
+    { to: "/settings", label: t("nav.settings"), icon: <SettingsRoundedIcon />, id: "nav-settings", dataOnboarding: undefined as string | undefined },
   ];
 
   const activePath = navigationItems.some((item) => item.to === location.pathname)
@@ -560,6 +569,7 @@ export default function App() {
       <AppBar position="sticky" sx={{ display: { xs: "flex", md: "none" } }}>
         <Toolbar sx={{ minHeight: 64, px: 2, gap: 1 }}>
           <Avatar
+            src={avatarUrl || undefined}
             sx={{
               width: 36,
               height: 36,
@@ -569,7 +579,7 @@ export default function App() {
               fontWeight: 700,
             }}
           >
-            {userInitial}
+            {avatarUrl ? null : userInitial}
           </Avatar>
           <Box sx={{ minWidth: 0, flexGrow: 1 }}>
             <Typography variant="h6" sx={{ fontSize: "1rem", fontWeight: 700, lineHeight: 1.2 }}>
@@ -593,26 +603,6 @@ export default function App() {
               <ReleaseNotesCenter username={username} suppressAutoOpen={shouldSuppressReleaseNotes} />
             </Suspense>
           ) : null}
-          <Tooltip title={t("nav.switchLanguage")} placement="bottom">
-            <IconButton id="language-switch-mobile" data-onboarding="language-switch-button" color="inherit" onClick={handleLanguageToggle} size="small">
-              <LanguageRoundedIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title={t("syllabus.importButton")} placement="bottom">
-            <IconButton id="import-syllabus-mobile" color="inherit" onClick={() => setSyllabusImportOpen(true)} size="small">
-              <MenuBookRoundedIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title={t("nav.installApp")} placement="bottom">
-            <IconButton id="install-web-app-mobile" data-onboarding="download-app-button" color="inherit" size="small" onClick={handleInstallApp}>
-              <DownloadRoundedIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title={t("nav.logout")} placement="bottom">
-            <IconButton color="inherit" onClick={handleLogout} size="small">
-              <LogoutRoundedIcon />
-            </IconButton>
-          </Tooltip>
         </Toolbar>
       </AppBar>
 
@@ -645,13 +635,14 @@ export default function App() {
             <Stack spacing={2.5}>
               <Stack direction="row" spacing={1.5} alignItems="center">
                 <Avatar
+                  src={avatarUrl || undefined}
                   sx={{
                     width: 44,
                     height: 44,
                     background: "linear-gradient(135deg, #4f46e5, #0ea5e9)",
                   }}
                 >
-                  <TaskAltRoundedIcon fontSize="small" />
+                  {avatarUrl ? null : <TaskAltRoundedIcon fontSize="small" />}
                 </Avatar>
                 <Box sx={{ minWidth: 0 }}>
                   <Typography variant="h6" fontWeight={800} sx={{ lineHeight: 1.1 }}>
@@ -720,51 +711,11 @@ export default function App() {
               <Box sx={{ height: 1, bgcolor: "divider" }} />
 
               <Stack spacing={1}>
-                <Button
-                  id="import-syllabus-desktop"
-                  variant="outlined"
-                  startIcon={<MenuBookRoundedIcon />}
-                  onClick={() => setSyllabusImportOpen(true)}
-                  sx={{ borderRadius: 2.5 }}
-                >
-                  {t("syllabus.importButton")}
-                </Button>
                 {username ? (
                   <Suspense fallback={null}>
                     <ReleaseNotesCenter username={username} suppressAutoOpen={shouldSuppressReleaseNotes} />
                   </Suspense>
                 ) : null}
-                <Button
-                  id="install-web-app-desktop"
-                  data-onboarding="download-app-button"
-                  variant="outlined"
-                  startIcon={<DownloadRoundedIcon />}
-                  onClick={handleInstallApp}
-                  sx={{ borderRadius: 2.5 }}
-                >
-                  {t("nav.installApp")}
-                </Button>
-                <Tooltip title={t("nav.switchLanguage")}>
-                  <Button
-                    id="language-switch-desktop"
-                    data-onboarding="language-switch-button"
-                    variant="outlined"
-                    startIcon={<LanguageRoundedIcon />}
-                    onClick={handleLanguageToggle}
-                    sx={{ borderRadius: 2.5 }}
-                  >
-                    {currentLanguage === "en" ? "中文" : "English"}
-                  </Button>
-                </Tooltip>
-                <Button
-                  variant="text"
-                  color="inherit"
-                  startIcon={<LogoutRoundedIcon />}
-                  onClick={handleLogout}
-                  sx={{ borderRadius: 2.5, color: "text.secondary" }}
-                >
-                  {t("nav.logout")}
-                </Button>
               </Stack>
             </Stack>
           </Paper>
@@ -811,6 +762,23 @@ export default function App() {
                     />
                     <Route path="/stats" element={<StatsPage tasks={tasks} />} />
                     <Route path="/help" element={<HelpPage />} />
+                    <Route path="/admin/email" element={<AdminEmailPage />} />
+                    <Route
+                      path="/settings"
+                      element={
+                        <SettingsPage
+                          tasks={tasks}
+                          onImportSuccess={() => void reloadTasksFromServer()}
+                          showToast={showToast}
+                          installPrompt={installPrompt}
+                          onInstallPromptConsumed={() => setInstallPrompt(null)}
+                          onLogout={handleLogout}
+                          onLoginSuccess={handleLoginSuccess}
+                          avatarUrl={avatarUrl}
+                          onAvatarChange={setAvatarUrl}
+                        />
+                      }
+                    />
                   </Routes>
                   </Suspense>
                 </ChunkErrorBoundary>
@@ -888,14 +856,6 @@ export default function App() {
         </BottomNavigation>
       </Paper>
       <OnboardingTooltip steps={onboardingSteps} storageKey={ONBOARDING_STORAGE_KEY} forceAdvanceSignal={onboardingForceSignal} />
-      <Suspense fallback={null}>
-        <SyllabusImportDialog
-          open={syllabusImportOpen}
-          onClose={() => setSyllabusImportOpen(false)}
-          onImportSuccess={() => void reloadTasksFromServer()}
-          showToast={showToast}
-        />
-      </Suspense>
       <Snackbar
         open={toast.open}
         autoHideDuration={3000}
@@ -911,21 +871,6 @@ export default function App() {
           {toast.message}
         </Alert>
       </Snackbar>
-      <Dialog open={installFallbackOpen} onClose={() => setInstallFallbackOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle>{t("nav.installFallback.title")}</DialogTitle>
-        <DialogContent>
-          <Typography color="text.secondary" sx={{ whiteSpace: "pre-line" }}>
-            {/iPad|iPhone|iPod/.test(navigator.userAgent)
-              ? t("nav.installFallback.ios")
-              : t("nav.installFallback.other")}
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button variant="contained" onClick={() => setInstallFallbackOpen(false)} sx={{ borderRadius: 2.5 }}>
-            {t("common.close")}
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 }

@@ -30,6 +30,11 @@ const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   role: { type: String, enum: ['USER', 'ADMIN'], default: 'USER', required: true },
+  email: { type: String, default: null },
+  emailNotifications: { type: Boolean, default: false },
+  passwordResetToken: { type: String, default: null },
+  passwordResetExpiry: { type: Date, default: null },
+  avatar: { type: String, default: null },
   pushSubscriptions: {
     type: [pushSubscriptionSchema],
     default: [],

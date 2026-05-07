@@ -76,16 +76,14 @@ describe("App behavior", () => {
     await waitFor(() => {
       expect(screen.getAllByRole("link", { name: "Today" }).length).toBeGreaterThan(0);
     });
-    await user.hover(screen.getAllByRole("button", { name: "Switch language" })[0]);
-    expect(await screen.findByText("Switch language")).toBeInTheDocument();
-
-    await user.click(screen.getAllByRole("button", { name: "Switch language" })[0]);
+    await user.click(screen.getAllByRole("link", { name: "Settings" })[0]);
+    expect(await screen.findByRole("heading", { name: "Settings" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "中文" }));
 
     await waitFor(() => {
       expect(screen.getAllByRole("link", { name: "今天" }).length).toBeGreaterThan(0);
     });
-    await user.hover(screen.getAllByRole("button", { name: "切换语言" })[0]);
-    expect(await screen.findByText("切换语言")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "设置" })).toBeInTheDocument();
   });
 
   it("shows onboarding once and stores completion after the user finishes it", async () => {

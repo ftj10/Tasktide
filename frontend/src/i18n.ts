@@ -44,6 +44,7 @@ const resources = {
         month: "Month",
         stats: "Stats",
         help: "Help",
+        settings: "Settings",
         mobileNavigation: "Mobile navigation",
         logout: "Logout",
         switchLanguage: "Switch language",
@@ -83,6 +84,85 @@ const resources = {
           failedToRegister: "Failed to register",
           failedToLogin: "Failed to log in",
           generic: "Something went wrong"
+        },
+        forgot: {
+          link: "Forgot password?",
+          email: "Email",
+          send: "Send reset link",
+          sent: "If that email is registered, a reset link has been sent.",
+          emailNotConfigured: "Email not configured on this server."
+        }
+      },
+      resetPassword: {
+        title: "Reset Password",
+        newPassword: "New password",
+        confirmPassword: "Confirm new password",
+        submit: "Submit",
+        success: "Password reset! You can now log in.",
+        loginLink: "Log in",
+        mismatch: "New passwords do not match.",
+        failed: "Password reset failed"
+      },
+      adminEmail: {
+        title: "Admin Email Broadcast",
+        accessDenied: "Access denied",
+        subject: "Subject",
+        html: "HTML body",
+        send: "Send",
+        sent: "Sent to {{count}} subscribers",
+        failed: "Email broadcast failed"
+      },
+      settings: {
+        title: "Settings",
+        account: {
+          title: "Account",
+          username: "Username: {{username}}",
+          unknownUser: "Current user",
+          switchAccount: "Switch Account",
+          changePassword: "Change Password",
+          currentPassword: "Current password",
+          newPassword: "New password",
+          confirmPassword: "Confirm new password",
+          updatePassword: "Update password",
+          passwordMismatch: "New passwords do not match.",
+          passwordUpdated: "Password updated",
+          passwordUpdateFailed: "Password update failed",
+          noSavedAccounts: "No saved accounts. Log into another account to save it here.",
+          addAccount: "Add Account",
+          passwordFor: "Password for {{username}}",
+          switchToSelected: "Switch to {{username}}",
+          switchFailed: "Account switch failed",
+          avatar: {
+            upload: "Upload Photo",
+            remove: "Remove Photo",
+            uploading: "Uploading…",
+            updated: "Profile photo updated",
+            removed: "Profile photo removed",
+            tooLarge: "Image is too large. Max ~200KB.",
+            invalidFormat: "Please upload a JPG, PNG, or WebP image."
+          }
+        },
+        language: {
+          title: "Language",
+          current: "Current language: {{language}}"
+        },
+        email: {
+          title: "Email Notifications",
+          description: "We will send occasional updates about your tasks.",
+          address: "Email address",
+          receive: "Receive email notifications",
+          saved: "Email preferences saved",
+          saveFailed: "Email preferences could not be saved"
+        },
+        install: {
+          title: "Install App",
+          action: "Install TaskTide"
+        },
+        import: {
+          title: "Import Tasks"
+        },
+        export: {
+          title: "Export Tasks"
         }
       },
       notifications: {
@@ -258,6 +338,36 @@ const resources = {
             title: "how to export tasks as ics calendar file.gif",
             text: "1. Open Today.\n2. Click Export ICS near the bottom of the page.\n3. Choose which tasks to include: all tasks, incomplete tasks only, or a specific date range.\n4. Click Download .ics.\n5. Open the downloaded file in Apple Calendar, Google Calendar, Outlook, or any app that supports ICS files."
           },
+          accountSettings: {
+            question: "Manage account settings",
+            title: "account settings.gif",
+            text: "What it does:\nSettings lets you log out, change your password, and switch between saved usernames without saving passwords.\n\nHow to use:\n1. Open Settings.\n2. Use Change Password when you know your current password.\n3. Use Switch Account to choose a saved username.\n4. Enter that account password to finish switching."
+          },
+          addYourEmail: {
+            question: "Add your email",
+            title: "add your email.gif",
+            text: "What it does:\nEmail Notifications let TaskTide send occasional task updates to your inbox.\n\nHow to use:\n1. Open Settings.\n2. Find Email Notifications.\n3. Enter your email address.\n4. Turn on Receive email notifications.\n5. Click Save."
+          },
+          switchAccounts: {
+            question: "Switch accounts",
+            title: "switch accounts.gif",
+            text: "What it does:\nSwitch Account lets you reuse saved usernames without saving passwords.\n\nHow to use:\n1. Open Settings.\n2. Click Switch Account.\n3. Choose a saved username.\n4. Enter that account password.\n5. Submit to switch."
+          },
+          changePassword: {
+            question: "Change password",
+            title: "change password.gif",
+            text: "What it does:\nChange Password updates your sign-in password after you confirm the current one.\n\nHow to use:\n1. Open Settings.\n2. Expand Change Password.\n3. Enter your current password.\n4. Enter and confirm the new password.\n5. Click Update password."
+          },
+          settingsImportExport: {
+            question: "Export or import tasks from Settings",
+            title: "settings import export.gif",
+            text: "What it does:\nSettings keeps task import and export tools in one place.\n\nHow to use:\n1. Open Settings.\n2. Use Import ICS for calendar files.\n3. Use Import Syllabus for course planning.\n4. Use Export ICS to download tasks for a calendar app."
+          },
+          forgotPasswordFlow: {
+            question: "Forgot password flow",
+            title: "forgot password flow.gif",
+            text: "What it does:\nForgot password sends a reset link when email is configured for your account.\n\nHow to use:\n1. Open the login screen.\n2. Click Forgot password?.\n3. Enter your email address.\n4. Open the reset link from your email.\n5. Create a new password."
+          },
           syllabusAutoClarify: {
             question: "Import a syllabus with AI clarifications",
             title: "how to import syllabus with clarifications.gif",
@@ -287,14 +397,14 @@ const resources = {
         guides: {
           title: "How To Use This Website",
           step0: "TaskTide is for planning a week of work from start to finish. Create a clean account, add what you need to do, arrange it by day or time, then mark work complete as your week moves forward.",
-          step1: "If you want to plan today, start on Today. Add tasks, import calendar events from an ICS file if you have one, and use the list as your daily work plan. Every action — create, edit, complete, delete — confirms with a brief message at the bottom of the screen.",
+          step1: "If you want to plan today, start on Today. Add tasks and use the list as your daily work plan. To import calendar events, open Settings and use Import ICS.",
           step2: "When you need to organize the whole week, open Week. Place tasks into time slots, compare busy days, and adjust your plan before the work happens.",
           step3: "Use Month when you want to scan a larger schedule, choose a future date, or jump back into Today for a specific day.",
           step4: "Use Reminders for notes that are not tied to one schedule slot but should stay easy to find until you complete them. When you mark a reminder done, TaskTide confirms that it was completed.",
-          step5Desktop: "On desktop, use the left sidebar to move between Reminders, Today, Week, Month, Stats, Help, and the install guide.",
+          step5Desktop: "On desktop, use the left sidebar to move between Reminders, Today, Week, Month, Stats, Help, and Settings.",
           step5Mobile: "On mobile, use the bottom navigation to move between Reminders, Today, Week, Month, Stats, and Help. The tabs stay visible at the bottom of the screen, fit across the phone width, and leave room for the device safe area.",
-          step6Desktop: "If you want TaskTide to open like an app, click Install app in the sidebar and confirm when the browser prompt appears. If you want task alerts, task start reminders, and daily task check-ins, open Help and choose Enable Task Notifications.",
-          step6Mobile: "If you want TaskTide on your home screen, tap Install app and follow the short instructions. Then open Help and choose Enable Task Notifications if you want task alerts, task start reminders, and daily task check-ins.",
+          step6Desktop: "Open Settings when you want to switch language, install TaskTide, import or export tasks, change your password, switch accounts, or add an email for optional notifications. If you want browser task alerts, open Help and choose Enable Task Notifications.",
+          step6Mobile: "Open Settings when you want to switch language, install TaskTide, import or export tasks, change your password, switch accounts, or add an email for optional notifications. Then open Help and choose Enable Task Notifications if you want browser task alerts.",
           step7Desktop: "If your connection drops, keep editing tasks normally. TaskTide will merge repeated offline edits and sync them when the server is available again. If a page has not loaded on this device yet, TaskTide shows a clear offline message instead of a blank screen. Heavier areas such as Week, Month, Help, and Updates load when you open them, so the first screen can start sooner. Use Updates to see what changed recently, and use Help when you need the full workflow explained again.",
           step7Mobile: "If your connection drops, keep editing tasks normally. TaskTide will merge repeated offline edits and sync them when the server is available again. If a page has not loaded on this device yet, TaskTide shows a clear offline message instead of a blank screen. Heavier areas such as Week, Month, Help, and Updates load when you open them, so the first screen can start sooner. Use Updates to see what changed recently, and use Help when you need the full workflow explained again."
         },
@@ -387,6 +497,26 @@ const resources = {
           q22: {
             question: "Why do I see an offline page message?",
             answer: "Some pages load only when you open them. If you are offline and the page has not loaded on this device before, TaskTide shows a message instead of a blank screen. Go back online, open the page once, and it will be ready for future visits."
+          },
+          q23: {
+            question: "Where is language switch?",
+            answer: "Open Settings, then use the Language section to switch between English and 中文."
+          },
+          q24: {
+            question: "Where is install button?",
+            answer: "Open Settings, then use Install App to install TaskTide or see manual install steps for your device."
+          },
+          q25: {
+            question: "How do I reset my password?",
+            answer: "On the login screen, click Forgot password?, enter your email, then open the reset link from your email and choose a new password."
+          },
+          q26: {
+            question: "What are email notifications?",
+            answer: "Email notifications are optional task-related updates. Add your email in Settings, turn on Receive email notifications, and save."
+          },
+          q27: {
+            question: "How do I add or change my profile photo?",
+            answer: "Go to Settings → Account. Tap the camera icon on your avatar circle to upload a photo. Tap Remove Photo to revert to your initials. Your photo appears next to your name throughout the app."
           }
         },
         ask: {
@@ -511,7 +641,35 @@ const resources = {
         backlogShrinking: "−{{count}} (shrinking)",
         backlogNeutral: "Neutral",
         currentPeriodRange: "Current: {{start}} – {{end}}",
-        previousPeriodRange: "Previous: {{start}} – {{end}}"
+        previousPeriodRange: "Previous: {{start}} – {{end}}",
+        streak: {
+          title: "Activity Streak",
+          current: "Current Streak",
+          longest: "Longest Streak",
+          days_one: "{{count}} day",
+          days_other: "{{count}} days",
+          none: "No streak yet — complete a task today to start one!"
+        },
+        categoryBreakdown: {
+          title: "Category Breakdown",
+          subtitle: "Last 30 days · by task type",
+          typeONCE: "One-time",
+          typeRECURRING: "Recurring",
+          typePERMANENT: "Habit",
+          typeTEMPORARY: "Temporary",
+          tasks: "{{count}} tasks",
+          noData: "Complete tasks to see category data."
+        },
+        priorityBreakdown: {
+          title: "Priority Breakdown",
+          subtitle: "Last 30 days · by priority level",
+          p1: "P1 · Urgent",
+          p2: "P2 · High",
+          p3: "P3 · Normal",
+          p4: "P4 · Low",
+          p5: "P5 · No priority",
+          noData: "Complete tasks to see priority data."
+        }
       },
       syllabus: {
         importButton: "Import Syllabus",
@@ -644,6 +802,7 @@ const resources = {
         month: "月视图",
         stats: "统计",
         help: "帮助",
+        settings: "设置",
         mobileNavigation: "移动端导航",
         logout: "退出登录",
         switchLanguage: "切换语言",
@@ -683,6 +842,85 @@ const resources = {
           failedToRegister: "注册失败",
           failedToLogin: "登录失败",
           generic: "发生了一些问题"
+        },
+        forgot: {
+          link: "忘记密码？",
+          email: "邮箱",
+          send: "发送重置链接",
+          sent: "如果该邮箱已注册，重置链接已发送。",
+          emailNotConfigured: "此服务器未配置邮件。"
+        }
+      },
+      resetPassword: {
+        title: "重置密码",
+        newPassword: "新密码",
+        confirmPassword: "确认新密码",
+        submit: "提交",
+        success: "密码已重置！现在可以登录。",
+        loginLink: "登录",
+        mismatch: "两次输入的新密码不一致。",
+        failed: "密码重置失败"
+      },
+      adminEmail: {
+        title: "管理员邮件广播",
+        accessDenied: "拒绝访问",
+        subject: "主题",
+        html: "HTML 正文",
+        send: "发送",
+        sent: "已发送给 {{count}} 位订阅用户",
+        failed: "邮件广播失败"
+      },
+      settings: {
+        title: "设置",
+        account: {
+          title: "账号",
+          username: "用户名：{{username}}",
+          unknownUser: "当前用户",
+          switchAccount: "切换账号",
+          changePassword: "修改密码",
+          currentPassword: "当前密码",
+          newPassword: "新密码",
+          confirmPassword: "确认新密码",
+          updatePassword: "更新密码",
+          passwordMismatch: "两次输入的新密码不一致。",
+          passwordUpdated: "密码已更新",
+          passwordUpdateFailed: "密码更新失败",
+          noSavedAccounts: "没有已保存账号。登录另一个账号后，它会显示在这里。",
+          addAccount: "添加账号",
+          passwordFor: "{{username}} 的密码",
+          switchToSelected: "切换到 {{username}}",
+          switchFailed: "切换账号失败",
+          avatar: {
+            upload: "上传头像",
+            remove: "移除头像",
+            uploading: "上传中…",
+            updated: "头像已更新",
+            removed: "头像已移除",
+            tooLarge: "图片过大，最大约 200KB。",
+            invalidFormat: "请上传 JPG、PNG 或 WebP 图片。"
+          }
+        },
+        language: {
+          title: "语言",
+          current: "当前语言：{{language}}"
+        },
+        email: {
+          title: "邮件通知",
+          description: "我们将不定期发送任务相关的通知到您的邮箱。",
+          address: "邮箱地址",
+          receive: "接收邮件通知",
+          saved: "邮件偏好已保存",
+          saveFailed: "无法保存邮件偏好"
+        },
+        install: {
+          title: "安装应用",
+          action: "安装 TaskTide"
+        },
+        import: {
+          title: "导入任务"
+        },
+        export: {
+          title: "导出任务"
         }
       },
       notifications: {
@@ -858,6 +1096,36 @@ const resources = {
             title: "how to export tasks as ics calendar file.gif",
             text: "1. 打开 Today。\n2. 点击页面底部的 Export ICS。\n3. 选择要包含的任务：全部任务、仅未完成任务，或指定日期范围。\n4. 点击 Download .ics。\n5. 用 Apple Calendar、Google Calendar、Outlook 或任何支持 ICS 格式的应用打开下载的文件。"
           },
+          accountSettings: {
+            question: "管理账号设置",
+            title: "account settings.gif",
+            text: "功能说明：\n「设置」可以让你退出登录、修改密码，并在不保存密码的情况下切换已保存的用户名。\n\n使用方法：\n1. 打开「设置」。\n2. 如果知道当前密码，可以使用「修改密码」。\n3. 使用「切换账号」选择已保存的用户名。\n4. 输入该账号密码即可完成切换。"
+          },
+          addYourEmail: {
+            question: "添加邮箱",
+            title: "add your email.gif",
+            text: "功能说明：\n邮件通知可让 TaskTide 不定期把任务相关更新发送到你的邮箱。\n\n使用方法：\n1. 打开「设置」。\n2. 找到「邮件通知」。\n3. 输入邮箱地址。\n4. 开启「接收邮件通知」。\n5. 点击「保存」。"
+          },
+          switchAccounts: {
+            question: "切换账号",
+            title: "switch accounts.gif",
+            text: "功能说明：\n「切换账号」可以复用已保存的用户名，但不会保存密码。\n\n使用方法：\n1. 打开「设置」。\n2. 点击「切换账号」。\n3. 选择已保存的用户名。\n4. 输入该账号密码。\n5. 提交后完成切换。"
+          },
+          changePassword: {
+            question: "修改密码",
+            title: "change password.gif",
+            text: "功能说明：\n「修改密码」会在确认当前密码后更新你的登录密码。\n\n使用方法：\n1. 打开「设置」。\n2. 展开「修改密码」。\n3. 输入当前密码。\n4. 输入并确认新密码。\n5. 点击「更新密码」。"
+          },
+          settingsImportExport: {
+            question: "从设置导入或导出任务",
+            title: "settings import export.gif",
+            text: "功能说明：\n「设置」把任务导入和导出工具集中在同一处。\n\n使用方法：\n1. 打开「设置」。\n2. 使用 Import ICS 导入日历文件。\n3. 使用 Import Syllabus 规划课程任务。\n4. 使用 Export ICS 下载任务并导入日历应用。"
+          },
+          forgotPasswordFlow: {
+            question: "忘记密码流程",
+            title: "forgot password flow.gif",
+            text: "功能说明：\n当账号已配置邮箱且服务器支持邮件时，忘记密码会发送重置链接。\n\n使用方法：\n1. 打开登录页面。\n2. 点击「忘记密码？」。\n3. 输入邮箱地址。\n4. 打开邮件中的重置链接。\n5. 设置新密码。"
+          },
           syllabusAutoClarify: {
             question: "通过 AI 澄清信息后导入课程大纲",
             title: "how to import syllabus with clarifications.gif",
@@ -887,14 +1155,14 @@ const resources = {
         guides: {
           title: "网站使用说明",
           step0: "TaskTide 用来从开始到完成规划一周的工作。先创建清晰账号，再添加要做的事，按日期或时间安排，然后随着一周推进把事项标记为完成。",
-          step1: "如果要规划今天，就从 Today 开始。添加任务，有 ICS 文件时可以导入日历事件，并把列表当作当天的执行计划。每次创建、编辑、完成或删除操作后，屏幕底部都会显示简短的确认提示。",
+          step1: "如果要规划今天，就从 Today 开始。添加任务，并把列表当作当天的执行计划。如需导入日历事件，请打开 Settings 并使用 Import ICS。",
           step2: "需要整理整周安排时，打开 Week。把任务放进时间段，比较哪些天更忙，并在开始前调整计划。",
           step3: "想查看更大范围、选择未来日期，或进入某一天的 Today 时，使用 Month。",
           step4: "Reminders 适合记录不绑定具体时间段、但需要一直容易找到直到完成的事项。标记提醒完成后，TaskTide 会确认它已完成。",
-          step5Desktop: "桌面端可以用左侧边栏切换 Reminders、Today、Week、Month、Stats、Help，并打开安装指引。",
+          step5Desktop: "桌面端可以用左侧边栏切换 Reminders、Today、Week、Month、Stats、Help 和 Settings。",
           step5Mobile: "手机端可以用底部导航切换 Reminders、Today、Week、Month、Stats 和 Help。标签会固定在屏幕底部，横向适配手机宽度，并为设备安全区域预留空间。",
-          step6Desktop: "如果希望 TaskTide 像应用一样打开，请点击侧边栏中的「安装应用」，然后在浏览器弹出提示时确认安装。如果希望收到 task alerts、task start reminders 和 daily task check-ins，请打开 Help 并选择 Enable Task Notifications。",
-          step6Mobile: "如果希望 TaskTide 出现在主屏幕，请点击「安装应用」并按照简短说明操作。之后如果希望收到 task alerts、task start reminders 和 daily task check-ins，请打开 Help 并选择 Enable Task Notifications。",
+          step6Desktop: "需要切换语言、安装 TaskTide、导入或导出任务、修改密码、切换账号，或添加邮件通知邮箱时，请打开 Settings。如果需要浏览器任务提醒，请打开 Help 并选择 Enable Task Notifications。",
+          step6Mobile: "需要切换语言、安装 TaskTide、导入或导出任务、修改密码、切换账号，或添加邮件通知邮箱时，请打开 Settings。如果需要浏览器任务提醒，请打开 Help 并选择 Enable Task Notifications。",
           step7Desktop: "如果连接中断，可以继续正常编辑任务。TaskTide 会合并重复的离线修改，并在服务器恢复后同步。如果某个页面还没有在这台设备上加载过，TaskTide 会显示清晰的离线提示，而不是空白页面。Week、Month、Help 和 Updates 等较重区域会在打开时加载，让首次进入更快。使用 Updates 查看最近变化，需要重新理解完整流程时可以回到 Help。",
           step7Mobile: "如果连接中断，可以继续正常编辑任务。TaskTide 会合并重复的离线修改，并在服务器恢复后同步。如果某个页面还没有在这台设备上加载过，TaskTide 会显示清晰的离线提示，而不是空白页面。Week、Month、Help 和 Updates 等较重区域会在打开时加载，让首次进入更快。使用 Updates 查看最近变化，需要重新理解完整流程时可以回到 Help。"
         },
@@ -987,6 +1255,26 @@ const resources = {
           q22: {
             question: "为什么会看到离线页面提示？",
             answer: "有些页面会在你第一次打开时才加载。如果你离线时打开一个还没在这台设备上加载过的页面，TaskTide 会显示提示，而不是空白页面。重新联网后先打开一次该页面，以后访问会更顺畅。"
+          },
+          q23: {
+            question: "语言切换在哪里？",
+            answer: "打开「设置」，在「语言」区域可在 English 和 中文 之间切换。"
+          },
+          q24: {
+            question: "安装按钮在哪里？",
+            answer: "打开「设置」，使用「安装应用」安装 TaskTide，或查看适合当前设备的手动安装步骤。"
+          },
+          q25: {
+            question: "如何重置密码？",
+            answer: "在登录页面点击「忘记密码？」，输入邮箱，然后打开邮件中的重置链接并设置新密码。"
+          },
+          q26: {
+            question: "邮件通知是什么？",
+            answer: "邮件通知是可选的任务相关更新。在「设置」中添加邮箱，开启「接收邮件通知」，然后保存。"
+          },
+          q27: {
+            question: "如何添加或更换头像？",
+            answer: "进入「设置」→「账号」，点击头像圆圈上的相机图标即可上传图片。点击「移除头像」可恢复显示首字母。头像将在整个应用中显示在您的名字旁边。"
           }
         },
         ask: {
@@ -1111,7 +1399,35 @@ const resources = {
         backlogShrinking: "−{{count}}（在减少）",
         backlogNeutral: "基本持平",
         currentPeriodRange: "当前：{{start}} – {{end}}",
-        previousPeriodRange: "前期：{{start}} – {{end}}"
+        previousPeriodRange: "前期：{{start}} – {{end}}",
+        streak: {
+          title: "连续打卡",
+          current: "当前连续天数",
+          longest: "最长连续天数",
+          days_one: "{{count}} 天",
+          days_other: "{{count}} 天",
+          none: "还没有连续记录，今天完成一个任务开始打卡吧！"
+        },
+        categoryBreakdown: {
+          title: "分类统计",
+          subtitle: "近 30 天 · 按任务类型",
+          typeONCE: "一次性",
+          typeRECURRING: "重复任务",
+          typePERMANENT: "习惯",
+          typeTEMPORARY: "临时",
+          tasks: "{{count}} 个任务",
+          noData: "完成任务后即可查看分类统计。"
+        },
+        priorityBreakdown: {
+          title: "优先级统计",
+          subtitle: "近 30 天 · 按优先级",
+          p1: "P1 · 紧急",
+          p2: "P2 · 高",
+          p3: "P3 · 一般",
+          p4: "P4 · 低",
+          p5: "P5 · 无优先级",
+          noData: "完成任务后即可查看优先级统计。"
+        }
       },
       syllabus: {
         importButton: "导入课程大纲",

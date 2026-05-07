@@ -18,11 +18,17 @@ import TrendingDownRoundedIcon from "@mui/icons-material/TrendingDownRounded";
 import TrendingFlatRoundedIcon from "@mui/icons-material/TrendingFlatRounded";
 import EmojiEventsRoundedIcon from "@mui/icons-material/EmojiEventsRounded";
 import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
+import LocalFireDepartmentRoundedIcon from "@mui/icons-material/LocalFireDepartmentRounded";
+import CategoryRoundedIcon from "@mui/icons-material/CategoryRounded";
+import PriorityHighRoundedIcon from "@mui/icons-material/PriorityHighRounded";
 
 import type { Task } from "../types";
 import {
+  computeStreakStats,
   periodStatsForWindow,
+  priorityBreakdown,
   productivityStatsSeries,
+  taskTypeBreakdown,
   weekdayProductivitySeries,
 } from "../app/taskLogic";
 import { ymd } from "../app/date";
@@ -59,6 +65,21 @@ export function StatsPage({ tasks }: { tasks: Task[] }) {
     [tasks, todayYmd]
   );
 
+  const streak = useMemo(
+    () => computeStreakStats(tasks, todayYmd),
+    [tasks, todayYmd]
+  );
+
+  const typeBreakdown = useMemo(
+    () => taskTypeBreakdown(tasks, todayYmd, CURRENT_WINDOW),
+    [tasks, todayYmd]
+  );
+
+  const priorityData = useMemo(
+    () => priorityBreakdown(tasks, todayYmd, CURRENT_WINDOW),
+    [tasks, todayYmd]
+  );
+
   const hasEnoughData = currentStats.totalCount >= TREND_MIN_TASKS;
   const maxTrendTotal = useMemo(
     () => Math.max(...trendSeries.map((d) => d.totalCount), 1),
@@ -84,6 +105,27 @@ export function StatsPage({ tasks }: { tasks: Task[] }) {
     : "0";
 
   const backlogDelta = currentStats.createdCount - currentStats.completedCount;
+
+  function getTypeLabel(type: string): string {
+    const map: Record<string, string> = {
+      ONCE: t("stats.categoryBreakdown.typeONCE"),
+      RECURRING: t("stats.categoryBreakdown.typeRECURRING"),
+      PERMANENT: t("stats.categoryBreakdown.typePERMANENT"),
+      TEMPORARY: t("stats.categoryBreakdown.typeTEMPORARY"),
+    };
+    return map[type] ?? type;
+  }
+
+  function getPriorityLabel(p: string): string {
+    const map: Record<string, string> = {
+      "1": t("stats.priorityBreakdown.p1"),
+      "2": t("stats.priorityBreakdown.p2"),
+      "3": t("stats.priorityBreakdown.p3"),
+      "4": t("stats.priorityBreakdown.p4"),
+      "5": t("stats.priorityBreakdown.p5"),
+    };
+    return map[p] ?? `P${p}`;
+  }
 
   function formatTrendDate(dateYmd: string) {
     return new Intl.DateTimeFormat(isZh ? "zh" : "en", {
@@ -636,6 +678,110 @@ export function StatsPage({ tasks }: { tasks: Task[] }) {
             </Stack>
           </Paper>
 
+          {/* Category breakdown */}
+          <Paper
+            elevation={0}
+            sx={{
+              p: { xs: 1.5, sm: 2 },
+              borderRadius: { xs: 0, sm: 2 },
+              border: "1px solid",
+              borderColor: alpha("#0f172a", 0.08),
+              background: "rgba(255,255,255,0.92)",
+            }}
+          >
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
+              <CategoryRoundedIcon sx={{ fontSize: 18, color: "#4f46e5" }} />
+              <Typography variant="subtitle1" fontWeight={800}>{t("stats.categoryBreakdown.title")}</Typography>
+            </Stack>
+            <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1.5 }}>
+              {t("stats.categoryBreakdown.subtitle")}
+            </Typography>
+            {typeBreakdown.length === 0 ? (
+              <Typography variant="body2" color="text.secondary">{t("stats.categoryBreakdown.noData")}</Typography>
+            ) : (
+              <Stack spacing={1.25}>
+                {typeBreakdown.map((item) => (
+                  <Box key={item.label}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="baseline" sx={{ mb: 0.4 }}>
+                      <Typography variant="body2" fontWeight={700}>{getTypeLabel(item.label)}</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {item.completedCount}/{item.totalCount} · {item.completionRate}%
+                      </Typography>
+                    </Stack>
+                    <Box sx={{ height: 8, borderRadius: 999, bgcolor: alpha("#4f46e5", 0.1), overflow: "hidden" }}>
+                      <Box
+                        sx={{
+                          height: "100%",
+                          width: `${item.completionRate}%`,
+                          bgcolor: "#4f46e5",
+                          borderRadius: 999,
+                          transition: "width 0.4s ease",
+                        }}
+                      />
+                    </Box>
+                  </Box>
+                ))}
+              </Stack>
+            )}
+          </Paper>
+
+          {/* Priority breakdown */}
+          <Paper
+            elevation={0}
+            sx={{
+              p: { xs: 1.5, sm: 2 },
+              borderRadius: { xs: 0, sm: 2 },
+              border: "1px solid",
+              borderColor: alpha("#0f172a", 0.08),
+              background: "rgba(255,255,255,0.92)",
+            }}
+          >
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
+              <PriorityHighRoundedIcon sx={{ fontSize: 18, color: "#ef4444" }} />
+              <Typography variant="subtitle1" fontWeight={800}>{t("stats.priorityBreakdown.title")}</Typography>
+            </Stack>
+            <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1.5 }}>
+              {t("stats.priorityBreakdown.subtitle")}
+            </Typography>
+            {priorityData.length === 0 ? (
+              <Typography variant="body2" color="text.secondary">{t("stats.priorityBreakdown.noData")}</Typography>
+            ) : (
+              <Stack spacing={1.25}>
+                {priorityData.map((item) => {
+                  const priorityColors: Record<string, string> = {
+                    "1": "#ef4444",
+                    "2": "#f97316",
+                    "3": "#eab308",
+                    "4": "#22c55e",
+                    "5": "#94a3b8",
+                  };
+                  const color = priorityColors[item.label] ?? "#94a3b8";
+                  return (
+                    <Box key={item.label}>
+                      <Stack direction="row" justifyContent="space-between" alignItems="baseline" sx={{ mb: 0.4 }}>
+                        <Typography variant="body2" fontWeight={700}>{getPriorityLabel(item.label)}</Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {item.completedCount}/{item.totalCount} · {item.completionRate}%
+                        </Typography>
+                      </Stack>
+                      <Box sx={{ height: 8, borderRadius: 999, bgcolor: alpha(color, 0.12), overflow: "hidden" }}>
+                        <Box
+                          sx={{
+                            height: "100%",
+                            width: `${item.completionRate}%`,
+                            bgcolor: color,
+                            borderRadius: 999,
+                            transition: "width 0.4s ease",
+                          }}
+                        />
+                      </Box>
+                    </Box>
+                  );
+                })}
+              </Stack>
+            )}
+          </Paper>
+
           <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap>
             <Chip
               size="small"
@@ -656,6 +802,67 @@ export function StatsPage({ tasks }: { tasks: Task[] }) {
           </Stack>
         </Stack>
       )}
+
+      <Paper
+        elevation={0}
+        sx={{
+          mt: 2.5,
+          p: { xs: 1.5, sm: 2 },
+          borderRadius: { xs: 0, sm: 2 },
+          border: "1px solid",
+          borderColor: alpha("#f97316", 0.2),
+          background: "#ffffff",
+        }}
+      >
+        <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
+          <LocalFireDepartmentRoundedIcon sx={{ fontSize: 18, color: "#f97316" }} />
+          <Typography variant="subtitle1" fontWeight={800}>{t("stats.streak.title")}</Typography>
+        </Stack>
+        {streak.currentStreak === 0 && streak.longestStreak === 0 ? (
+          <Typography variant="body2" color="text.secondary">{t("stats.streak.none")}</Typography>
+        ) : (
+          <Stack direction="row" spacing={2}>
+            <Box
+              sx={{
+                flex: 1,
+                p: 1.5,
+                borderRadius: 2,
+                bgcolor: alpha("#f97316", 0.07),
+                textAlign: "center",
+              }}
+            >
+              <Typography variant="h3" fontWeight={800} sx={{ color: "#f97316", lineHeight: 1 }}>
+                {streak.currentStreak}
+              </Typography>
+              <Typography variant="caption" color="text.secondary" fontWeight={700}>
+                {t("stats.streak.current")}
+              </Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
+                {t("stats.streak.days_other", { count: streak.currentStreak })}
+              </Typography>
+            </Box>
+            <Box
+              sx={{
+                flex: 1,
+                p: 1.5,
+                borderRadius: 2,
+                bgcolor: alpha("#94a3b8", 0.07),
+                textAlign: "center",
+              }}
+            >
+              <Typography variant="h3" fontWeight={800} sx={{ color: "text.primary", lineHeight: 1 }}>
+                {streak.longestStreak}
+              </Typography>
+              <Typography variant="caption" color="text.secondary" fontWeight={700}>
+                {t("stats.streak.longest")}
+              </Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
+                {t("stats.streak.days_other", { count: streak.longestStreak })}
+              </Typography>
+            </Box>
+          </Stack>
+        )}
+      </Paper>
     </Box>
   );
 }

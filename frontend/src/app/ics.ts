@@ -6,6 +6,8 @@ import dayjs from "dayjs";
 import type { RepeatFrequency, Task, TaskOccurrenceOverride, TaskRecurrence } from "../types";
 import { normalizeTask } from "./tasks";
 
+const API_URL = import.meta.env.VITE_API_URL || "/api";
+
 type ParsedIcsDate = {
   dateYmd: string;
   time: string;
@@ -344,6 +346,27 @@ export function parseIcsTasks(source: string): IcsImportResult {
   }
 
   return { tasks, skippedCount };
+}
+
+// INPUT: ICS file
+// OUTPUT: imported task count and skipped event count
+// EFFECT: Parses calendar events and saves them to the authenticated planner account
+export async function importTasksFromIcs(file: File): Promise<IcsImportResult> {
+  const result = parseIcsTasks(await file.text());
+  if (result.tasks.length === 0) return result;
+
+  const response = await fetch(`${API_URL}/tasks/batch`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ tasks: result.tasks }),
+  });
+
+  if (!response.ok) {
+    throw new Error("ICS import failed");
+  }
+
+  return result;
 }
 
 function buildOccurrenceOverrides(

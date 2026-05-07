@@ -34,10 +34,10 @@ describe("help center data behavior", () => {
     });
   });
 
-  it("returns nine help-center items with required fields", () => {
+  it("returns fourteen help-center items with required fields", () => {
     const items = getHelpCenterData(t);
 
-    expect(items).toHaveLength(9);
+    expect(items).toHaveLength(14);
     for (const item of items) {
       expect(item.id).toEqual(expect.any(String));
       expect(["all", "desktop", "mobile"]).toContain(item.audience);

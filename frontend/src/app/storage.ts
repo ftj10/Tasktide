@@ -9,6 +9,7 @@ import { normalizeTasks } from "./tasks";
 const WEEK_KEY = "tasktide_lastWeekStart_v1";
 const USERNAME_KEY = "tasktide_username";
 const ROLE_KEY = "tasktide_user_role";
+const SAVED_ACCOUNTS_KEY = "savedAccounts";
 const TASK_CACHE_KEY = "tasktide_tasks_cache_v1";
 const TASK_SYNC_QUEUE_KEY = "tasktide_tasks_sync_queue_v1";
 
@@ -299,6 +300,39 @@ export function isAdminUser() { return getUserRole() === "ADMIN"; }
 export function setAuth(username: string, role: AuthRole = "USER") {
   localStorage.setItem(USERNAME_KEY, username);
   localStorage.setItem(ROLE_KEY, role);
+}
+
+// INPUT: none
+// OUTPUT: saved account usernames
+// EFFECT: Lists recent account names without storing passwords
+export function getSavedAccounts(): string[] {
+  return readJsonStorage<string[]>(SAVED_ACCOUNTS_KEY, []).filter(
+    (account) => typeof account === "string" && account.trim()
+  );
+}
+
+// INPUT: username
+// OUTPUT: updated saved account list
+// EFFECT: Stores up to five recent account names without storing passwords
+export function addSavedAccount(username: string) {
+  const normalizedUsername = username.trim();
+  if (!normalizedUsername) return;
+
+  const accounts = getSavedAccounts().filter(
+    (account) => account.toLowerCase() !== normalizedUsername.toLowerCase()
+  );
+  writeJsonStorage(SAVED_ACCOUNTS_KEY, [normalizedUsername, ...accounts].slice(0, 5));
+}
+
+// INPUT: username
+// OUTPUT: updated saved account list
+// EFFECT: Removes one saved account name from the switcher
+export function removeSavedAccount(username: string) {
+  const normalizedUsername = username.trim().toLowerCase();
+  writeJsonStorage(
+    SAVED_ACCOUNTS_KEY,
+    getSavedAccounts().filter((account) => account.toLowerCase() !== normalizedUsername)
+  );
 }
 
 // INPUT: none

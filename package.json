@@ -1,7 +1,7 @@
 {
   "name": "tasktide-workspace",
   "private": true,
-  "version": "2.9.2",
+  "version": "2.10.0",
   "scripts": {
     "backup:dataset": "npm --prefix backend run backup:dataset",
     "backup:dataset:auto": "npm --prefix backend run backup:dataset:auto",

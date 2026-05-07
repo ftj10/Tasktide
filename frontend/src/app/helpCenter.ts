@@ -46,13 +46,13 @@ export function getOnboardingSteps(t: TFunction): OnboardingTooltipStep[] {
     },
     {
       id: "language-switch",
-      targets: ["[data-onboarding='language-switch-button']", "#language-switch-desktop", "#language-switch-mobile"],
+      targets: ["[data-onboarding='language-switch-button']", "#language-switch-settings", "#nav-settings-desktop", "#nav-settings-mobile"],
       title: t("onboarding.steps.languageSwitch.title"),
       text: t("onboarding.steps.languageSwitch.text"),
     },
     {
       id: "download-app",
-      targets: ["[data-onboarding='download-app-button']", "#install-web-app-desktop", "#install-web-app-mobile"],
+      targets: ["[data-onboarding='download-app-button']", "#install-web-app-settings", "#nav-settings-desktop", "#nav-settings-mobile"],
       title: t("onboarding.steps.downloadApp.title"),
       text: t("onboarding.steps.downloadApp.text"),
     },
@@ -184,6 +184,71 @@ export function getHelpCenterData(t: TFunction): HelpCenterItem[] {
           mediaAlt: t("help.walkthroughs.exportIcs.title"),
           title: t("help.walkthroughs.exportIcs.title"),
           text: t("help.walkthroughs.exportIcs.text"),
+        },
+      ],
+    },
+    {
+      id: "add-your-email",
+      audience: "all",
+      question: t("help.walkthroughs.addYourEmail.question"),
+      steps: [
+        {
+          mediaSrc: "/help-walkthroughs/add your email.gif",
+          mediaAlt: t("help.walkthroughs.addYourEmail.title"),
+          title: t("help.walkthroughs.addYourEmail.title"),
+          text: t("help.walkthroughs.addYourEmail.text"),
+        },
+      ],
+    },
+    {
+      id: "switch-accounts",
+      audience: "all",
+      question: t("help.walkthroughs.switchAccounts.question"),
+      steps: [
+        {
+          mediaSrc: "/help-walkthroughs/switch accounts.gif",
+          mediaAlt: t("help.walkthroughs.switchAccounts.title"),
+          title: t("help.walkthroughs.switchAccounts.title"),
+          text: t("help.walkthroughs.switchAccounts.text"),
+        },
+      ],
+    },
+    {
+      id: "change-password",
+      audience: "all",
+      question: t("help.walkthroughs.changePassword.question"),
+      steps: [
+        {
+          mediaSrc: "/help-walkthroughs/change password.gif",
+          mediaAlt: t("help.walkthroughs.changePassword.title"),
+          title: t("help.walkthroughs.changePassword.title"),
+          text: t("help.walkthroughs.changePassword.text"),
+        },
+      ],
+    },
+    {
+      id: "settings-import-export",
+      audience: "all",
+      question: t("help.walkthroughs.settingsImportExport.question"),
+      steps: [
+        {
+          mediaSrc: "/help-walkthroughs/settings import export.gif",
+          mediaAlt: t("help.walkthroughs.settingsImportExport.title"),
+          title: t("help.walkthroughs.settingsImportExport.title"),
+          text: t("help.walkthroughs.settingsImportExport.text"),
+        },
+      ],
+    },
+    {
+      id: "forgot-password-flow",
+      audience: "all",
+      question: t("help.walkthroughs.forgotPasswordFlow.question"),
+      steps: [
+        {
+          mediaSrc: "/help-walkthroughs/forgot password flow.gif",
+          mediaAlt: t("help.walkthroughs.forgotPasswordFlow.title"),
+          title: t("help.walkthroughs.forgotPasswordFlow.title"),
+          text: t("help.walkthroughs.forgotPasswordFlow.text"),
         },
       ],
     },

@@ -19,7 +19,7 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import LanguageRoundedIcon from "@mui/icons-material/LanguageRounded";
 import TaskAltRoundedIcon from "@mui/icons-material/TaskAltRounded";
 import { useTranslation } from "react-i18next";
-import { setAuth } from "../app/storage";
+import { addSavedAccount, setAuth } from "../app/storage";
 
 const API_URL = import.meta.env.VITE_API_URL || "/api";
 
@@ -37,6 +37,9 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
   } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotMessage, setForgotMessage] = useState("");
   const currentLanguage = i18n.resolvedLanguage?.startsWith("zh") ? "zh" : "en";
 
   function translateAuthMessage(message: string) {
@@ -90,6 +93,7 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
         setPassword("");
       } else {
         setAuth(data.username, data.role);
+        addSavedAccount(data.username);
         onLoginSuccess();
       }
     } catch (err: unknown) {
@@ -103,6 +107,24 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
       setIsLoading(false);
     }
   };
+
+  async function handleForgotPassword(event: React.FormEvent) {
+    event.preventDefault();
+    setForgotMessage("");
+
+    const response = await fetch(`${API_URL}/auth/forgot-password`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: forgotEmail }),
+    });
+    const data = await response.json().catch(() => ({}));
+    setForgotMessage(
+      response.status === 503
+        ? t("login.forgot.emailNotConfigured")
+        : data.message || data.error || t("login.forgot.sent")
+    );
+  }
 
   return (
     <Box
@@ -218,6 +240,31 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
               </Button>
             </Stack>
           </Box>
+
+          {!isRegistering && (
+            <Stack spacing={1.5}>
+              <Button variant="text" onClick={() => setForgotOpen((open) => !open)} sx={{ color: "text.secondary" }}>
+                {t("login.forgot.link")}
+              </Button>
+              {forgotOpen && (
+                <Box component="form" onSubmit={handleForgotPassword}>
+                  <Stack spacing={1.5}>
+                    <TextField
+                      label={t("login.forgot.email")}
+                      type="email"
+                      value={forgotEmail}
+                      onChange={(event) => setForgotEmail(event.target.value)}
+                      required
+                    />
+                    <Button type="submit" variant="outlined">
+                      {t("login.forgot.send")}
+                    </Button>
+                    {forgotMessage && <Alert severity="info">{forgotMessage}</Alert>}
+                  </Stack>
+                </Box>
+              )}
+            </Stack>
+          )}
 
           <Button
             fullWidth

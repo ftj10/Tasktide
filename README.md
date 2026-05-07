@@ -1,6 +1,6 @@
 # TaskTide Application
 
-Current version: `v2.9.1`
+Current version: `v2.10.0`
 
 TaskTide is a full-stack planner for daily tasks, weekly routines, reminders, shared help questions, calendar-based scheduling, and mobile-first weekly organization.
 
@@ -12,9 +12,12 @@ Deployed Web: TaskTide
 
 ## Features
 
-- A Syllabus Import wizard lets you paste a course syllabus or upload one or more files — PDF, CSV, and Word (.docx) are all supported. You can mix file types and paste text together; all sources are combined before analysis. The AI prompt asks for concise task descriptions and looks for exams, assignments, readings, prep work, recurring course obligations, and other academic planning items. Before sending to Claude, a consent gate shows you exactly what text will be shared. Automatic import checks for ambiguous syllabus details first, lets you answer optional clarification questions, then creates task drafts with the high-quality analysis path. Extracted task drafts appear on a review screen where you can edit, remove, or restore each item before confirming. The wizard saves your progress for 24 hours so a closed browser does not mean starting over. Batch imports are capped at 200 tasks. Access it from the sidebar on desktop or the top bar on mobile.
+- A Settings page (`/settings`) centralizes account actions, password changes, saved username account switching, language switching, install guidance, ICS import, syllabus import, and ICS export.
+- A Syllabus Import wizard lets you paste a course syllabus or upload one or more files — PDF, CSV, and Word (.docx) are all supported. You can mix file types and paste text together; all sources are combined before analysis. The AI prompt asks for concise task descriptions and looks for exams, assignments, readings, prep work, recurring course obligations, and other academic planning items. Before sending to Claude, a consent gate shows you exactly what text will be shared. Automatic import checks for ambiguous syllabus details first, lets you answer optional clarification questions, then creates task drafts with the high-quality analysis path. Extracted task drafts appear on a review screen where you can edit, remove, or restore each item before confirming. The wizard saves your progress for 24 hours so a closed browser does not mean starting over. Batch imports are capped at 200 tasks. Access it from Settings on desktop or mobile.
 - Task and reminder CRUD actions — create, update, complete, delete — each confirm with a brief toast notification at the bottom of the screen, including a correct completion message when reminders are marked done. ICS import results also appear as toasts instead of inline banners.
 - Secure registration and login with HttpOnly cookie sessions and persisted `USER` / `ADMIN` roles.
+- Signed-in users can change their password from Settings and use saved username shortcuts to switch accounts without storing passwords.
+- Optional email notification preferences, forgot-password reset links, and an admin-only email broadcast route support email workflows when SMTP is configured.
 - Registration now trims usernames, prevents duplicate-looking username casing, and requires stronger passwords before an account is created.
 - Cookie-backed write requests are checked against trusted TaskTide origins so signed-in planner changes stay protected from cross-site request attempts.
 - Hosted frontend and backend deployments now keep users signed in after login by automatically using cross-site session cookie settings when the browser request comes from a different hostname.
@@ -49,7 +52,7 @@ Deployed Web: TaskTide
 - Help Center now includes `Quick Walkthroughs`: short question-driven modal guides with GIF-ready media slots for adding tasks, opening Week, finding saved tasks, drag-to-add, and Task Notifications setup.
 - Help Center includes a start-to-finish website guide, focused walkthroughs, and clickable Q&A entries, including offline page guidance.
 - Help Center now explains mobile notification setup, mobile web-app installation, and browser-specific installed-app behavior for iPhone, iPad, and Android.
-- The app shell includes an Install app entry point that opens the Help Center walkthrough for adding TaskTide as a web app.
+- The app shell includes a Settings entry point for installing TaskTide, switching language, importing tasks, exporting tasks, and logging out.
 - Help-question posting now keeps the draft visible if the request fails instead of showing a false success state.
 - Week view now respects one-day recurring-task time overrides when placing events on the calendar.
 - Week view now generates recurring events only for the visible range and reuses cached occurrence windows for repeated range renders.
@@ -94,6 +97,11 @@ SESSION_COOKIE_SECURE=optional_true_or_false
 WEB_PUSH_SUBJECT=mailto:you@example.com
 VAPID_PUBLIC_KEY=optional_existing_public_key
 VAPID_PRIVATE_KEY=optional_existing_private_key
+EMAIL_HOST=your_smtp_host
+EMAIL_PORT=587
+EMAIL_USER=your_smtp_username
+EMAIL_PASS=your_smtp_password
+EMAIL_FROM=optional_from_address
 ```
 
 Frontend:
@@ -132,6 +140,7 @@ npm --prefix frontend run build
 - If you deploy the frontend and backend on different HTTPS hostnames, set `CORS_ORIGIN` to the frontend origin. The backend uses this value for credentialed CORS and CSRF origin checks. Cross-host login responses default to `SameSite=None; Secure`; use `SESSION_COOKIE_SAME_SITE` and `SESSION_COOKIE_SECURE` only when you need to override that behavior.
 - Local development can skip manual VAPID setup because the backend generates `backend/.push-vapid.json` on first use. Production should provide `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `WEB_PUSH_SUBJECT`.
 - Task Notifications are user-controlled from Help. TaskTide does not request notification permission automatically after login, page load, app startup, or session restore.
+- Email notifications are opt-in from Settings and require SMTP environment variables. If `EMAIL_HOST` is not set, email sending degrades without crashing and password reset requests report that email is not configured.
 - `Enable Task Notifications` creates or reuses the current browser subscription and saves it through `POST /notifications/subscriptions`; the backend upserts by endpoint so the same browser does not create duplicate subscription records.
 - `Disable Task Notifications` unsubscribes only the current browser or installed app and deletes only that endpoint through `DELETE /notifications/subscriptions`; other signed-in devices remain connected.
 - Use `Import ICS` on the Today page when you want to bring calendar events into the planner from a `.ics` export. The importer keeps titles, notes, locations, multi-day all-day ranges, timed events, and supported daily, weekly, monthly, and yearly recurrence rules.

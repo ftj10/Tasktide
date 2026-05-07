@@ -292,3 +292,110 @@ function buildProductivityStats(completedCount: number, totalCount: number): Pro
     completionRate: totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0,
   };
 }
+
+export type StreakResult = {
+  currentStreak: number;
+  longestStreak: number;
+};
+
+// INPUT: all tasks and today's date string
+// OUTPUT: current consecutive-day streak and all-time longest streak
+// EFFECT: Scans up to 365 days of completion history to build streak counters
+export function computeStreakStats(all: Task[], todayYmd: string): StreakResult {
+  const LOOK_BACK = 365;
+  const hasCompletion: boolean[] = [];
+
+  for (let offset = 0; offset < LOOK_BACK; offset++) {
+    const dateYmd = dayjs(todayYmd).subtract(offset, "day").format("YYYY-MM-DD");
+    hasCompletion.push(completedTasksForDate(all, dateYmd).length > 0);
+  }
+
+  let currentStreak = 0;
+  const startOffset = hasCompletion[0] ? 0 : 1;
+  for (let i = startOffset; i < LOOK_BACK; i++) {
+    if (hasCompletion[i]) currentStreak++;
+    else break;
+  }
+
+  let longestStreak = 0;
+  let run = 0;
+  for (const c of hasCompletion) {
+    if (c) { run++; longestStreak = Math.max(longestStreak, run); }
+    else run = 0;
+  }
+
+  return { currentStreak, longestStreak };
+}
+
+export type CategoryBreakdownItem = {
+  label: string;
+  completedCount: number;
+  totalCount: number;
+  completionRate: number;
+};
+
+// INPUT: all tasks, end date, window in days
+// OUTPUT: per-type completion breakdown sorted by total count descending
+// EFFECT: Groups scheduled and completed tasks by task type for the Stats category panel
+export function taskTypeBreakdown(all: Task[], endDateYmd: string, windowDays: number): CategoryBreakdownItem[] {
+  const safeWindowDays = Math.max(1, windowDays);
+  const byType = new Map<string, { completed: number; total: number }>();
+
+  for (let offset = 0; offset < safeWindowDays; offset++) {
+    const dateYmd = dayjs(endDateYmd).subtract(offset, "day").format("YYYY-MM-DD");
+    const active = tasksForDate(all, dateYmd);
+    const completed = completedTasksForDate(all, dateYmd);
+    for (const task of active) {
+      const k = task.type;
+      const p = byType.get(k) ?? { completed: 0, total: 0 };
+      byType.set(k, { completed: p.completed, total: p.total + 1 });
+    }
+    for (const task of completed) {
+      const k = task.type;
+      const p = byType.get(k) ?? { completed: 0, total: 0 };
+      byType.set(k, { completed: p.completed + 1, total: p.total + 1 });
+    }
+  }
+
+  return Array.from(byType.entries())
+    .map(([type, { completed, total }]) => ({
+      label: type,
+      completedCount: completed,
+      totalCount: total,
+      completionRate: total > 0 ? Math.round((completed / total) * 100) : 0,
+    }))
+    .sort((a, b) => b.totalCount - a.totalCount);
+}
+
+// INPUT: all tasks, end date, window in days
+// OUTPUT: per-priority completion breakdown sorted by priority ascending (1=highest)
+// EFFECT: Groups scheduled and completed tasks by emergency level for the Stats priority panel
+export function priorityBreakdown(all: Task[], endDateYmd: string, windowDays: number): CategoryBreakdownItem[] {
+  const safeWindowDays = Math.max(1, windowDays);
+  const byPriority = new Map<number, { completed: number; total: number }>();
+
+  for (let offset = 0; offset < safeWindowDays; offset++) {
+    const dateYmd = dayjs(endDateYmd).subtract(offset, "day").format("YYYY-MM-DD");
+    const active = tasksForDate(all, dateYmd);
+    const completed = completedTasksForDate(all, dateYmd);
+    for (const task of active) {
+      const k = task.emergency ?? 5;
+      const p = byPriority.get(k) ?? { completed: 0, total: 0 };
+      byPriority.set(k, { completed: p.completed, total: p.total + 1 });
+    }
+    for (const task of completed) {
+      const k = task.emergency ?? 5;
+      const p = byPriority.get(k) ?? { completed: 0, total: 0 };
+      byPriority.set(k, { completed: p.completed + 1, total: p.total + 1 });
+    }
+  }
+
+  return Array.from(byPriority.entries())
+    .sort(([a], [b]) => a - b)
+    .map(([priority, { completed, total }]) => ({
+      label: String(priority),
+      completedCount: completed,
+      totalCount: total,
+      completionRate: total > 0 ? Math.round((completed / total) * 100) : 0,
+    }));
+}

@@ -2,7 +2,7 @@
 // OUTPUT: Express application plus startup helpers
 // EFFECT: Exposes the backend API used by the weekly planner features and persists data through MongoDB models
 require('dotenv').config();
-const { randomUUID } = require('node:crypto');
+const { randomBytes, randomUUID } = require('node:crypto');
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -17,6 +17,7 @@ const { getTaskRetentionCutoff, startTaskRetentionScheduler } = require('./taskR
 const { getPushPublicKey } = require('./pushNotifications');
 const { startNotificationScheduler } = require('./notificationScheduler');
 const syllabusAnalysis = require('./syllabusAnalysis');
+const emailService = require('./emailService');
 
 const app = express();
 const SESSION_COOKIE_NAME = 'tasktide_session';
@@ -507,6 +508,200 @@ app.get('/session', authenticateToken, async (req, res) => {
     username: req.user.username,
     role: req.user.role,
   });
+});
+
+// INPUT: authenticated session
+// OUTPUT: current account profile
+// EFFECT: Gives settings pages the latest account preferences and role
+app.get('/user/me', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findOne({ _id: req.user.userId });
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    res.status(200).json({
+      username: user.username,
+      role: resolveUserRole(user),
+      email: user.email ?? null,
+      emailNotifications: Boolean(user.emailNotifications),
+      avatar: user.avatar ?? null,
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to load user" });
+  }
+});
+
+// INPUT: authenticated current and new password fields
+// OUTPUT: password update confirmation or validation error
+// EFFECT: Lets signed-in users rotate their account password after confirming the current one
+app.put('/user/password', authenticateToken, async (req, res) => {
+  try {
+    const currentPassword = String(req.body?.currentPassword ?? '');
+    const newPassword = String(req.body?.newPassword ?? '');
+
+    if (newPassword.length < MIN_PASSWORD_LENGTH) {
+      return res.status(400).json({ error: "Password must be at least 8 characters" });
+    }
+
+    const user = await User.findOne({ _id: req.user.userId });
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const validPassword = await bcrypt.compare(currentPassword, user.password);
+    if (!validPassword) return res.status(401).json({ error: "Invalid current password" });
+
+    const hashedPassword = await bcrypt.hash(newPassword, await bcrypt.genSalt(10));
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({ message: 'Password updated' });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to update password" });
+  }
+});
+
+// INPUT: base64 avatar data URL or null to clear
+// OUTPUT: update confirmation
+// EFFECT: Stores or removes the profile avatar for the signed-in user
+app.put('/user/avatar', authenticateToken, async (req, res) => {
+  try {
+    const avatar = req.body?.avatar ?? null;
+    if (avatar !== null) {
+      if (typeof avatar !== 'string' || !avatar.startsWith('data:image/')) {
+        return res.status(400).json({ error: 'Invalid avatar format' });
+      }
+      if (avatar.length > 262144) {
+        return res.status(400).json({ error: 'Avatar too large (max ~200KB)' });
+      }
+    }
+    await User.findByIdAndUpdate(req.user.userId, { avatar });
+    res.status(200).json({ message: 'Avatar updated' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update avatar' });
+  }
+});
+
+// INPUT: authenticated email preferences
+// OUTPUT: update confirmation or validation error
+// EFFECT: Stores opt-in email notification settings for the signed-in account
+app.put('/user/email', authenticateToken, async (req, res) => {
+  try {
+    const email = String(req.body?.email ?? '').trim();
+    const emailNotifications = Boolean(req.body?.emailNotifications);
+
+    if (email && (!email.includes('@') || !email.includes('.'))) {
+      return res.status(400).json({ error: "Invalid email" });
+    }
+
+    const nextEmail = email || null;
+    await User.updateOne(
+      { _id: req.user.userId },
+      {
+        $set: {
+          email: nextEmail,
+          emailNotifications: nextEmail ? emailNotifications : false,
+        },
+      },
+      { runValidators: true }
+    );
+
+    res.status(200).json({ message: 'Email preferences updated' });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to update email preferences" });
+  }
+});
+
+// INPUT: account email address
+// OUTPUT: generic reset-link status
+// EFFECT: Starts password reset without revealing whether the email is registered
+app.post('/auth/forgot-password', async (req, res) => {
+  try {
+    const email = String(req.body?.email ?? '').trim();
+    const genericMessage = 'If that email is registered, a reset link has been sent.';
+
+    if (!emailService.isEmailConfigured()) {
+      return res.status(503).json({ error: 'Email not configured' });
+    }
+
+    const user = email ? await User.findOne({ email }) : null;
+    if (!user) {
+      return res.status(200).json({ message: genericMessage });
+    }
+
+    const plainToken = randomBytes(32).toString('hex');
+    user.passwordResetToken = await bcrypt.hash(plainToken, await bcrypt.genSalt(10));
+    user.passwordResetExpiry = new Date(Date.now() + 60 * 60 * 1000);
+    await user.save();
+
+    const origin = String(process.env.CORS_ORIGIN ?? '').split(',')[0].trim();
+    const resetLink = `${origin}/reset-password?token=${plainToken}&email=${encodeURIComponent(email)}`;
+    await emailService.sendEmail({
+      to: email,
+      subject: 'Reset your TaskTide password',
+      html: `<p>Use this link to reset your TaskTide password:</p><p><a href="${resetLink}">${resetLink}</a></p>`,
+    });
+
+    res.status(200).json({ message: genericMessage });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to start password reset" });
+  }
+});
+
+// INPUT: reset email, token, and new password
+// OUTPUT: reset confirmation or validation error
+// EFFECT: Completes password reset with a hashed single-use token
+app.post('/auth/reset-password', async (req, res) => {
+  try {
+    const email = String(req.body?.email ?? '').trim();
+    const token = String(req.body?.token ?? '').trim();
+    const newPassword = String(req.body?.newPassword ?? '');
+
+    if (newPassword.length < MIN_PASSWORD_LENGTH) {
+      return res.status(400).json({ error: "Password must be at least 8 characters" });
+    }
+
+    const user = email ? await User.findOne({ email }) : null;
+    if (!user || !user.passwordResetToken || !user.passwordResetExpiry || user.passwordResetExpiry <= new Date()) {
+      return res.status(400).json({ error: "Invalid or expired reset token" });
+    }
+
+    const validToken = await bcrypt.compare(token, user.passwordResetToken);
+    if (!validToken) {
+      return res.status(400).json({ error: "Invalid or expired reset token" });
+    }
+
+    user.password = await bcrypt.hash(newPassword, await bcrypt.genSalt(10));
+    user.passwordResetToken = null;
+    user.passwordResetExpiry = null;
+    await user.save();
+
+    res.status(200).json({ message: 'Password reset successful' });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to reset password" });
+  }
+});
+
+// INPUT: admin email subject and HTML body
+// OUTPUT: broadcast send count
+// EFFECT: Sends an email update to opted-in users only
+app.post('/admin/email-broadcast', authenticateToken, async (req, res) => {
+  try {
+    if (req.user.role !== 'ADMIN') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    if (!emailService.isEmailConfigured()) {
+      return res.status(503).json({ error: 'Email not configured' });
+    }
+
+    const subject = String(req.body?.subject ?? '').trim();
+    const html = String(req.body?.html ?? '').trim();
+    const users = await User.find({ emailNotifications: true, email: { $ne: null } });
+
+    await Promise.all(users.map((user) => emailService.sendEmail({ to: user.email, subject, html })));
+
+    res.status(200).json({ sent: users.length });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to send email broadcast" });
+  }
 });
 
 // INPUT: current browser session

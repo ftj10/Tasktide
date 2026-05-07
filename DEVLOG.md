@@ -1,5 +1,76 @@
 # Development Log
 
+## Version 2.10.0
+Update Date: 2026-05-06
+
+### Changes
+
+**`frontend/src/pages/SettingsPage.tsx`**
+- Added a new settings page with Account, Language, Install App, Import Tasks, and Export Tasks sections.
+- Moved syllabus import, ICS import, ICS export, install prompt handling, language switching, and logout access into the settings workflow.
+- Replaced Account placeholders with a password-change accordion and saved-username account switch dialog.
+
+**`frontend/src/App.tsx`**
+- Added lazy `/settings` routing and Settings navigation entries for desktop and mobile.
+- Removed language, install, syllabus import, and logout controls from the mobile top bar and desktop sidebar actions.
+- Kept the browser install prompt capture in the app shell and passed the captured prompt into Settings.
+
+**`frontend/src/app/ics.ts`**
+- Added `importTasksFromIcs` to parse ICS files and save imported tasks through the batch task API.
+
+**`frontend/src/i18n.ts`, `frontend/src/app/helpCenter.ts`**
+- Added bilingual settings navigation and page strings.
+- Updated onboarding targets so language and install guidance points to Settings.
+- Added bilingual strings for password changes and account switching.
+
+**`frontend/src/app/storage.ts`, `frontend/src/pages/LoginPage.tsx`**
+- Added saved account helpers backed by the `savedAccounts` localStorage key.
+- Stores only usernames, deduplicates case-insensitively, and caps the switcher list at five accounts.
+- Adds the username to saved accounts after successful login.
+
+**`backend/server.js`**
+- Added `GET /user/me` for current account profile data.
+- Added `PUT /user/password` with current-password verification and minimum new password validation.
+- Added `PUT /user/email`, `POST /auth/forgot-password`, `POST /auth/reset-password`, and `POST /admin/email-broadcast`.
+
+**`backend/emailService.js`, `backend/models/User.js`, `backend/package.json`**
+- Added SMTP email service wrapper with graceful no-op behavior when `EMAIL_HOST` is missing.
+- Added user fields for email preferences and bcrypt-hashed password reset tokens.
+- Added `nodemailer` to backend dependencies; local install was blocked by registry DNS in this sandbox, so `backend/package-lock.json` could not be regenerated here.
+
+**`frontend/src/pages/LoginPage.tsx`, `frontend/src/pages/ResetPasswordPage.tsx`, `frontend/src/pages/AdminEmailPage.tsx`**
+- Added forgot-password request form to login mode.
+- Added public reset password page at `/reset-password`.
+- Added URL-only admin email broadcast page at `/admin/email`.
+
+**`frontend/src/pages/SettingsPage.tsx`**
+- Added Email Notifications section that loads current email preferences and saves opt-in changes.
+
+**`frontend/src/app/helpCenter.ts`, `frontend/src/pages/HelpPage.tsx`, `frontend/src/i18n.ts`**
+- Added walkthroughs for adding email, switching accounts, changing password, Settings import/export, and forgot-password reset.
+- Added Q&A entries for moved language/install controls, password reset, and email notifications.
+
+**`frontend/src/pages/SettingsPage.behavior.test.tsx`**
+- Added behavior coverage for settings section rendering, language switching, and logout.
+
+**`frontend/src/app/storage.behavior.test.ts`, `backend/tests/user-password.behavior.test.js`**
+- Added storage helper coverage for empty, deduplicated, capped, and removed saved accounts.
+- Added backend account route coverage for password change success, wrong current password, short new password, and current user profile.
+
+**`backend/tests/email.behavior.test.js`, `frontend/src/pages/AdminEmailPage.behavior.test.tsx`**
+- Added backend coverage for email preference validation, forgot-password privacy behavior, expired reset token handling, and non-admin broadcast rejection.
+- Added frontend coverage for admin-only email page rendering.
+
+**`package.json`, `frontend/package.json`, `backend/package.json`, `frontend/package-lock.json`, `backend/package-lock.json`, `RELEASENOTES.md`, `frontend/src/app/releaseNotes.ts`, `README.md`, `DEVLOG.md`**
+- Bumped workspace, frontend, and backend versions to `2.10.0`.
+- Added public and in-app release notes for the Settings page.
+
+### Design decisions
+- Settings owns dialogs and utility workflows so navigation surfaces stay focused on planner pages.
+- `App.tsx` still owns `beforeinstallprompt` capture because the browser event is global and can fire before Settings is opened.
+
+---
+
 ## Version 2.9.2
 Update Date: 2026-05-06
 
