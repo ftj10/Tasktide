@@ -7,11 +7,12 @@ description: Coordinates the full AI-assisted development workflow for TaskTide 
 
 ## Quick start
 
-1. Read the user's requirement
-2. Classify it (see below)
-3. Output: chosen path, reason, command sequence, files to read/update, next action
-4. Generate the Codex handoff prompt for implementation and tests
-5. When implementation or tests are needed, route the work to Codex; this is mandatory, not optional
+1. Run `/superpowers:brainstorming` to explore user intent and requirements before proceeding
+2. Read the user's requirement
+3. Classify it (see below)
+4. Output: chosen path, reason, command sequence, files to read/update, next action
+5. Generate the Codex handoff prompt for implementation and tests
+6. When implementation or tests are needed, route the work to Codex; this is mandatory, not optional
 
 ## Classification
 
@@ -27,14 +28,14 @@ description: Coordinates the full AI-assisted development workflow for TaskTide 
 
 ### Large feature (4–5)
 ```
-/to-prd → /to-issues → /triage → /grill-with-docs
+/superpowers:brainstorming → /to-prd → /to-issues → /triage → /grill-with-docs
 → /planning-with-files:plan → Claude TDD handoff prompt
 → Codex implements tests and code → Claude diff review → Codex fix prompt → /zoom-out
 ```
 
 ### Medium feature (3)
 ```
-/grill-with-docs → /planning-with-files:plan → Claude TDD handoff prompt
+/superpowers:brainstorming → /grill-with-docs → /planning-with-files:plan → Claude TDD handoff prompt
 → Codex implements tests and code → Claude diff review → Codex fix prompt
 ```
 
