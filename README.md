@@ -91,7 +91,7 @@ MONGODB_URI=your_mongodb_connection_string_here
 JWT_SECRET=your_secure_random_secret_string
 ANTHROPIC_API_KEY=your_anthropic_api_key_for_syllabus_analysis
 ADMIN_USERNAMES=comma_separated_admin_usernames
-CORS_ORIGIN=http://127.0.0.1:5173
+CORS_ORIGIN=http://127.0.0.1:5173,https://your-other-origin.com
 SESSION_COOKIE_SAME_SITE=optional_lax_strict_or_none
 SESSION_COOKIE_SECURE=optional_true_or_false
 WEB_PUSH_SUBJECT=mailto:you@example.com
@@ -137,7 +137,7 @@ npm --prefix frontend run build
 - The installable web app, browser tab title, service worker notifications, package metadata, session cookie, and local browser profile keys use the TaskTide brand.
 - The login session now lives in an HttpOnly cookie. JavaScript no longer reads the JWT directly, and frontend API calls rely on browser credentials instead of `Authorization` headers.
 - Local frontend development now defaults to the Vite `/api` proxy so cookie-based auth stays same-origin during `npm run dev`.
-- If you deploy the frontend and backend on different HTTPS hostnames, set `CORS_ORIGIN` to the frontend origin. The backend uses this value for credentialed CORS and CSRF origin checks. Cross-host login responses default to `SameSite=None; Secure`; use `SESSION_COOKIE_SAME_SITE` and `SESSION_COOKIE_SECURE` only when you need to override that behavior.
+- If you deploy the frontend and backend on different HTTPS hostnames, set `CORS_ORIGIN` to the frontend origin. Multiple origins are supported as a comma-separated list (e.g. `https://app.example.com,https://staging.example.com`). The backend uses this value for credentialed CORS and CSRF origin checks. Cross-host login responses default to `SameSite=None; Secure`; use `SESSION_COOKIE_SAME_SITE` and `SESSION_COOKIE_SECURE` only when you need to override that behavior.
 - Local development can skip manual VAPID setup because the backend generates `backend/.push-vapid.json` on first use. Production should provide `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `WEB_PUSH_SUBJECT`.
 - Task Notifications are user-controlled from Help. TaskTide does not request notification permission automatically after login, page load, app startup, or session restore.
 - Email notifications are opt-in from Settings and require SMTP environment variables. If `EMAIL_HOST` is not set, email sending degrades without crashing and password reset requests report that email is not configured.
