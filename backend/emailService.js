@@ -1,46 +1,32 @@
 // INPUT: { to, subject, html }
-// OUTPUT: sends email via SMTP transporter
-// EFFECT: noop with warning log if EMAIL_HOST env is not set
+// OUTPUT: sends email via Resend
+// EFFECT: noop with warning log if RESEND_API_KEY env is not set
 function isEmailConfigured() {
-  return Boolean(String(process.env.EMAIL_HOST ?? '').trim());
-}
-
-function createTransporter() {
-  if (!isEmailConfigured()) return null;
-
-  let nodemailer;
-  try {
-    nodemailer = require('nodemailer');
-  } catch {
-    console.warn('Email not configured: nodemailer package is unavailable');
-    return null;
-  }
-
-  return nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: Number(process.env.EMAIL_PORT || 587),
-    auth: process.env.EMAIL_USER
-      ? {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
-        }
-      : undefined,
-  });
+  return Boolean(String(process.env.RESEND_API_KEY ?? '').trim());
 }
 
 async function sendEmail({ to, subject, html }) {
-  const transporter = createTransporter();
-  if (!transporter) {
-    console.warn('Email not configured');
+  if (!isEmailConfigured()) {
+    console.warn('Email not configured: RESEND_API_KEY is not set');
     return false;
   }
 
-  await transporter.sendMail({
-    from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
-    to,
-    subject,
-    html,
-  });
+  let Resend;
+  try {
+    ({ Resend } = require('resend'));
+  } catch {
+    console.warn('Email not configured: resend package is unavailable');
+    return false;
+  }
+
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const from = process.env.EMAIL_FROM || 'TaskTide <noreply@yourdomain.com>';
+
+  const { error } = await resend.emails.send({ from, to, subject, html });
+  if (error) {
+    console.error('Resend error:', error);
+    return false;
+  }
   return true;
 }
 
