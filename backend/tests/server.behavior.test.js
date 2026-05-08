@@ -200,7 +200,9 @@ test('behavior: login sets a session cookie for valid credentials', async () => 
   });
 
   assert.equal(result.statusCode, 200);
-  assert.deepEqual(result.json, { username: 'tom', role: 'ADMIN' });
+  assert.equal(result.json.username, 'tom');
+  assert.equal(result.json.role, 'ADMIN');
+  assert.equal(typeof result.json.switchToken, 'string');
   assert.match(result.headers['set-cookie'], /tasktide_session=signed-token/);
   assert.match(result.headers['set-cookie'], /HttpOnly/);
 });
@@ -225,7 +227,9 @@ test('behavior: login trims username and rejects blank auth fields', async () =>
 
   assert.equal(result.statusCode, 200);
   assert.equal(String(lookupFilter.username), '/^casey$/i');
-  assert.deepEqual(result.json, { username: 'Casey', role: 'USER' });
+  assert.equal(result.json.username, 'Casey');
+  assert.equal(result.json.role, 'USER');
+  assert.equal(typeof result.json.switchToken, 'string');
   assert.equal(blankResult.statusCode, 400);
   assert.deepEqual(blankResult.json, { error: 'Username and password are required' });
 });
@@ -273,10 +277,113 @@ test('behavior: login backfills a missing stored role for legacy users', async (
   });
 
   assert.equal(result.statusCode, 200);
-  assert.deepEqual(result.json, { username: 'tom', role: 'USER' });
+  assert.equal(result.json.username, 'tom');
+  assert.equal(result.json.role, 'USER');
+  assert.equal(typeof result.json.switchToken, 'string');
   assert.deepEqual(updateFilter, { _id: 'user-1' });
   assert.deepEqual(updatePayload, { $set: { role: 'USER' } });
   assert.deepEqual(updateOptions, { runValidators: true });
+});
+
+test('behavior: login response includes a switchToken for the account switcher', async () => {
+  User.findOne = async () => ({ _id: 'user-1', username: 'tom', password: 'hashed', role: 'USER' });
+  User.updateOne = async () => ({ matchedCount: 0 });
+  bcrypt.compare = async () => true;
+  jwt.sign = (payload) => `signed-${payload.type ?? 'session'}`;
+
+  const result = await invokeApp(app, '/login', {
+    method: 'POST',
+    body: { username: 'tom', password: 'secret' },
+  });
+
+  assert.equal(result.statusCode, 200);
+  assert.equal(typeof result.json.switchToken, 'string');
+  assert.ok(result.json.switchToken.length > 0);
+});
+
+test('behavior: account-switch sets a session cookie for a valid switch token', async () => {
+  User.findOne = async () => ({ _id: 'user-1', username: 'tom', password: 'hashed', role: 'USER' });
+  User.updateOne = async () => ({ matchedCount: 0 });
+  jwt.verify = (_token, _secret) => ({ type: 'switch', username: 'tom', userId: 'user-1', role: 'USER' });
+  jwt.sign = () => 'new-session-token';
+
+  const result = await invokeApp(app, '/account-switch', {
+    method: 'POST',
+    body: { username: 'tom', switchToken: 'valid-switch-token' },
+  });
+
+  assert.equal(result.statusCode, 200);
+  assert.deepEqual(result.json, { username: 'tom', role: 'USER' });
+  assert.match(result.headers['set-cookie'], /tasktide_session=new-session-token/);
+});
+
+test('behavior: account-switch returns 401 for an expired or invalid switch token', async () => {
+  jwt.verify = () => { throw new Error('jwt expired'); };
+
+  const result = await invokeApp(app, '/account-switch', {
+    method: 'POST',
+    body: { username: 'tom', switchToken: 'expired-token' },
+  });
+
+  assert.equal(result.statusCode, 401);
+  assert.deepEqual(result.json, { error: 'Switch token invalid or expired' });
+});
+
+test('behavior: account-switch returns 401 when username does not match token payload', async () => {
+  jwt.verify = () => ({ type: 'switch', username: 'casey', userId: 'user-2', role: 'USER' });
+
+  const result = await invokeApp(app, '/account-switch', {
+    method: 'POST',
+    body: { username: 'tom', switchToken: 'valid-but-wrong-user' },
+  });
+
+  assert.equal(result.statusCode, 401);
+  assert.deepEqual(result.json, { error: 'Switch token invalid or expired' });
+});
+
+test('behavior: account-switch returns 400 when username or switchToken is missing', async () => {
+  const missingToken = await invokeApp(app, '/account-switch', {
+    method: 'POST',
+    body: { username: 'tom' },
+  });
+  const missingUsername = await invokeApp(app, '/account-switch', {
+    method: 'POST',
+    body: { switchToken: 'some-token' },
+  });
+
+  assert.equal(missingToken.statusCode, 400);
+  assert.equal(missingUsername.statusCode, 400);
+});
+
+test('behavior: account-token returns a switchToken without setting a session cookie', async () => {
+  User.findOne = async () => ({ _id: 'user-2', username: 'casey', password: 'hashed', role: 'USER' });
+  User.updateOne = async () => ({ matchedCount: 0 });
+  bcrypt.compare = async () => true;
+  jwt.sign = (payload) => `signed-${payload.type ?? 'session'}`;
+
+  const result = await invokeApp(app, '/account-token', {
+    method: 'POST',
+    body: { username: 'casey', password: 'password1' },
+  });
+
+  assert.equal(result.statusCode, 200);
+  assert.equal(result.json.username, 'casey');
+  assert.equal(typeof result.json.switchToken, 'string');
+  assert.ok(result.json.switchToken.length > 0);
+  assert.equal(result.headers['set-cookie'], undefined);
+});
+
+test('behavior: account-token returns 400 for invalid credentials', async () => {
+  User.findOne = async () => ({ _id: 'user-2', username: 'casey', password: 'hashed', role: 'USER' });
+  bcrypt.compare = async () => false;
+
+  const result = await invokeApp(app, '/account-token', {
+    method: 'POST',
+    body: { username: 'casey', password: 'wrongpassword' },
+  });
+
+  assert.equal(result.statusCode, 400);
+  assert.deepEqual(result.json, { error: 'Invalid credentials' });
 });
 
 test('behavior: session endpoint returns the authenticated user from the session cookie', async () => {
