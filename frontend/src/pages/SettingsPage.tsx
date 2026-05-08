@@ -38,8 +38,10 @@ import { useTranslation } from "react-i18next";
 
 import type { Task } from "../types";
 import {
+  type SavedAccount,
   addSavedAccount,
   getSavedAccounts,
+  getSwitchToken,
   getUsername,
   isAdminUser,
   removeSavedAccount,
@@ -87,10 +89,15 @@ export function SettingsPage({
   const [syllabusImportOpen, setSyllabusImportOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [switchOpen, setSwitchOpen] = useState(false);
-  const [savedAccounts, setSavedAccounts] = useState<string[]>(() => getSavedAccounts());
-  const [selectedAccount, setSelectedAccount] = useState("");
-  const [switchPassword, setSwitchPassword] = useState("");
+  const [savedAccounts, setSavedAccounts] = useState<SavedAccount[]>(() => getSavedAccounts());
+  const [switchingAccount, setSwitchingAccount] = useState<string | null>(null);
   const [switchError, setSwitchError] = useState("");
+  const [failedAccount, setFailedAccount] = useState("");
+  const [addAccountOpen, setAddAccountOpen] = useState(false);
+  const [addUsername, setAddUsername] = useState("");
+  const [addPassword, setAddPassword] = useState("");
+  const [addError, setAddError] = useState("");
+  const [addLoading, setAddLoading] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -199,39 +206,76 @@ export function SettingsPage({
     showToast(t("settings.account.passwordUpdated"), "success");
   }
 
-  async function handleSwitchAccount(event: FormEvent) {
-    event.preventDefault();
+  async function handleSwitchAccount(username: string) {
     setSwitchError("");
+    setFailedAccount("");
+    setSwitchingAccount(username);
 
-    const response = await fetch(`${API_URL}/login`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username: selectedAccount, password: switchPassword }),
-    });
-    const data = await response.json().catch(() => ({}));
+    const switchToken = getSwitchToken(username) ?? "";
 
-    if (!response.ok) {
-      setSwitchError(data.error || t("settings.account.switchFailed"));
-      setSwitchPassword("");
-      return;
+    try {
+      const response = await fetch(`${API_URL}/account-switch`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, switchToken }),
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        setSwitchError(t("settings.account.sessionExpired", { username }));
+        setFailedAccount(username);
+        setSwitchingAccount(null);
+        return;
+      }
+
+      setAuth(data.username, data.role);
+      setSwitchOpen(false);
+      onLoginSuccess();
+    } catch {
+      setSwitchError(t("settings.account.switchFailed"));
+      setSwitchingAccount(null);
     }
-
-    setAuth(data.username, data.role);
-    addSavedAccount(data.username);
-    setSavedAccounts(getSavedAccounts());
-    setSwitchOpen(false);
-    setSelectedAccount("");
-    setSwitchPassword("");
-    onLoginSuccess();
   }
 
-  function handleRemoveAccount(account: string) {
-    removeSavedAccount(account);
+  async function handleAddAccount(event: FormEvent) {
+    event.preventDefault();
+    setAddError("");
+    setAddLoading(true);
+
+    try {
+      const response = await fetch(`${API_URL}/account-token`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: addUsername, password: addPassword }),
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        setAddError(data.error || t("settings.account.addFailed"));
+        setAddLoading(false);
+        return;
+      }
+
+      addSavedAccount(data.username, data.switchToken ?? "");
+      setSavedAccounts(getSavedAccounts());
+      setAddUsername("");
+      setAddPassword("");
+      setAddAccountOpen(false);
+    } catch {
+      setAddError(t("settings.account.addFailed"));
+    } finally {
+      setAddLoading(false);
+    }
+  }
+
+  function handleRemoveAccount(username: string) {
+    removeSavedAccount(username);
     setSavedAccounts(getSavedAccounts());
-    if (selectedAccount === account) {
-      setSelectedAccount("");
-      setSwitchPassword("");
+    if (failedAccount === username) {
+      setSwitchError("");
+      setFailedAccount("");
     }
   }
 
@@ -350,6 +394,16 @@ export function SettingsPage({
     }
   }
 
+  function handleSwitchDialogClose() {
+    setSwitchOpen(false);
+    setSwitchError("");
+    setFailedAccount("");
+    setAddAccountOpen(false);
+    setAddUsername("");
+    setAddPassword("");
+    setAddError("");
+  }
+
   return (
     <Box sx={{ px: { xs: 2, md: 0 }, pb: 3 }}>
       <Stack spacing={2.5}>
@@ -408,6 +462,15 @@ export function SettingsPage({
                 </Button>
                 <Button variant="outlined" onClick={() => setSwitchOpen(true)}>
                   {t("settings.account.switchAccount")}
+                </Button>
+                <Button
+                  variant="outlined"
+                  onClick={() => {
+                    setAddAccountOpen(true);
+                    setSwitchOpen(true);
+                  }}
+                >
+                  {t("settings.account.addAccount")}
                 </Button>
               </Stack>
               <Accordion variant="outlined">
@@ -593,58 +656,89 @@ export function SettingsPage({
         showToast={showToast}
       />
       <ExportIcsDialog open={exportOpen} onClose={() => setExportOpen(false)} tasks={tasks} />
-      <Dialog open={switchOpen} onClose={() => setSwitchOpen(false)} fullWidth maxWidth="sm">
+      <Dialog open={switchOpen} onClose={handleSwitchDialogClose} fullWidth maxWidth="sm">
         <DialogTitle>{t("settings.account.switchAccount")}</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ pt: 1 }}>
             {savedAccounts.length === 0 ? (
-              <>
-                <Alert severity="info">{t("settings.account.noSavedAccounts")}</Alert>
-                <Button variant="contained" onClick={onLogout}>
-                  {t("settings.account.addAccount")}
-                </Button>
-              </>
+              <Alert severity="info">{t("settings.account.noSavedAccounts")}</Alert>
             ) : (
-              <>
-                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                  {savedAccounts.map((account) => (
-                    <Chip
-                      key={account}
-                      label={account}
-                      color={selectedAccount === account ? "primary" : "default"}
-                      onClick={() => {
-                        setSelectedAccount(account);
-                        setSwitchPassword("");
-                        setSwitchError("");
-                      }}
-                      onDelete={() => handleRemoveAccount(account)}
-                      deleteIcon={<DeleteRoundedIcon />}
-                    />
-                  ))}
-                </Stack>
-                {selectedAccount && (
-                  <Box component="form" onSubmit={handleSwitchAccount}>
-                    <Stack spacing={1.5}>
-                      {switchError && <Alert severity="error">{switchError}</Alert>}
-                      <TextField
-                        label={t("settings.account.passwordFor", { username: selectedAccount })}
-                        type="password"
-                        value={switchPassword}
-                        onChange={(event) => setSwitchPassword(event.target.value)}
-                        required
-                      />
-                      <Button type="submit" variant="contained">
-                        {t("settings.account.switchToSelected", { username: selectedAccount })}
-                      </Button>
-                    </Stack>
-                  </Box>
-                )}
-              </>
+              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                {savedAccounts.map(({ username }) => (
+                  <Chip
+                    key={username}
+                    label={username}
+                    onClick={() => { void handleSwitchAccount(username); }}
+                    onDelete={() => handleRemoveAccount(username)}
+                    deleteIcon={<DeleteRoundedIcon />}
+                    disabled={switchingAccount !== null}
+                  />
+                ))}
+              </Stack>
             )}
+            {switchError && (
+              <Alert
+                severity="error"
+                action={
+                  failedAccount ? (
+                    <Button
+                      size="small"
+                      color="inherit"
+                      onClick={() => {
+                        setAddUsername(failedAccount);
+                        setAddAccountOpen(true);
+                      }}
+                    >
+                      {t("common.reAdd", "Re-add")}
+                    </Button>
+                  ) : undefined
+                }
+              >
+                {switchError}
+              </Alert>
+            )}
+            <Accordion
+              expanded={addAccountOpen}
+              onChange={(_, expanded) => setAddAccountOpen(expanded)}
+              disableGutters
+              elevation={0}
+              sx={{ border: 1, borderColor: "divider", borderRadius: 1 }}
+            >
+              <AccordionSummary expandIcon={<ExpandMoreRoundedIcon />}>
+                <Typography variant="body2">{t("settings.account.addAnotherAccount")}</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Box component="form" onSubmit={(e) => { void handleAddAccount(e); }}>
+                  <Stack spacing={1.5}>
+                    {addError && <Alert severity="error">{addError}</Alert>}
+                    <TextField
+                      label={t("settings.account.addUsernameLabel")}
+                      value={addUsername}
+                      onChange={(e) => setAddUsername(e.target.value)}
+                      required
+                      autoComplete="username"
+                      size="small"
+                    />
+                    <TextField
+                      label={t("settings.account.currentPassword")}
+                      type="password"
+                      value={addPassword}
+                      onChange={(e) => setAddPassword(e.target.value)}
+                      required
+                      autoComplete="current-password"
+                      size="small"
+                    />
+                    <Button type="submit" variant="contained" disabled={addLoading}>
+                      {addLoading ? "…" : t("settings.account.addAndStay")}
+                    </Button>
+                  </Stack>
+                </Box>
+              </AccordionDetails>
+            </Accordion>
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setSwitchOpen(false)}>{t("common.close")}</Button>
+          <Button onClick={handleSwitchDialogClose}>{t("common.close")}</Button>
         </DialogActions>
       </Dialog>
     </Box>
