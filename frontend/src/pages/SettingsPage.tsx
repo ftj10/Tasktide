@@ -63,7 +63,6 @@ type SettingsPageProps = {
   installPrompt: BeforeInstallPromptEvent | null;
   onInstallPromptConsumed: () => void;
   onLogout: () => void;
-  onLoginSuccess: () => void;
   avatarUrl: string | null;
   onAvatarChange: (url: string | null) => void;
 };
@@ -77,7 +76,6 @@ export function SettingsPage({
   installPrompt,
   onInstallPromptConsumed,
   onLogout,
-  onLoginSuccess,
   avatarUrl,
   onAvatarChange,
 }: SettingsPageProps) {
@@ -258,6 +256,9 @@ export function SettingsPage({
       }
 
       addSavedAccount(data.username, data.switchToken ?? "");
+      for (const conn of data.newConnections ?? []) {
+        addSavedAccount(conn.username, conn.switchToken);
+      }
       setSavedAccounts(getSavedAccounts());
       setAddUsername("");
       setAddPassword("");

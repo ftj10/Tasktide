@@ -23,6 +23,7 @@ const storageMocks = vi.hoisted(() => ({
   updateReminder: vi.fn(),
   deleteReminder: vi.fn(),
   logoutUser: vi.fn(),
+  addSavedAccount: vi.fn(),
 }));
 
 vi.mock("../src/app/storage", async () => {
@@ -40,6 +41,7 @@ vi.mock("../src/app/storage", async () => {
     updateReminder: storageMocks.updateReminder,
     deleteReminder: storageMocks.deleteReminder,
     logoutUser: storageMocks.logoutUser,
+    addSavedAccount: storageMocks.addSavedAccount,
     rolloverIfNeeded: (tasks: unknown) => tasks,
   };
 });
@@ -59,6 +61,7 @@ describe("App behavior", () => {
     storageMocks.updateReminder.mockReset().mockResolvedValue(undefined);
     storageMocks.deleteReminder.mockReset().mockResolvedValue(undefined);
     storageMocks.logoutUser.mockReset();
+    storageMocks.addSavedAccount.mockReset();
     await i18n.changeLanguage("en");
   });
 
@@ -183,6 +186,23 @@ describe("App behavior", () => {
     });
 
     expect(storageMocks.loadTasks).toHaveBeenCalledTimes(1);
+  });
+
+  it("loads account connections after login and merges them into saved accounts", async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ avatar: null }) })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ connections: [{ username: "sam", switchToken: "tok-sam" }] }),
+      });
+    vi.stubGlobal("fetch", fetchMock);
+
+    renderWithProviders(<App />);
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith("/api/account-connections", { credentials: "include" });
+      expect(storageMocks.addSavedAccount).toHaveBeenCalledWith("sam", "tok-sam");
+    });
   });
 
   it("stores daily notification dedupe state in the retained history key", async () => {

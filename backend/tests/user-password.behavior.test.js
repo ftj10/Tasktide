@@ -18,10 +18,12 @@ const originals = {
     compare: bcrypt.compare,
   },
   jwt: {
+    sign: jwt.sign,
     verify: jwt.verify,
   },
   user: {
     findOne: User.findOne,
+    updateOne: User.updateOne,
   },
 };
 
@@ -33,8 +35,25 @@ function resetStubs() {
   bcrypt.genSalt = originals.bcrypt.genSalt;
   bcrypt.hash = originals.bcrypt.hash;
   bcrypt.compare = originals.bcrypt.compare;
+  jwt.sign = originals.jwt.sign;
   jwt.verify = originals.jwt.verify;
   User.findOne = originals.user.findOne;
+  User.updateOne = originals.user.updateOne;
+}
+
+function createTestUser(username, overrides = {}) {
+  return {
+    _id: `${username}-id`,
+    username,
+    password: 'hashed-password',
+    role: 'USER',
+    savedAccounts: [],
+    ...overrides,
+  };
+}
+
+function usernameFromFilter(filter) {
+  return String(filter?.username ?? '').replace(/^\/\^/, '').replace(/\$\/i$/, '');
 }
 
 test.beforeEach(() => {
@@ -131,5 +150,88 @@ test('behavior: GET /user/me returns username and role', async () => {
     role: 'ADMIN',
     email: null,
     emailNotifications: false,
+    avatar: null,
   });
+});
+
+test('behavior: POST /account-token propagates A to B and B to A connections in DB', async () => {
+  const users = new Map([
+    ['tom', createTestUser('tom')],
+    ['sam', createTestUser('sam')],
+  ]);
+  bcrypt.compare = async () => true;
+  jwt.sign = (payload) => `tok-${payload.username}`;
+  User.findOne = async (filter) => users.get(usernameFromFilter(filter).toLowerCase()) ?? null;
+  User.updateOne = async (filter, payload) => {
+    const user = users.get(usernameFromFilter(filter).toLowerCase());
+    if (user) user.savedAccounts = payload.$set.savedAccounts;
+    return { matchedCount: user ? 1 : 0 };
+  };
+
+  const result = await invokeApp(app, '/account-token', {
+    method: 'POST',
+    headers: authHeaders(),
+    body: { username: 'sam', password: 'password1' },
+  });
+
+  assert.equal(result.statusCode, 200);
+  assert.deepEqual(users.get('tom').savedAccounts, [{ username: 'sam', switchToken: 'tok-sam' }]);
+  assert.deepEqual(users.get('sam').savedAccounts, [{ username: 'tom', switchToken: 'tok-tom' }]);
+});
+
+test('behavior: POST /account-token when B already has C gives A C and C A', async () => {
+  const users = new Map([
+    ['tom', createTestUser('tom')],
+    ['sam', createTestUser('sam', {
+      savedAccounts: [{ username: 'carol', switchToken: 'old-carol' }],
+    })],
+    ['carol', createTestUser('carol')],
+  ]);
+  bcrypt.compare = async () => true;
+  jwt.sign = (payload) => `tok-${payload.username}`;
+  User.findOne = async (filter) => users.get(usernameFromFilter(filter).toLowerCase()) ?? null;
+  User.updateOne = async (filter, payload) => {
+    const user = users.get(usernameFromFilter(filter).toLowerCase());
+    if (user) user.savedAccounts = payload.$set.savedAccounts;
+    return { matchedCount: user ? 1 : 0 };
+  };
+
+  const result = await invokeApp(app, '/account-token', {
+    method: 'POST',
+    headers: authHeaders(),
+    body: { username: 'sam', password: 'password1' },
+  });
+
+  assert.equal(result.statusCode, 200);
+  assert.deepEqual(result.json.newConnections, [{ username: 'carol', switchToken: 'tok-carol' }]);
+  assert.deepEqual(users.get('tom').savedAccounts, [
+    { username: 'sam', switchToken: 'tok-sam' },
+    { username: 'carol', switchToken: 'tok-carol' },
+  ]);
+  assert.deepEqual(users.get('carol').savedAccounts, [{ username: 'tom', switchToken: 'tok-tom' }]);
+});
+
+test('behavior: GET /account-connections returns current user DB connections', async () => {
+  User.findOne = async () => ({
+    _id: 'user-1',
+    username: 'tom',
+    role: 'USER',
+    savedAccounts: [{ username: 'sam', switchToken: 'tok-sam' }],
+  });
+
+  const result = await invokeApp(app, '/account-connections', {
+    headers: authHeaders(),
+  });
+
+  assert.equal(result.statusCode, 200);
+  assert.deepEqual(result.json, {
+    connections: [{ username: 'sam', switchToken: 'tok-sam' }],
+  });
+});
+
+test('behavior: GET /account-connections without auth returns 401', async () => {
+  const result = await invokeApp(app, '/account-connections');
+
+  assert.equal(result.statusCode, 401);
+  assert.deepEqual(result.json, { error: 'Access denied' });
 });

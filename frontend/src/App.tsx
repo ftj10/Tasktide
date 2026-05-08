@@ -37,6 +37,7 @@ import {
   deleteReminder,
   deleteTask,
   flushPendingTaskSync,
+  addSavedAccount,
   getUsername,
   loadSession,
   loadReminders,
@@ -257,8 +258,20 @@ export default function App() {
       }
     }
 
+    async function fetchAccountConnections() {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || "/api";
+        const res = await fetch(`${apiUrl}/account-connections`, { credentials: "include" });
+        const data = await res.json() as { connections?: { username: string; switchToken: string }[] };
+        for (const conn of data.connections ?? []) {
+          addSavedAccount(conn.username, conn.switchToken);
+        }
+      } catch {}
+    }
+
     fetchInitialData();
     void fetchUserProfile();
+    void fetchAccountConnections();
   }, [isAuthenticated]);
 
   function queueTaskSync(prevTasks: Task[], nextTasks: Task[]) {
@@ -773,7 +786,6 @@ export default function App() {
                           installPrompt={installPrompt}
                           onInstallPromptConsumed={() => setInstallPrompt(null)}
                           onLogout={handleLogout}
-                          onLoginSuccess={handleLoginSuccess}
                           avatarUrl={avatarUrl}
                           onAvatarChange={setAvatarUrl}
                         />

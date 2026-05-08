@@ -1,5 +1,18 @@
 # Release Notes
 
+Title: Version 2.12.0 – Update Released (2026-05-08)
+
+What’s New
+
+- Added: Saved accounts now connect both ways automatically when you add another account.
+- Added: If an account already has saved account connections, those connected accounts can now appear for you too.
+
+Improvements
+
+- Improved: Switching between related accounts is easier because account connections sync after you add an account.
+
+Fixes
+
 ## Version 2.11.1 – Update Released (2026-05-08)
 
 ### Fixes

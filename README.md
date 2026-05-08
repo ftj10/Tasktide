@@ -1,6 +1,6 @@
 # TaskTide Application
 
-Current version: `v2.11.0`
+Current version: `v2.12.0`
 
 TaskTide is a full-stack planner for daily tasks, weekly routines, reminders, shared help questions, calendar-based scheduling, and mobile-first weekly organization.
 
@@ -17,7 +17,7 @@ Deployed Web: TaskTide
 - Task and reminder CRUD actions — create, update, complete, delete — each confirm with a brief toast notification at the bottom of the screen, including a correct completion message when reminders are marked done. ICS import results also appear as toasts instead of inline banners.
 - Secure registration and login with HttpOnly cookie sessions and persisted `USER` / `ADMIN` roles.
 - Signed-in users can change their password from Settings and use saved username shortcuts to switch accounts without storing passwords.
-- Multi-account switching — save up to 10 accounts and switch between them with one click using 30-day switch tokens; add accounts inline without logging out
+- Multi-account switching — save up to 10 accounts and switch between them with one click using 30-day switch tokens; add accounts inline without logging out; related saved accounts sync both ways automatically
 - Optional email notification preferences, forgot-password reset links, and an admin-only email broadcast route support email workflows when SMTP is configured.
 - Registration now trims usernames, prevents duplicate-looking username casing, and requires stronger passwords before an account is created.
 - Cookie-backed write requests are checked against trusted TaskTide origins so signed-in planner changes stay protected from cross-site request attempts.

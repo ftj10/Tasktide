@@ -35,6 +35,13 @@ const userSchema = new mongoose.Schema({
   passwordResetToken: { type: String, default: null },
   passwordResetExpiry: { type: Date, default: null },
   avatar: { type: String, default: null },
+  savedAccounts: {
+    type: [{
+      username: { type: String, required: true },
+      switchToken: { type: String, required: true },
+    }],
+    default: [],
+  },
   pushSubscriptions: {
     type: [pushSubscriptionSchema],
     default: [],

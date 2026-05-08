@@ -226,6 +226,30 @@ async function persistResolvedUserRole(user) {
   return resolvedRole;
 }
 
+async function upsertDbSavedAccount(ownerUsername, entry) {
+  const norm = entry.username.toLowerCase();
+  const user = await User.findOne(buildUsernameLookup(ownerUsername));
+  if (!user) return;
+  const filtered = (user.savedAccounts || []).filter((account) => account.username.toLowerCase() !== norm);
+  const updated = [entry, ...filtered].slice(0, 10);
+  await User.updateOne(
+    buildUsernameLookup(ownerUsername),
+    { $set: { savedAccounts: updated } },
+    { runValidators: true }
+  );
+}
+
+async function generateSwitchTokenForUser(username) {
+  const user = await User.findOne(buildUsernameLookup(username));
+  if (!user) return null;
+  const role = await persistResolvedUserRole(user);
+  return jwt.sign(
+    { userId: user._id, username: user.username, role, type: 'switch' },
+    process.env.JWT_SECRET,
+    { expiresIn: SWITCH_TOKEN_EXPIRY }
+  );
+}
+
 function readCookieValue(cookieHeader, name) {
   const cookieText = String(cookieHeader ?? '');
   if (!cookieText) return null;
@@ -445,6 +469,27 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
+// INPUT: optional session cookie or bearer token request header
+// OUTPUT: decoded user on req.user when available
+// EFFECT: Lets secondary account token creation sync saved-account links for signed-in users
+const optionalAuthenticateToken = (req, res, next) => {
+  const cookieToken = readCookieValue(req.headers.cookie, SESSION_COOKIE_NAME);
+  const authHeader = req.headers['authorization'];
+  const headerToken = authHeader && authHeader.split(' ')[1];
+  const token = cookieToken || headerToken;
+
+  if (!token) {
+    next();
+    return;
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, decodedUser) => {
+    if (err) return res.status(403).json({ error: "Invalid token" });
+    req.user = toSessionUser(decodedUser);
+    next();
+  });
+};
+
 // INPUT: username and password
 // OUTPUT: registration success or validation failure
 // EFFECT: Creates a new account for the planner authentication feature
@@ -543,10 +588,10 @@ app.post("/account-switch", async (req, res) => {
   }
 });
 
-// INPUT: username and password
-// OUTPUT: switch token for the target account (no session cookie change)
-// EFFECT: Authenticates a secondary account so it can be saved for later one-click switching
-app.post("/account-token", async (req, res) => {
+// INPUT: current session plus secondary username and password
+// OUTPUT: switch tokens for saved-account connections
+// EFFECT: Authenticates a secondary account and syncs saved-account links across connected accounts
+app.post("/account-token", optionalAuthenticateToken, async (req, res) => {
   try {
     const validatedPayload = validateLoginPayload(req.body?.username, req.body?.password);
     if (validatedPayload.error) {
@@ -566,9 +611,54 @@ app.post("/account-token", async (req, res) => {
       { expiresIn: SWITCH_TOKEN_EXPIRY }
     );
 
-    res.status(200).json({ username: user.username, switchToken });
+    const newConnections = [];
+
+    if (req.user?.username) {
+      const ownerUsername = req.user.username;
+      const switchTokenForOwner = await generateSwitchTokenForUser(ownerUsername);
+      const existingConnections = (user.savedAccounts || [])
+        .filter((account) => account?.username)
+        .filter((account) => account.username.toLowerCase() !== ownerUsername.toLowerCase())
+        .filter((account) => account.username.toLowerCase() !== user.username.toLowerCase());
+
+      if (switchTokenForOwner) {
+        for (const connection of existingConnections) {
+          const freshTokenForConnection = await generateSwitchTokenForUser(connection.username);
+          if (!freshTokenForConnection) continue;
+          await upsertDbSavedAccount(ownerUsername, {
+            username: connection.username,
+            switchToken: freshTokenForConnection,
+          });
+          await upsertDbSavedAccount(connection.username, {
+            username: ownerUsername,
+            switchToken: switchTokenForOwner,
+          });
+          newConnections.push({
+            username: connection.username,
+            switchToken: freshTokenForConnection,
+          });
+        }
+
+        await upsertDbSavedAccount(ownerUsername, { username: user.username, switchToken });
+        await upsertDbSavedAccount(user.username, { username: ownerUsername, switchToken: switchTokenForOwner });
+      }
+    }
+
+    res.status(200).json({ username: user.username, switchToken, newConnections });
   } catch {
     res.status(500).json({ error: "Failed to generate account token" });
+  }
+});
+
+// INPUT: authenticated session
+// OUTPUT: saved account connections for the current user
+// EFFECT: Restores server-synced account switch targets into the signed-in browser
+app.get('/account-connections', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findOne(buildUsernameLookup(req.user.username));
+    res.status(200).json({ connections: user?.savedAccounts ?? [] });
+  } catch {
+    res.status(500).json({ error: 'Failed to fetch connections' });
   }
 });
 

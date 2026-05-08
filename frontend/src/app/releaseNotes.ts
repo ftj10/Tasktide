@@ -14,6 +14,28 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-05-08-symmetric-accounts",
+    version: "v2.12.0",
+    releasedAt: "2026-05-08",
+    title: { en: "Connected Saved Accounts", zh: "已保存账号自动连接" },
+    summary: {
+      en: "Adding an account now keeps saved account switching connected across related accounts.",
+      zh: "添加账号后，相关账号之间的已保存切换关系现在会自动同步。",
+    },
+    changes: {
+      en: [
+        "Added: Saved accounts now connect both ways automatically.",
+        "Added: Existing saved connections from the account you add can now sync into your switcher.",
+        "Improved: Related accounts are easier to switch between after one account is added.",
+      ],
+      zh: [
+        "新增：已保存账号现在会自动双向连接。",
+        "新增：被添加账号已有的保存连接现在也可以同步到你的切换列表。",
+        "改进：添加一个账号后，在相关账号之间切换更方便。",
+      ],
+    },
+  },
+  {
     id: "2026-05-08-account-switch-reload",
     version: "v2.11.1",
     releasedAt: "2026-05-08",

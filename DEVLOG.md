@@ -1,5 +1,40 @@
 # Development Log
 
+## Version 2.12.0
+Update Date: 2026-05-08
+
+### Changes
+
+**`backend/models/User.js`**
+- Added `savedAccounts` to persisted user records with username and switch-token entries.
+
+**`backend/server.js`**
+- Added database saved-account upsert and switch-token generation helpers.
+- Extended `/account-token` so a signed-in user adding another account creates A to B and B to A saved-account records.
+- Added transitive propagation from B's existing saved accounts so A receives those connections and each connected account receives A.
+- Added authenticated `GET /account-connections` for restoring database-backed saved-account links into the browser.
+
+**`frontend/src/pages/SettingsPage.tsx`**
+- Updated inline add-account handling to store `newConnections` returned by `/account-token`.
+
+**`frontend/src/App.tsx`**
+- Added account-connection loading after authenticated task and reminder hydration so server-synced saved accounts merge into local storage.
+
+**`backend/tests/user-password.behavior.test.js`, `frontend/src/pages/SettingsPage.behavior.test.tsx`, `frontend/tests/app.behavior.test.tsx`**
+- Added backend coverage for symmetric propagation, transitive propagation, authenticated connection fetch, and unauthenticated rejection.
+- Added frontend coverage for storing returned `newConnections` and merging startup account connections into saved accounts.
+
+**`frontend/package.json`, `RELEASENOTES.md`, `frontend/src/app/releaseNotes.ts`, `frontend/src/app/helpCenter.ts`, `README.md`, `DEVLOG.md`**
+- Bumped frontend version from `2.11.1` to `2.12.0`.
+- Updated user-facing release notes, in-app release notes, Help Center walkthrough guidance, public overview, and maintainer log for automatic saved-account linking.
+
+### Design decisions
+- `/account-token` still supports the existing secondary-account credential check, while signed-in requests also use the active session to persist account links.
+- Switch tokens are regenerated during propagation so saved connections receive fresh 30-day switch credentials.
+- The propagation caps each saved-account list at ten entries to match the frontend switcher limit.
+
+---
+
 ## Version 2.11.1
 Update Date: 2026-05-08
 

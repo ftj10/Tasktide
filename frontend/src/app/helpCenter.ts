@@ -82,6 +82,8 @@ export function getOnboardingSteps(t: TFunction): OnboardingTooltipStep[] {
 }
 
 export function getHelpCenterData(t: TFunction): HelpCenterItem[] {
+  const isChinese = t("help.walkthroughs.switchAccounts.question") === "切换账号";
+
   return [
     {
       id: "add-task-browser",
@@ -210,6 +212,14 @@ export function getHelpCenterData(t: TFunction): HelpCenterItem[] {
           mediaAlt: t("help.walkthroughs.switchAccounts.title"),
           title: t("help.walkthroughs.switchAccounts.title"),
           text: t("help.walkthroughs.switchAccounts.text"),
+        },
+        {
+          mediaSrc: "/help-walkthroughs/switch accounts.gif",
+          mediaAlt: t("help.walkthroughs.switchAccounts.title"),
+          title: isChinese ? "自动账号连接" : "Automatic account linking",
+          text: isChinese
+            ? "功能说明：\n添加账号后，两个账号会自动互相保存。如果新账号已经保存了其他账号，这些连接也会自动加入。\n\n使用方法：\n1. 在「设置」中打开「切换账号」。\n2. 添加另一个账号并保持当前登录。\n3. 重新打开「切换账号」即可看到自动同步的账号。\n4. 点击任意已保存账号即可切换。"
+            : "What it does:\nAfter you add an account, both accounts automatically save each other. If the new account already has other saved accounts, those connections are added too.\n\nHow to use:\n1. Open Switch Account in Settings.\n2. Add another account and stay signed in.\n3. Reopen Switch Account to see the synced accounts.\n4. Click any saved account to switch.",
         },
       ],
     },

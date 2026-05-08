@@ -5,15 +5,23 @@ description: Coordinates the full AI-assisted development workflow for TaskTide 
 
 # TaskTide Agent Workflow
 
-## Quick start
+## Phase 1 — Brainstorming (runs immediately on invocation)
 
-1. Run `/superpowers:brainstorming` to explore user intent and requirements before proceeding
-   - **STOP after brainstorming completes. Do NOT auto-invoke any other superpowers skill** (e.g. `superpowers:writing-plans`, `superpowers:executing-plans`, etc.) — the command sequences below define exactly which skills run next, in order, driven by the user
-2. Read the user's requirement
-3. Classify it (see below)
-4. Output: chosen path, reason, command sequence, files to read/update, next action
-5. Generate the Codex handoff prompt for implementation and tests
-6. When implementation or tests are needed, route the work to Codex; this is mandatory, not optional
+Invoke `/superpowers:brainstorming` now. That is the **only** action in Phase 1.
+
+> **HARD STOP after brainstorming completes.**
+> Do NOT classify, do NOT output a workflow path, do NOT generate a Codex prompt, do NOT invoke any other skill.
+> Wait silently for the user to continue.
+
+## Phase 2 — Workflow (only after user explicitly continues)
+
+When the user signals they are ready to proceed (e.g. "continue", "what's next", or gives a refined requirement):
+
+1. Read the user's requirement
+2. Classify it (see below)
+3. Output: chosen path, reason, command sequence, files to read/update, next action
+4. Generate the Codex handoff prompt for implementation and tests
+5. When implementation or tests are needed, route the work to Codex; this is mandatory, not optional
 
 ## Classification
 

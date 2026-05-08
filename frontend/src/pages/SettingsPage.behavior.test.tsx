@@ -218,6 +218,34 @@ describe("SettingsPage", () => {
     });
   });
 
+  it("inline add-account stores newConnections returned by /account-token", async () => {
+    const user = userEvent.setup();
+    storageMocks.getSavedAccounts.mockReturnValue([]);
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ email: "", emailNotifications: false }) })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          username: "sam",
+          switchToken: "tok-sam",
+          newConnections: [{ username: "carol", switchToken: "tok-carol" }],
+        }),
+      });
+    vi.stubGlobal("fetch", fetchMock);
+
+    renderSettingsPage();
+    await user.click(screen.getByRole("button", { name: "Add Account" }));
+    const dialog = await screen.findByRole("dialog");
+    await user.type(await within(dialog).findByRole("textbox", { name: /Username/i }), "sam");
+    await user.type(within(dialog).getByLabelText(/Current password/i), "password1");
+    await user.click(within(dialog).getByRole("button", { name: /Add & Stay/i }));
+
+    await waitFor(() => {
+      expect(storageMocks.addSavedAccount).toHaveBeenCalledWith("sam", "tok-sam");
+      expect(storageMocks.addSavedAccount).toHaveBeenCalledWith("carol", "tok-carol");
+    });
+  });
+
   it("inline add-account form shows error when credentials are rejected", async () => {
     const user = userEvent.setup();
     storageMocks.getSavedAccounts.mockReturnValue([]);
