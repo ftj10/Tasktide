@@ -230,8 +230,7 @@ export function SettingsPage({
       }
 
       setAuth(data.username, data.role);
-      setSwitchOpen(false);
-      onLoginSuccess();
+      window.location.reload();
     } catch {
       setSwitchError(t("settings.account.switchFailed"));
       setSwitchingAccount(null);

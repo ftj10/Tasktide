@@ -1,5 +1,10 @@
 # Release Notes
 
+## Version 2.11.1 – Update Released (2026-05-08)
+
+### Fixes
+- Fixed: After switching to a saved account, the app now fully reloads so your tasks, reminders, and avatar load correctly for the new account.
+
 ## Version 2.11.0 – Update Released (2026-05-07)
 
 ### What's New

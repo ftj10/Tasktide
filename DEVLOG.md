@@ -1,5 +1,18 @@
 # Development Log
 
+## Version 2.11.1
+Update Date: 2026-05-08
+
+### Changes
+
+**`frontend/src/pages/SettingsPage.tsx`**
+- `handleSwitchAccount`: replaced `setSwitchOpen(false); onLoginSuccess()` with `window.location.reload()`. Root cause: `onLoginSuccess` calls `setIsAuthenticated(true)` which is already `true` after a switch, so the `useEffect([isAuthenticated])` that loads tasks/reminders never re-fires. A full reload reinitializes the app against the new session cookie.
+
+**`frontend/src/pages/SettingsPage.behavior.test.tsx`**
+- Updated account-switch test to stub `window.location.reload` via `vi.stubGlobal("location", ...)` and assert `reloadMock` called instead of `onLoginSuccess`.
+
+---
+
 ## Version 2.10.1
 Update Date: 2026-05-07
 

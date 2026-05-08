@@ -14,6 +14,20 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-05-08-account-switch-reload",
+    version: "v2.11.1",
+    releasedAt: "2026-05-08",
+    title: { en: "Account Switch Fix", zh: "账号切换修复" },
+    summary: {
+      en: "Switching to a saved account now fully reloads the app for the new user.",
+      zh: "切换到已保存的账号后，应用现在会为新用户完整重新加载。",
+    },
+    changes: {
+      en: ["Fixed: After switching accounts, tasks and reminders now load correctly for the new account."],
+      zh: ["修复：切换账号后，任务和提醒现在会为新账号正确加载。"],
+    },
+  },
+  {
     id: "2026-05-07-multi-account-switch",
     version: "v2.11.0",
     releasedAt: "2026-05-07",

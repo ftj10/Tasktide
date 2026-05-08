@@ -153,13 +153,14 @@ describe("SettingsPage", () => {
     const user = userEvent.setup();
     storageMocks.getSavedAccounts.mockReturnValue([{ username: "casey", switchToken: "tok-abc" }]);
     storageMocks.getSwitchToken.mockReturnValue("tok-abc");
+    const reloadMock = vi.fn();
+    vi.stubGlobal("location", { ...window.location, reload: reloadMock });
     const fetchMock = vi.fn()
       .mockResolvedValueOnce({ ok: true, json: async () => ({ email: "", emailNotifications: false }) })
       .mockResolvedValueOnce({ ok: true, json: async () => ({ username: "casey", role: "USER" }) });
     vi.stubGlobal("fetch", fetchMock);
-    const onLoginSuccess = vi.fn();
 
-    renderSettingsPage({ onLoginSuccess });
+    renderSettingsPage();
     await user.click(screen.getByRole("button", { name: "Switch Account" }));
     await user.click(screen.getByRole("button", { name: "casey" }));
 
@@ -168,7 +169,7 @@ describe("SettingsPage", () => {
         expect.stringContaining("/account-switch"),
         expect.objectContaining({ body: JSON.stringify({ username: "casey", switchToken: "tok-abc" }) })
       );
-      expect(onLoginSuccess).toHaveBeenCalledTimes(1);
+      expect(reloadMock).toHaveBeenCalledTimes(1);
     });
   });
 
