@@ -22,6 +22,7 @@ const emailService = require('./emailService');
 const app = express();
 const SESSION_COOKIE_NAME = 'tasktide_session';
 const SESSION_COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+const SWITCH_TOKEN_EXPIRY = '30d';
 const MIN_USERNAME_LENGTH = 3;
 const MIN_PASSWORD_LENGTH = 8;
 
@@ -492,9 +493,14 @@ app.post('/login', async (req, res) => {
     const role = await persistResolvedUserRole(user);
     const sessionUser = toSessionUser({ userId: user._id, username: user.username, role });
     const token = jwt.sign(sessionUser, process.env.JWT_SECRET, { expiresIn: '7d' });
+    const switchToken = jwt.sign(
+      { userId: user._id, username: user.username, role, type: 'switch' },
+      process.env.JWT_SECRET,
+      { expiresIn: SWITCH_TOKEN_EXPIRY }
+    );
 
     setSessionCookie(req, res, token);
-    res.status(200).json({ username: user.username, role: sessionUser.role });
+    res.status(200).json({ username: user.username, role: sessionUser.role, switchToken });
   } catch (err) {
     res.status(500).json({ error: "Failed to log in" });
   }
