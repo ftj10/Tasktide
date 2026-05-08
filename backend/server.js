@@ -506,6 +506,72 @@ app.post('/login', async (req, res) => {
   }
 });
 
+// INPUT: username plus a previously-issued switch token
+// OUTPUT: new session cookie for the target account
+// EFFECT: Switches the active browser session without requiring a password
+app.post("/account-switch", async (req, res) => {
+  const username = String(req.body?.username ?? '').trim();
+  const switchToken = String(req.body?.switchToken ?? '').trim();
+
+  if (!username || !switchToken) {
+    return res.status(400).json({ error: "Username and switchToken are required" });
+  }
+
+  let payload;
+  try {
+    payload = jwt.verify(switchToken, process.env.JWT_SECRET);
+  } catch {
+    return res.status(401).json({ error: "Switch token invalid or expired" });
+  }
+
+  if (payload.type !== 'switch' || String(payload.username ?? '').toLowerCase() !== username.toLowerCase()) {
+    return res.status(401).json({ error: "Switch token invalid or expired" });
+  }
+
+  try {
+    const user = await User.findOne(buildUsernameLookup(username));
+    if (!user) return res.status(401).json({ error: "Switch token invalid or expired" });
+
+    const role = await persistResolvedUserRole(user);
+    const sessionUser = toSessionUser({ userId: user._id, username: user.username, role });
+    const token = jwt.sign(sessionUser, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+    setSessionCookie(req, res, token);
+    res.status(200).json({ username: user.username, role: sessionUser.role });
+  } catch {
+    res.status(500).json({ error: "Failed to switch account" });
+  }
+});
+
+// INPUT: username and password
+// OUTPUT: switch token for the target account (no session cookie change)
+// EFFECT: Authenticates a secondary account so it can be saved for later one-click switching
+app.post("/account-token", async (req, res) => {
+  try {
+    const validatedPayload = validateLoginPayload(req.body?.username, req.body?.password);
+    if (validatedPayload.error) {
+      return res.status(400).json({ error: validatedPayload.error });
+    }
+
+    const user = await User.findOne(buildUsernameLookup(validatedPayload.username));
+    if (!user) return res.status(400).json({ error: "Invalid credentials" });
+
+    const validPassword = await bcrypt.compare(validatedPayload.password, user.password);
+    if (!validPassword) return res.status(400).json({ error: "Invalid credentials" });
+
+    const role = await persistResolvedUserRole(user);
+    const switchToken = jwt.sign(
+      { userId: user._id, username: user.username, role, type: 'switch' },
+      process.env.JWT_SECRET,
+      { expiresIn: SWITCH_TOKEN_EXPIRY }
+    );
+
+    res.status(200).json({ username: user.username, switchToken });
+  } catch {
+    res.status(500).json({ error: "Failed to generate account token" });
+  }
+});
+
 // INPUT: authenticated session cookie
 // OUTPUT: signed-in session profile
 // EFFECT: Lets the frontend restore the current browser session without reading the JWT in JavaScript
