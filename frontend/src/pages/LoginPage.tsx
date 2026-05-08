@@ -93,7 +93,7 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
         setPassword("");
       } else {
         setAuth(data.username, data.role);
-        addSavedAccount(data.username);
+        addSavedAccount(data.username, data.switchToken ?? "");
         onLoginSuccess();
       }
     } catch (err: unknown) {
