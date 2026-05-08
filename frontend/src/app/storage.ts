@@ -6,6 +6,8 @@ import dayjs from "dayjs";
 import { weekStartMonday } from "./date";
 import { normalizeTasks } from "./tasks";
 
+export type SavedAccount = { username: string; switchToken: string };
+
 const WEEK_KEY = "tasktide_lastWeekStart_v1";
 const USERNAME_KEY = "tasktide_username";
 const ROLE_KEY = "tasktide_user_role";
@@ -43,6 +45,31 @@ function readJsonStorage<T>(key: string, fallback: T): T {
 
 function writeJsonStorage<T>(key: string, value: T) {
   localStorage.setItem(key, JSON.stringify(value));
+}
+
+function migrateSavedAccounts(raw: unknown): SavedAccount[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((entry): SavedAccount | null => {
+      if (typeof entry === 'string' && entry.trim()) {
+        return { username: entry.trim(), switchToken: '' };
+      }
+      if (
+        entry &&
+        typeof entry === 'object' &&
+        typeof (entry as SavedAccount).username === 'string' &&
+        (entry as SavedAccount).username.trim()
+      ) {
+        return {
+          username: (entry as SavedAccount).username.trim(),
+          switchToken: typeof (entry as SavedAccount).switchToken === 'string'
+            ? (entry as SavedAccount).switchToken
+            : '',
+        };
+      }
+      return null;
+    })
+    .filter((entry): entry is SavedAccount => entry !== null);
 }
 
 function getPendingTaskSyncQueue() {
@@ -303,36 +330,42 @@ export function setAuth(username: string, role: AuthRole = "USER") {
 }
 
 // INPUT: none
-// OUTPUT: saved account usernames
-// EFFECT: Lists recent account names without storing passwords
-export function getSavedAccounts(): string[] {
-  return readJsonStorage<string[]>(SAVED_ACCOUNTS_KEY, []).filter(
-    (account) => typeof account === "string" && account.trim()
-  );
+// OUTPUT: saved account list with switch tokens
+// EFFECT: Lists saved accounts and migrates old string-only entries to the new shape
+export function getSavedAccounts(): SavedAccount[] {
+  return migrateSavedAccounts(readJsonStorage(SAVED_ACCOUNTS_KEY, []));
 }
 
-// INPUT: username
+// INPUT: username and switch token
 // OUTPUT: updated saved account list
-// EFFECT: Stores up to five recent account names without storing passwords
-export function addSavedAccount(username: string) {
+// EFFECT: Stores up to ten accounts; re-adding an existing username refreshes its switch token
+export function addSavedAccount(username: string, switchToken: string) {
   const normalizedUsername = username.trim();
   if (!normalizedUsername) return;
-
   const accounts = getSavedAccounts().filter(
-    (account) => account.toLowerCase() !== normalizedUsername.toLowerCase()
+    (a) => a.username.toLowerCase() !== normalizedUsername.toLowerCase()
   );
-  writeJsonStorage(SAVED_ACCOUNTS_KEY, [normalizedUsername, ...accounts].slice(0, 5));
+  writeJsonStorage(SAVED_ACCOUNTS_KEY, [{ username: normalizedUsername, switchToken }, ...accounts].slice(0, 10));
 }
 
 // INPUT: username
 // OUTPUT: updated saved account list
-// EFFECT: Removes one saved account name from the switcher
+// EFFECT: Removes one saved account from the switcher
 export function removeSavedAccount(username: string) {
   const normalizedUsername = username.trim().toLowerCase();
   writeJsonStorage(
     SAVED_ACCOUNTS_KEY,
-    getSavedAccounts().filter((account) => account.toLowerCase() !== normalizedUsername)
+    getSavedAccounts().filter((a) => a.username.toLowerCase() !== normalizedUsername)
   );
+}
+
+// INPUT: username
+// OUTPUT: stored switch token or null
+// EFFECT: Supplies the account switcher with the credential needed for one-click switching
+export function getSwitchToken(username: string): string | null {
+  const normalizedUsername = username.trim().toLowerCase();
+  const account = getSavedAccounts().find((a) => a.username.toLowerCase() === normalizedUsername);
+  return account?.switchToken || null;
 }
 
 // INPUT: none
