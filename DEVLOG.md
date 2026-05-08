@@ -1175,3 +1175,16 @@ Update Date: 2026-05-01
 
 ### Known Limitations
 - The Install app entry opens guidance rather than directly invoking a browser install prompt, because install-prompt support varies by browser and device.
+
+## 2026-05-07 — Multi-Account Switch (v2.11.0)
+
+### Changes
+- `backend/server.js`: `POST /login` now returns `switchToken` (30-day JWT, `type: "switch"`). New `POST /account-switch` validates a switch token and issues a session cookie. New `POST /account-token` authenticates and returns only a switch token (no cookie change) for inline add-account without disrupting the active session.
+- `frontend/src/app/storage.ts`: `savedAccounts` shape changed from `string[]` to `{ username, switchToken }[]`. Migration handles old string entries by assigning `switchToken: ""`. Cap raised to 10. New `getSwitchToken(username)` helper.
+- `frontend/src/pages/LoginPage.tsx`: `addSavedAccount` now receives `data.switchToken` after login.
+- `frontend/src/pages/SettingsPage.tsx`: Switch dialog redesigned — one-click chip switching via `/account-switch`, inline add-account form via `/account-token`. "Add Account" button opens dialog with add form expanded.
+
+### Design decisions
+- `/account-token` is separate from `/login` so inline add-account doesn't overwrite the active session cookie.
+- Switch tokens are stateless JWTs (no DB storage). Expiry is 30 days. When expired, the chip error prompts re-add.
+- `getSwitchToken` returns `null` (not `""`) for migrated old entries, so the UI correctly shows the re-add prompt for them.

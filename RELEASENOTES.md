@@ -1,5 +1,15 @@
 # Release Notes
 
+## Version 2.11.0 – Update Released (2026-05-07)
+
+### What's New
+- Added: Save multiple accounts (up to 10) and switch between them with one click — no password needed after the first login.
+- Added: Add a new account from the Switch Account dialog without logging out of your current session.
+
+### Improvements
+- Improved: Saved account slots increased from 5 to 10.
+- Improved: The Switch Account dialog now shows all saved accounts as one-click chips — no intermediate selection step.
+
 Title: Version 2.10.1 – Update Released (2026-05-07)
 
 What’s New

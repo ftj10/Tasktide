@@ -14,6 +14,28 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-05-07-multi-account-switch",
+    version: "v2.11.0",
+    releasedAt: "2026-05-07",
+    title: { en: "One-Click Account Switching", zh: "一键切换账号" },
+    summary: {
+      en: "Switch between saved accounts instantly — no password re-entry after the first login.",
+      zh: "首次登录后，随时一键切换账号，无需重复输入密码。",
+    },
+    changes: {
+      en: [
+        "Added: Save up to 10 accounts and switch with a single click.",
+        "Added: Add a new account inline without logging out.",
+        "Improved: Saved account limit raised from 5 to 10.",
+      ],
+      zh: [
+        "新增：最多保存 10 个账号，一键点击即可切换。",
+        "新增：可在不退出当前账号的情况下内联添加新账号。",
+        "改进：已保存账号数量上限从 5 提升至 10。",
+      ],
+    },
+  },
+  {
     id: "2026-05-07-settings-admin-account-tools",
     version: "v2.10.1",
     releasedAt: "2026-05-07",

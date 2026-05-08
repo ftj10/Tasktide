@@ -398,10 +398,12 @@ export function SettingsPage({
     setSwitchOpen(false);
     setSwitchError("");
     setFailedAccount("");
+    setSwitchingAccount(null);
     setAddAccountOpen(false);
     setAddUsername("");
     setAddPassword("");
     setAddError("");
+    setAddLoading(false);
   }
 
   return (
