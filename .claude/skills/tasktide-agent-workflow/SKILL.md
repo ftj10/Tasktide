@@ -8,6 +8,7 @@ description: Coordinates the full AI-assisted development workflow for TaskTide 
 ## Quick start
 
 1. Run `/superpowers:brainstorming` to explore user intent and requirements before proceeding
+   - **STOP after brainstorming completes. Do NOT auto-invoke any other superpowers skill** (e.g. `superpowers:writing-plans`, `superpowers:executing-plans`, etc.) — the command sequences below define exactly which skills run next, in order, driven by the user
 2. Read the user's requirement
 3. Classify it (see below)
 4. Output: chosen path, reason, command sequence, files to read/update, next action
