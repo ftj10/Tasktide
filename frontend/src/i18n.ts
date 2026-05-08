@@ -127,11 +127,16 @@ const resources = {
           passwordMismatch: "New passwords do not match.",
           passwordUpdated: "Password updated",
           passwordUpdateFailed: "Password update failed",
-          noSavedAccounts: "No saved accounts. Log into another account to save it here.",
+          noSavedAccounts: "No saved accounts. Use \"Add another account\" below to add one.",
           addAccount: "Add Account",
           passwordFor: "Password for {{username}}",
           switchToSelected: "Switch to {{username}}",
           switchFailed: "Account switch failed",
+          sessionExpired: "Session expired for {{username}} — please re-add this account",
+          addAnotherAccount: "Add another account",
+          addAndStay: "Add & Stay",
+          addFailed: "Failed to add account",
+          addUsernameLabel: "Username",
           avatar: {
             upload: "Upload Photo",
             remove: "Remove Photo",
@@ -367,7 +372,7 @@ const resources = {
           switchAccounts: {
             question: "Switch accounts",
             title: "switch accounts.gif",
-            text: "What it does:\nSwitch Account lets you reuse saved usernames without saving passwords.\n\nHow to use:\n1. Open Settings.\n2. Click Switch Account.\n3. Choose a saved username.\n4. Enter that account password.\n5. Submit to switch."
+            text: "What it does:\nSwitch Account lets you save multiple accounts and switch between them with one click — no password needed after the first login.\n\nHow to use:\n1. Open Settings.\n2. Click Switch Account (or Add Account).\n3. To add a new account: expand \"Add another account\", enter credentials, click Add & Stay.\n4. To switch: click any saved account chip. You are switched instantly.\n5. To remove an account: click the × on its chip."
           },
           changePassword: {
             question: "Change password",
@@ -901,11 +906,16 @@ const resources = {
           passwordMismatch: "两次输入的新密码不一致。",
           passwordUpdated: "密码已更新",
           passwordUpdateFailed: "密码更新失败",
-          noSavedAccounts: "没有已保存账号。登录另一个账号后，它会显示在这里。",
+          noSavedAccounts: "没有已保存账号。在下方「添加其他账号」中添加一个。",
           addAccount: "添加账号",
           passwordFor: "{{username}} 的密码",
           switchToSelected: "切换到 {{username}}",
           switchFailed: "切换账号失败",
+          sessionExpired: "{{username}} 的会话已过期，请重新添加此账号",
+          addAnotherAccount: "添加其他账号",
+          addAndStay: "添加并留在当前账号",
+          addFailed: "添加账号失败",
+          addUsernameLabel: "用户名",
           avatar: {
             upload: "上传头像",
             remove: "移除头像",
@@ -1141,7 +1151,7 @@ const resources = {
           switchAccounts: {
             question: "切换账号",
             title: "switch accounts.gif",
-            text: "功能说明：\n「切换账号」可以复用已保存的用户名，但不会保存密码。\n\n使用方法：\n1. 打开「设置」。\n2. 点击「切换账号」。\n3. 选择已保存的用户名。\n4. 输入该账号密码。\n5. 提交后完成切换。"
+            text: "功能说明：\n「切换账号」支持保存多个账号，首次登录后即可一键切换，无需再次输入密码。\n\n使用方法：\n1. 打开「设置」。\n2. 点击「切换账号」或「添加账号」。\n3. 添加新账号：展开「添加其他账号」，输入账号密码，点击「添加并留在当前账号」。\n4. 切换账号：点击已保存账号的标签即可立即切换。\n5. 删除账号：点击标签上的 × 即可移除。"
           },
           changePassword: {
             question: "修改密码",
