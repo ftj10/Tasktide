@@ -382,7 +382,7 @@ const resources = {
           settingsImportExport: {
             question: "Export or import tasks from Settings",
             title: "settings import export.gif",
-            text: "What it does:\nSettings keeps task import and export tools in one place.\n\nHow to use:\n1. Open Settings.\n2. Use Import ICS for calendar files.\n3. Use Import Syllabus for course planning.\n4. Use Export ICS to download tasks for a calendar app."
+            text: "What it does:\nSettings keeps calendar import and export tools in one place.\n\nHow to use:\n1. Open Settings.\n2. Use Import ICS for calendar files.\n3. Use Export ICS to download tasks for a calendar app.\n4. To import a course syllabus, tap Import Syllabus (AI) on the main task view."
           },
           forgotPasswordFlow: {
             question: "Forgot password flow",
@@ -392,12 +392,12 @@ const resources = {
           syllabusAutoClarify: {
             question: "Import a syllabus with AI clarifications",
             title: "how to import syllabus with clarifications.gif",
-            text: "What it does:\nAutomatic syllabus import checks whether any dates, section details, or repeating schedules are unclear before creating tasks.\n\nHow to use:\n1. Click Import Syllabus and add your syllabus text or file.\n2. Choose Analyze with Claude.\n3. Review the text and click Send to Claude.\n4. If questions appear, answer any that you can or leave the answer box blank to skip.\n5. Click Analyze, then review and add the suggested tasks."
+            text: "What it does:\nAutomatic syllabus import checks whether any dates, section details, or repeating schedules are unclear before creating tasks.\n\nHow to use:\n1. Tap Import Syllabus (AI) on the main task view and add your syllabus text or file.\n2. Choose Analyze with Claude.\n3. Answer any optional preference questions, then click Next.\n4. Review the text and click Send to Claude.\n5. If questions appear, answer any that you can or leave the answer box blank to skip.\n6. Click Analyze, then review and add the suggested tasks."
           },
           syllabusManual: {
             question: "Import a syllabus using your own AI",
             title: "how to import syllabus manually.gif",
-            text: "1. Click Import Syllabus in the sidebar.\n2. Paste your syllabus text or upload a PDF, CSV, or DOCX file, then click Next.\n3. Choose Copy prompt to my AI.\n4. Optionally add study preferences (e.g. \"remind me 3 days before exams\").\n5. Click Next to see the generated prompt — copy it with the Copy Prompt button.\n6. Paste the prompt into any AI (ChatGPT, Claude, etc.) and copy the JSON it returns. The prompt asks for a short useful description on every task.\n7. Paste that JSON into the wizard and click Import Tasks.\n8. Review the extracted tasks, edit descriptions if needed, remove anything you do not want, then click to add them to your planner."
+            text: "1. Tap Import Syllabus (AI) on the main task view.\n2. Paste your syllabus text or upload a PDF, CSV, or DOCX file, then click Next.\n3. Choose Copy prompt to my AI.\n4. Optionally choose study days, prep days, skipped item types, or extra notes.\n5. Click Next to see the generated prompt — copy it with the Copy Prompt button.\n6. Paste the prompt into any AI (ChatGPT, Claude, etc.) and copy the JSON it returns. The prompt asks for a short useful description on every task.\n7. Paste that JSON into the wizard and click Import Tasks.\n8. Review the extracted tasks, edit descriptions if needed, remove anything you do not want, then click to add them to your planner."
           }
         },
         taskNotifications: {
@@ -738,6 +738,19 @@ const resources = {
         preferencesLabel: "Any hints for the AI? (optional)",
         preferencesPlaceholder: "e.g. remind me 3 days before each exam",
         preferencesHint: "These instructions are added to the AI prompt.",
+        preferencesExamDaysLabel: "Add a 'study' task how many days before each exam or final?",
+        preferencesExamDaysHint: "e.g. enter 3 → AI adds \"Study for Midterm\" 3 days before the exam",
+        preferencesAssignDaysLabel: "Add a 'prep' task how many days before each assignment or quiz?",
+        preferencesAssignDaysHint: "e.g. enter 1 → AI adds \"Finish Assignment\" 1 day before it's due",
+        preferencesSkipLabel: "Don't import these (select any to skip)",
+        preferencesSkipHint: "Nothing selected = import everything",
+        preferencesSkipLectures: "Lectures",
+        preferencesSkipOfficeHours: "Office Hours",
+        preferencesSkipReadings: "Readings",
+        preferencesSkipLabs: "Labs",
+        preferencesSkipTutorials: "Tutorials",
+        preferencesFreeTextLabel: "Anything else you want the AI to know? (optional)",
+        preferencesDaysPlaceholder: "days",
         promptTitle: "Your AI Prompt",
         promptPrivacy: "Nothing is sent anywhere — paste this prompt into any AI you choose.",
         promptCopy: "Copy Prompt",
@@ -1161,7 +1174,7 @@ const resources = {
           settingsImportExport: {
             question: "从设置导入或导出任务",
             title: "settings import export.gif",
-            text: "功能说明：\n「设置」把任务导入和导出工具集中在同一处。\n\n使用方法：\n1. 打开「设置」。\n2. 使用 Import ICS 导入日历文件。\n3. 使用 Import Syllabus 规划课程任务。\n4. 使用 Export ICS 下载任务并导入日历应用。"
+            text: "功能说明：\n「设置」集中提供日历导入和导出工具。\n\n使用方法：\n1. 打开「设置」。\n2. 使用 Import ICS 导入日历文件。\n3. 使用 Export ICS 下载任务并导入日历应用。\n4. 如需导入课程大纲，请在主任务视图点击 Import Syllabus (AI)。"
           },
           forgotPasswordFlow: {
             question: "忘记密码流程",
@@ -1171,12 +1184,12 @@ const resources = {
           syllabusAutoClarify: {
             question: "通过 AI 澄清信息后导入课程大纲",
             title: "how to import syllabus with clarifications.gif",
-            text: "功能说明：\n自动课程大纲导入会先检查日期、章节信息或重复安排是否不清楚，然后再创建任务。\n\n使用方法：\n1. 点击「导入课程大纲」，添加大纲文本或文件。\n2. 选择「用 Claude 自动分析」。\n3. 检查文本并点击「发送给 Claude」。\n4. 如果出现问题，请回答能确定的问题，也可以留空跳过。\n5. 点击「分析」，然后检查并添加建议任务。"
+            text: "功能说明：\n自动课程大纲导入会先检查日期、章节信息或重复安排是否不清楚，然后再创建任务。\n\n使用方法：\n1. 在主任务视图点击 Import Syllabus (AI)，添加大纲文本或文件。\n2. 选择「用 Claude 自动分析」。\n3. 填写任何可选偏好问题，然后点击「下一步」。\n4. 检查文本并点击「发送给 Claude」。\n5. 如果出现问题，请回答能确定的问题，也可以留空跳过。\n6. 点击「分析」，然后检查并添加建议任务。"
           },
           syllabusManual: {
             question: "使用自己的 AI 导入课程大纲",
             title: "how to import syllabus manually.gif",
-            text: "1. 点击侧边栏中的「导入课程大纲」。\n2. 粘贴大纲文本或上传 PDF、CSV 或 DOCX 文件，然后点击「下一步」。\n3. 选择「复制提示词到我的 AI」。\n4. 可选：填写学习偏好（例如「考试前 3 天提醒我」）。\n5. 点击「下一步」查看生成的提示词，用「复制提示词」按钮复制。\n6. 将提示词粘贴到任意 AI（ChatGPT、Claude 等）并复制它返回的 JSON。提示词会要求每个任务都有简短有用的描述。\n7. 将 JSON 粘贴回向导，点击「导入任务」。\n8. 检查提取的任务，按需编辑描述或删除不需要的任务，然后点击确认导入到计划中。"
+            text: "1. 在主任务视图点击 Import Syllabus (AI)。\n2. 粘贴大纲文本或上传 PDF、CSV 或 DOCX 文件，然后点击「下一步」。\n3. 选择「复制提示词到我的 AI」。\n4. 可选：选择备考天数、准备天数、要跳过的项目类型或额外说明。\n5. 点击「下一步」查看生成的提示词，用「复制提示词」按钮复制。\n6. 将提示词粘贴到任意 AI（ChatGPT、Claude 等）并复制它返回的 JSON。提示词会要求每个任务都有简短有用的描述。\n7. 将 JSON 粘贴回向导，点击「导入任务」。\n8. 检查提取的任务，按需编辑描述或删除不需要的任务，然后点击确认导入到计划中。"
           }
         },
         taskNotifications: {
@@ -1517,6 +1530,19 @@ const resources = {
         preferencesLabel: "对 AI 有什么特别说明？（选填）",
         preferencesPlaceholder: "例如：考试前 3 天提醒我",
         preferencesHint: "这些说明会附加到 AI 提示词中。",
+        preferencesExamDaysLabel: "每次考试或期末考前几天添加「备考」任务？",
+        preferencesExamDaysHint: "例如：输入 3 → AI 在考试前 3 天添加「备考 期中考」",
+        preferencesAssignDaysLabel: "每次作业或小测前几天添加「准备」任务？",
+        preferencesAssignDaysHint: "例如：输入 1 → AI 在截止日前 1 天添加「完成作业」",
+        preferencesSkipLabel: "不导入这些类型（可多选）",
+        preferencesSkipHint: "不选 = 全部导入",
+        preferencesSkipLectures: "讲座",
+        preferencesSkipOfficeHours: "答疑时间",
+        preferencesSkipReadings: "阅读材料",
+        preferencesSkipLabs: "实验课",
+        preferencesSkipTutorials: "辅导课",
+        preferencesFreeTextLabel: "还有什么想让 AI 知道的？（选填）",
+        preferencesDaysPlaceholder: "天数",
         promptTitle: "您的 AI 提示词",
         promptPrivacy: "数据不会发送到任何地方——请将此提示词粘贴到您选择的任意 AI 中。",
         promptCopy: "复制提示词",
