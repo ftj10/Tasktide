@@ -26,7 +26,7 @@ import MapIcon from "@mui/icons-material/Map";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import UploadFileRoundedIcon from "@mui/icons-material/UploadFileRounded";
-import FileDownloadRoundedIcon from "@mui/icons-material/FileDownloadRounded";
+import SchoolRoundedIcon from "@mui/icons-material/SchoolRounded";
 import TodayRoundedIcon from "@mui/icons-material/TodayRounded";
 import DoneAllRoundedIcon from "@mui/icons-material/DoneAllRounded";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
@@ -56,7 +56,7 @@ import {
 import { deleteSyllabusBatch } from "../app/storage";
 import { getPriorityAccent } from "../app/priorities";
 import { parseIcsTasks } from "../app/ics";
-import { ExportIcsDialog } from "../components/ExportIcsDialog";
+import { SyllabusImportDialog } from "./SyllabusImportDialog";
 
 export function TodayPage(props: {
   tasks: Task[];
@@ -120,7 +120,7 @@ export function TodayPage(props: {
     occurrenceDateYmd?: string;
   } | undefined>();
   const [allDoneOpen, setAllDoneOpen] = useState(false);
-  const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [syllabusDialogOpen, setSyllabusDialogOpen] = useState(false);
 
   useEffect(() => {
     onTaskDialogVisibilityChange?.(dialogOpen);
@@ -600,11 +600,11 @@ export function TodayPage(props: {
             </Button>
             <Button
               variant="outlined"
-              startIcon={<FileDownloadRoundedIcon />}
-              onClick={() => setExportDialogOpen(true)}
+              startIcon={<SchoolRoundedIcon />}
+              onClick={() => setSyllabusDialogOpen(true)}
               sx={{ borderRadius: 2.5 }}
             >
-              {t("today.exportIcs")}
+              {t("syllabus.importButton")}
             </Button>
             <Button
               id="today-add-task-button"
@@ -810,10 +810,11 @@ export function TodayPage(props: {
         onCancel={() => setAllDoneOpen(false)}
         onConfirm={markAllDone}
       />
-      <ExportIcsDialog
-        open={exportDialogOpen}
-        onClose={() => setExportDialogOpen(false)}
-        tasks={tasks}
+      <SyllabusImportDialog
+        open={syllabusDialogOpen}
+        onClose={() => setSyllabusDialogOpen(false)}
+        onImportSuccess={() => void reloadTasks?.()}
+        showToast={(msg, sev) => showToast?.(msg, sev)}
       />
     </Box>
   );
