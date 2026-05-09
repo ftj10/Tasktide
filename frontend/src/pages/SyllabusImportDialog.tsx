@@ -36,6 +36,8 @@ import { transformDraft } from "../app/syllabusSchema";
 import { extract } from "../app/syllabusExtraction";
 import { validatePastedJson } from "../app/syllabusJson";
 import { buildSyllabusPrompt } from "../app/syllabusPrompt";
+import { serializePreferences } from "../app/syllabusPrefs";
+import type { StructuredPrefs } from "../app/syllabusPrefs";
 import { TaskDialog } from "../components/TaskDialog";
 
 export type WizardStep =
@@ -191,6 +193,10 @@ export function SyllabusImportDialog(props: {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [extracting, setExtracting] = useState(false);
   const [studyPreferences, setStudyPreferences] = useState("");
+  const [examPrepDays, setExamPrepDays] = useState("");
+  const [assignmentPrepDays, setAssignmentPrepDays] = useState("");
+  const [skipTypes, setSkipTypes] = useState<string[]>([]);
+  const [prefsFreeText, setPrefsFreeText] = useState("");
   const [generatedPrompt, setGeneratedPrompt] = useState("");
   const [promptCopied, setPromptCopied] = useState(false);
   const [pastedJson, setPastedJson] = useState("");
@@ -246,6 +252,10 @@ export function SyllabusImportDialog(props: {
     setUploadedFiles([]);
     setExtracting(false);
     setStudyPreferences("");
+    setExamPrepDays("");
+    setAssignmentPrepDays("");
+    setSkipTypes([]);
+    setPrefsFreeText("");
     setGeneratedPrompt("");
     setPromptCopied(false);
     setPastedJson("");
@@ -307,14 +317,17 @@ export function SyllabusImportDialog(props: {
 
   function handleChooseAuto() {
     setWizardMode("auto");
-    setWizardStep("consent");
+    setWizardStep("preferences");
   }
 
   function handleContinuePreferences() {
-    const prompt = buildSyllabusPrompt(extractedText, studyPreferences);
+    const prefs: StructuredPrefs = { examPrepDays, assignmentPrepDays, skipTypes, prefsFreeText };
+    const serialized = serializePreferences(prefs);
+    setStudyPreferences(serialized);
+    const prompt = buildSyllabusPrompt(extractedText, serialized);
     setGeneratedPrompt(prompt);
     setPromptCopied(false);
-    setWizardStep("prompt");
+    setWizardStep(wizardMode === "auto" ? "consent" : "prompt");
   }
 
   async function handleCopyPrompt() {
@@ -445,7 +458,7 @@ export function SyllabusImportDialog(props: {
         setWizardStep("prompt");
         break;
       case "consent":
-        setWizardStep("method");
+        setWizardStep("preferences");
         break;
       case "clarify":
         setWizardStep("consent");
@@ -499,6 +512,13 @@ export function SyllabusImportDialog(props: {
 
   const activeCount = reviewItems.filter((item) => !item.deleted).length;
   const editingItem = editingIdx !== null ? reviewItems[editingIdx] : null;
+  const skipOptions = [
+    t("syllabus.preferencesSkipLectures"),
+    t("syllabus.preferencesSkipOfficeHours"),
+    t("syllabus.preferencesSkipReadings"),
+    t("syllabus.preferencesSkipLabs"),
+    t("syllabus.preferencesSkipTutorials"),
+  ];
 
   return (
     <>
@@ -615,19 +635,78 @@ export function SyllabusImportDialog(props: {
               </Button>
             </Stack>
           ) : wizardStep === "preferences" ? (
-            <Stack spacing={2} sx={{ pt: 0.5 }}>
-              <TextField
-                label={t("syllabus.preferencesLabel")}
-                placeholder={t("syllabus.preferencesPlaceholder")}
-                multiline
-                minRows={3}
-                fullWidth
-                value={studyPreferences}
-                onChange={(e) => setStudyPreferences(e.target.value)}
-              />
-              <Typography variant="caption" color="text.secondary">
-                {t("syllabus.preferencesHint")}
-              </Typography>
+            <Stack spacing={3} sx={{ pt: 0.5 }}>
+              <Stack spacing={0.75}>
+                <Typography variant="subtitle2">
+                  {t("syllabus.preferencesExamDaysLabel")}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {t("syllabus.preferencesExamDaysHint")}
+                </Typography>
+                <TextField
+                  value={examPrepDays}
+                  onChange={(e) => setExamPrepDays(e.target.value.replace(/\D/g, ""))}
+                  placeholder={t("syllabus.preferencesDaysPlaceholder")}
+                  sx={{ width: 100 }}
+                  inputProps={{ inputMode: "numeric" }}
+                />
+              </Stack>
+              <Stack spacing={0.75}>
+                <Typography variant="subtitle2">
+                  {t("syllabus.preferencesAssignDaysLabel")}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {t("syllabus.preferencesAssignDaysHint")}
+                </Typography>
+                <TextField
+                  value={assignmentPrepDays}
+                  onChange={(e) => setAssignmentPrepDays(e.target.value.replace(/\D/g, ""))}
+                  placeholder={t("syllabus.preferencesDaysPlaceholder")}
+                  sx={{ width: 100 }}
+                  inputProps={{ inputMode: "numeric" }}
+                />
+              </Stack>
+              <Stack spacing={1}>
+                <Typography variant="subtitle2">
+                  {t("syllabus.preferencesSkipLabel")}
+                </Typography>
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                  {skipOptions.map((label) => {
+                    const selected = skipTypes.includes(label);
+                    return (
+                      <Chip
+                        key={label}
+                        label={label}
+                        clickable
+                        color={selected ? "primary" : "default"}
+                        variant={selected ? "filled" : "outlined"}
+                        onClick={() =>
+                          setSkipTypes((prev) =>
+                            selected
+                              ? prev.filter((item) => item !== label)
+                              : [...prev, label]
+                          )
+                        }
+                      />
+                    );
+                  })}
+                </Box>
+                <Typography variant="caption" color="text.secondary">
+                  {t("syllabus.preferencesSkipHint")}
+                </Typography>
+              </Stack>
+              <Stack spacing={0.75}>
+                <Typography variant="subtitle2">
+                  {t("syllabus.preferencesFreeTextLabel")}
+                </Typography>
+                <TextField
+                  multiline
+                  minRows={2}
+                  fullWidth
+                  value={prefsFreeText}
+                  onChange={(e) => setPrefsFreeText(e.target.value)}
+                />
+              </Stack>
             </Stack>
           ) : wizardStep === "prompt" ? (
             <Stack spacing={2} sx={{ pt: 0.5 }}>

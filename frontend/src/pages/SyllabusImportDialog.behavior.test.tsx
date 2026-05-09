@@ -56,6 +56,10 @@ describe("SyllabusImportDialog ambiguity clarification", () => {
       screen.getByRole("button", { name: /analyze with claude/i })
     );
     await waitFor(() =>
+      screen.getByRole("button", { name: /^next$/i })
+    );
+    await user.click(screen.getByRole("button", { name: /^next$/i }));
+    await waitFor(() =>
       screen.getByRole("button", { name: /send to claude/i })
     );
     await user.click(screen.getByRole("button", { name: /send to claude/i }));

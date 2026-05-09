@@ -33,6 +33,10 @@ async function goToConsent(user: ReturnType<typeof userEvent.setup>) {
   );
   await user.click(screen.getByRole("button", { name: /analyze with claude/i }));
   await waitFor(() =>
+    screen.getByRole("button", { name: /^next$/i })
+  );
+  await user.click(screen.getByRole("button", { name: /^next$/i }));
+  await waitFor(() =>
     screen.getByRole("button", { name: /send to claude/i })
   );
 }
@@ -99,7 +103,7 @@ describe("SyllabusImportDialog behavior", () => {
     ).toBeInTheDocument();
   });
 
-  it("cancelling consent gate (Back) returns to method select", async () => {
+  it("cancelling consent gate (Back) returns to preferences", async () => {
     const user = userEvent.setup();
     const fetchSpy = vi.spyOn(globalThis, "fetch");
     renderSyllabusImportDialog();
@@ -110,7 +114,7 @@ describe("SyllabusImportDialog behavior", () => {
     await goToConsent(user);
     await user.click(screen.getByRole("button", { name: /^back$/i }));
     expect(
-      screen.getByRole("button", { name: /analyze with claude/i })
+      screen.getByText(/add a 'study' task how many days before each exam or final/i)
     ).toBeInTheDocument();
     expect(fetchSpy).not.toHaveBeenCalled();
   });
@@ -294,6 +298,10 @@ describe("SyllabusImportDialog behavior", () => {
     await user.click(
       screen.getByRole("button", { name: /analyze with claude/i })
     );
+    await waitFor(() =>
+      screen.getByRole("button", { name: /^next$/i })
+    );
+    await user.click(screen.getByRole("button", { name: /^next$/i }));
     await waitFor(() =>
       screen.getByRole("button", { name: /send to claude/i })
     );
