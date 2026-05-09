@@ -7,21 +7,33 @@ description: Coordinates the full AI-assisted development workflow for TaskTide 
 
 ## Phase 1 — Brainstorming (runs immediately on invocation)
 
-Invoke `/superpowers:brainstorming` now. That is the **only** action in Phase 1.
+Invoke `/brainstorming` now. That is the **only** action in Phase 1.
 
 > **HARD STOP after brainstorming completes.**
 > Do NOT classify, do NOT output a workflow path, do NOT generate a Codex prompt, do NOT invoke any other skill.
 > Wait silently for the user to continue.
 
-## Phase 2 — Workflow (only after user explicitly continues)
+## Phase 2 — Classification (only after user explicitly continues)
 
-When the user signals they are ready to proceed (e.g. "continue", "what's next", or gives a refined requirement):
+When the user signals they are ready to proceed:
 
-1. Read the user's requirement
-2. Classify it (see below)
-3. Output: chosen path, reason, command sequence, files to read/update, next action
-4. Generate the Codex handoff prompt for implementation and tests
-5. When implementation or tests are needed, route the work to Codex; this is mandatory, not optional
+1. Classify the requirement (see below)
+2. Output: chosen path, reason, and command sequence as a numbered list
+3. **HARD STOP.** Do NOT invoke any skill. Do NOT write any files. Do NOT generate a Codex prompt.
+4. Wait for the user to say which step to run next (e.g. "run step 1", "do the plan", "go").
+
+> Each step in the command sequence requires an **explicit user trigger** before it runs.
+> "go ahead", "yes", or "continue" does NOT mean run all remaining steps — it means run the single next step, then stop again.
+
+## Phase 3 — Step execution (one step at a time)
+
+When the user triggers a specific step:
+
+- Invoke only that one skill or action
+- **HARD STOP after it completes**
+- Report what was done, then wait for the user to trigger the next step
+
+When implementation or tests are needed, generate the Codex handoff prompt and route to Codex via `/codex:rescue --background`. This is mandatory — do not implement code yourself.
 
 ## Classification
 
@@ -37,14 +49,14 @@ When the user signals they are ready to proceed (e.g. "continue", "what's next",
 
 ### Large feature (4–5)
 ```
-/superpowers:brainstorming → /to-prd → /to-issues → /triage → /grill-with-docs
+/brainstorming → /to-prd → /to-issues → /triage → /grill-with-docs
 → /planning-with-files:plan → Claude TDD handoff prompt
 → Codex implements tests and code → Claude diff review → Codex fix prompt → /zoom-out
 ```
 
 ### Medium feature (3)
 ```
-/superpowers:brainstorming → /grill-with-docs → /planning-with-files:plan → Claude TDD handoff prompt
+/brainstorming → /grill-with-docs → /planning-with-files:plan → Claude TDD handoff prompt
 → Codex implements tests and code → Claude diff review → Codex fix prompt
 ```
 
@@ -101,12 +113,11 @@ Use:
 
 Use `/codex:rescue --background` for every task that needs implementation, bug investigation, or tests. If the plugin is not installed, still output the Codex handoff prompt and make Codex execution the required next action.
 
-## Output format (every run)
+## Output format (Phase 2 only)
 1. **Chosen workflow path** — with reason
-2. **Command sequence** — copyable list
+2. **Command sequence** — numbered list, each step labeled (e.g. "Step 1: /brainstorming")
 3. **Files to read** — before starting
 4. **Files to update** — after implementation
-5. **Next action** — the immediate next step
-6. **Codex handoff prompt** — required when implementation or tests are needed
+5. _(no "next action" — wait for user to trigger each step explicitly)_
 
 See [REFERENCE.md](REFERENCE.md) for full workflow details, templates, and TaskTide-specific rules.

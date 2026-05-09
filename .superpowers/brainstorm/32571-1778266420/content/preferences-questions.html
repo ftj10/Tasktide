@@ -1,0 +1,46 @@
+<h2>Proposed Preference Questions</h2>
+<p class="subtitle">These appear before the AI analyzes the syllabus (both manual and auto paths). All are optional.</p>
+
+<div class="mockup" style="max-width:520px;margin:0 auto;">
+  <div class="mockup-header">Study Preferences — Step UI Preview</div>
+  <div class="mockup-body" style="display:flex;flex-direction:column;gap:14px;padding:16px;">
+
+    <div style="display:flex;flex-direction:column;gap:4px;">
+      <label style="font-size:0.78rem;font-weight:600;color:#6366f1;">Q1 — Reminder lead time: Exams &amp; Finals</label>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="mock-input" style="width:60px;text-align:center;">3</div>
+        <span style="font-size:0.85rem;color:#666;">days before — leave blank to skip</span>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:4px;">
+      <label style="font-size:0.78rem;font-weight:600;color:#6366f1;">Q2 — Reminder lead time: Assignments &amp; Quizzes</label>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="mock-input" style="width:60px;text-align:center;">1</div>
+        <span style="font-size:0.85rem;color:#666;">days before — leave blank to skip</span>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:4px;">
+      <label style="font-size:0.78rem;font-weight:600;color:#6366f1;">Q3 — Skip these task types (select any)</label>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;padding:8px;border:1px solid #e0e0e0;border-radius:8px;background:#fafafa;">
+        <span style="padding:4px 10px;border-radius:20px;border:1.5px solid #6366f1;color:#6366f1;font-size:0.8rem;background:#eef2ff;">✓ Lectures</span>
+        <span style="padding:4px 10px;border-radius:20px;border:1.5px solid #ccc;color:#666;font-size:0.8rem;">Office Hours</span>
+        <span style="padding:4px 10px;border-radius:20px;border:1.5px solid #ccc;color:#666;font-size:0.8rem;">Readings</span>
+        <span style="padding:4px 10px;border-radius:20px;border:1.5px solid #ccc;color:#666;font-size:0.8rem;">Labs</span>
+        <span style="padding:4px 10px;border-radius:20px;border:1.5px solid #ccc;color:#666;font-size:0.8rem;">Tutorials</span>
+      </div>
+      <span style="font-size:0.72rem;color:#999;">None selected = extract everything</span>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:4px;">
+      <label style="font-size:0.78rem;font-weight:600;color:#6366f1;">Q4 — Anything else for the AI? (optional)</label>
+      <div class="mock-input" style="min-height:52px;color:#aaa;font-style:italic;font-size:0.82rem;">e.g. "use 24h time", "my prof posts slides late"…</div>
+    </div>
+
+  </div>
+</div>
+
+<div style="max-width:520px;margin:16px auto 0;">
+  <p class="subtitle" style="font-size:0.8rem;">Q1 and Q2 answers become instructions like <em>"Add a reminder 3 days before each exam"</em> appended to the AI prompt. Q3 becomes <em>"Skip lectures and readings"</em>. Q4 is passed as-is.</p>
+</div>

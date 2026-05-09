@@ -29,6 +29,7 @@
   "enabledPlugins": {
     "andrej-karpathy-skills@karpathy-skills": true,
     "codex@openai-codex": true,
-    "ui-ux-pro-max@ui-ux-pro-max-skill": true
+    "ui-ux-pro-max@ui-ux-pro-max-skill": true,
+    "superpowers@claude-plugins-official": false
   }
 }
