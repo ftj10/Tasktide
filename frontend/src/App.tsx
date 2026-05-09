@@ -266,7 +266,9 @@ export default function App() {
         for (const conn of data.connections ?? []) {
           addSavedAccount(conn.username, conn.switchToken);
         }
-      } catch {}
+      } catch {
+        return;
+      }
     }
 
     fetchInitialData();

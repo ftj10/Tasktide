@@ -1,5 +1,99 @@
 # Development Log
 
+## Version 2.15.0
+Update Date: 2026-05-09
+
+### Changes
+
+**`frontend/src/pages/TodayPage.tsx`**
+- Removed the Today-page export ICS dialog wiring and `FileDownloadRoundedIcon` usage.
+- Added `SyllabusImportDialog` and `SchoolRoundedIcon` imports.
+- Replaced the Export ICS toolbar button with the Syllabus Import button.
+- Added Today-page syllabus dialog state and reload/toast callbacks for successful imports.
+
+**`frontend/src/App.tsx`**
+- Replaced an empty catch block with an explicit return so the existing lint gate can pass.
+
+**`frontend/src/i18n.ts`**
+- Updated Help Center syllabus walkthrough text to point users to the main task view instead of Settings or the sidebar.
+
+**`package.json`, `frontend/package.json`, `frontend/package-lock.json`, `RELEASENOTES.md`, `frontend/src/app/releaseNotes.ts`, `README.md`, `DEVLOG.md`**
+- Bumped frontend version from `2.14.0` to `2.15.0`.
+- Added public, in-app, README, Help Center, and maintainer notes for the Today-page syllabus import entry point.
+
+### Design decisions
+- Settings keeps ICS export available, while Today prioritizes the higher-frequency course planning action beside daily task controls.
+- Successful syllabus imports trigger the existing optional task reload callback, matching the dialog integration pattern used elsewhere.
+
+---
+
+## Version 2.14.0
+Update Date: 2026-05-09
+
+### Changes
+
+**`frontend/src/pages/SyllabusImportDialog.tsx`**
+- Imported `serializePreferences` and `StructuredPrefs`.
+- Added structured preference state for exam prep days, assignment prep days, skipped source types, and extra preference text.
+- Reset structured preference state when the dialog closes.
+- Changed the auto path to route from method selection to preferences, then consent.
+- Replaced the single preference text area with numeric day inputs, selectable skip chips, and optional free text.
+- Serialized structured preferences before building the manual prompt or sending the auto analysis request.
+
+**`frontend/src/pages/SyllabusImportDialog.behavior.test.tsx`**
+- Updated the auto ambiguity test to advance through the preferences step before sending to Claude.
+
+**`frontend/src/app/helpCenter.ts`, `frontend/src/i18n.ts`**
+- Updated Help Center walkthrough text so automatic syllabus import includes the new preference step.
+
+**`frontend/package.json`, `frontend/package-lock.json`, `RELEASENOTES.md`, `frontend/src/app/releaseNotes.ts`, `README.md`, `DEVLOG.md`**
+- Bumped frontend version from `2.13.0` to `2.14.0`.
+- Added public, in-app, README, Help Center, and maintainer notes for structured syllabus preferences.
+
+### Design decisions
+- Structured inputs still serialize into the existing `studyPreferences` string so the prompt builder and draft generation API contract do not need to change.
+- Skip chips store translated labels because the serialized prompt is user-facing natural language.
+
+---
+
+## Version 2.13.0
+Update Date: 2026-05-09
+
+### Changes
+
+**`frontend/src/i18n.ts`**
+- Added English and Chinese syllabus preference keys for exam prep days, assignment prep days, skip chips, free-text notes, and days placeholders.
+
+**`frontend/package.json`, `frontend/package-lock.json`, `RELEASENOTES.md`, `frontend/src/app/releaseNotes.ts`, `README.md`, `DEVLOG.md`**
+- Bumped frontend version from `2.12.1` to `2.13.0`.
+- Added public, in-app, README, and maintainer notes for the structured preference translation keys.
+
+### Design decisions
+- Kept the original free-text preference strings in place while adding the structured labels, so existing screens remain valid during the wizard UI transition.
+
+---
+
+## Version 2.12.1
+Update Date: 2026-05-09
+
+### Changes
+
+**`frontend/src/app/syllabusPrefs.ts`**
+- Added `StructuredPrefs` and `serializePreferences` for converting structured syllabus preference fields into the existing natural-language prompt format.
+- Added positive-integer parsing for exam and assignment prep day fields, singular day wording, skipped source labels, and optional free-text appending.
+
+**`frontend/src/app/syllabusPrefs.test.ts`**
+- Added eight focused unit tests covering blank inputs, exam prep, assignment prep, singular wording, skipped types, free text, joined output, and invalid day values.
+
+**`frontend/package.json`, `frontend/package-lock.json`, `RELEASENOTES.md`, `frontend/src/app/releaseNotes.ts`, `README.md`, `DEVLOG.md`**
+- Bumped frontend version from `2.12.0` to `2.12.1`.
+- Added public, in-app, README, and maintainer notes for the structured syllabus preference serializer.
+
+### Design decisions
+- The serializer returns the same free-form string shape used by the current syllabus prompt builder, so downstream prompt and import code can remain unchanged.
+
+---
+
 ## Version 2.12.0
 Update Date: 2026-05-08
 

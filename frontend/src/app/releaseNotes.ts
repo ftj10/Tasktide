@@ -14,6 +14,86 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-05-09-today-syllabus-import",
+    version: "v2.15.0",
+    releasedAt: "2026-05-09",
+    title: { en: "Syllabus Import on Today", zh: "今日页面课程大纲导入" },
+    summary: {
+      en: "Start AI syllabus import directly from the main task view.",
+      zh: "现在可直接从主任务页面开始 AI 课程大纲导入。",
+    },
+    changes: {
+      en: [
+        "Added: Import Syllabus (AI) now appears on the Today page.",
+        "Improved: Course planning starts from the same place you manage daily tasks.",
+      ],
+      zh: [
+        "新增：「导入课程大纲（AI）」现在显示在今日页面。",
+        "改进：课程规划现在可从管理每日任务的同一位置开始。",
+      ],
+    },
+  },
+  {
+    id: "2026-05-09-structured-syllabus-preferences",
+    version: "v2.14.0",
+    releasedAt: "2026-05-09",
+    title: { en: "Structured Syllabus Preferences", zh: "结构化课程大纲偏好" },
+    summary: {
+      en: "Syllabus Import now asks clearer optional questions before creating tasks.",
+      zh: "课程大纲导入现在会在创建任务前提出更清晰的可选偏好问题。",
+    },
+    changes: {
+      en: [
+        "Added: Choose how many days before exams to add study tasks.",
+        "Added: Choose how many days before assignments or quizzes to add prep tasks.",
+        "Added: Skip course item types such as lectures, readings, labs, tutorials, or office hours.",
+        "Improved: Analyze with Claude now includes preferences before the consent step.",
+      ],
+      zh: [
+        "新增：可选择考试前几天添加备考任务。",
+        "新增：可选择作业或小测前几天添加准备任务。",
+        "新增：可跳过讲座、阅读材料、实验课、辅导课或答疑时间等课程项目。",
+        "改进：用 Claude 自动分析现在会先填写偏好，再进入发送确认。",
+      ],
+    },
+  },
+  {
+    id: "2026-05-09-syllabus-preference-translations",
+    version: "v2.13.0",
+    releasedAt: "2026-05-09",
+    title: { en: "Structured Syllabus Preference Text", zh: "结构化课程大纲偏好文案" },
+    summary: {
+      en: "Syllabus Import now has clearer bilingual labels ready for structured preference questions.",
+      zh: "课程大纲导入现在准备了更清晰的双语结构化偏好问题文案。",
+    },
+    changes: {
+      en: [
+        "Added: Preference wording now covers study tasks, prep tasks, skipped course items, and extra AI notes.",
+      ],
+      zh: [
+        "新增：偏好文案现在覆盖备考任务、准备任务、跳过课程项目和额外 AI 说明。",
+      ],
+    },
+  },
+  {
+    id: "2026-05-09-syllabus-preferences-serializer",
+    version: "v2.12.1",
+    releasedAt: "2026-05-09",
+    title: { en: "Syllabus Preference Prep", zh: "课程大纲偏好准备" },
+    summary: {
+      en: "Syllabus import is being prepared for clearer preference choices before task generation.",
+      zh: "课程大纲导入正在为更清晰的偏好选择做好准备。",
+    },
+    changes: {
+      en: [
+        "Improved: Syllabus preferences can now be organized into study timing, prep timing, skipped items, and extra notes.",
+      ],
+      zh: [
+        "改进：课程大纲偏好现在可整理为备考时间、准备时间、跳过项目和额外说明。",
+      ],
+    },
+  },
+  {
     id: "2026-05-08-symmetric-accounts",
     version: "v2.12.0",
     releasedAt: "2026-05-08",

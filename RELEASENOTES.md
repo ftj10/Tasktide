@@ -1,5 +1,49 @@
 # Release Notes
 
+Title: Version 2.15.0 – Update Released (2026-05-09)
+
+What’s New
+
+- Added: Import Syllabus (AI) is now available from the main Today task view.
+
+Improvements
+
+- Improved: Course planning is easier to start because syllabus import now lives beside daily task actions.
+
+Fixes
+
+Title: Version 2.14.0 – Update Released (2026-05-09)
+
+What’s New
+
+- Added: Syllabus Import now asks clear optional questions for exam study timing, assignment prep timing, skipped course items, and extra AI notes.
+
+Improvements
+
+- Improved: Analyze with Claude now includes the same preference step before review and consent, so automatic imports can better match how you study.
+
+Fixes
+
+Title: Version 2.13.0 – Update Released (2026-05-09)
+
+What’s New
+
+- Added: Syllabus Import now has bilingual wording ready for study timing, prep timing, skipped item, and extra instruction preferences.
+
+Improvements
+
+Fixes
+
+Title: Version 2.12.1 – Update Released (2026-05-09)
+
+What’s New
+
+Improvements
+
+- Improved: Syllabus preferences are now prepared for clearer study timing, prep timing, skipped item, and extra instruction choices in the import flow.
+
+Fixes
+
 Title: Version 2.12.0 – Update Released (2026-05-08)
 
 What’s New

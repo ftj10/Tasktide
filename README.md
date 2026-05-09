@@ -1,6 +1,6 @@
 # TaskTide Application
 
-Current version: `v2.12.0`
+Current version: `v2.15.0`
 
 TaskTide is a full-stack planner for daily tasks, weekly routines, reminders, shared help questions, calendar-based scheduling, and mobile-first weekly organization.
 
@@ -12,8 +12,8 @@ Deployed Web: TaskTide
 
 ## Features
 
-- A Settings page (`/settings`) centralizes account actions, password changes, saved username account switching, language switching, install guidance, ICS import, syllabus import, and ICS export.
-- A Syllabus Import wizard lets you paste a course syllabus or upload one or more files — PDF, CSV, and Word (.docx) are all supported. You can mix file types and paste text together; all sources are combined before analysis. The AI prompt asks for concise task descriptions and looks for exams, assignments, readings, prep work, recurring course obligations, and other academic planning items. Before sending to Claude, a consent gate shows you exactly what text will be shared. Automatic import checks for ambiguous syllabus details first, lets you answer optional clarification questions, then creates task drafts with the high-quality analysis path. Extracted task drafts appear on a review screen where you can edit, remove, or restore each item before confirming. The wizard saves your progress for 24 hours so a closed browser does not mean starting over. Batch imports are capped at 200 tasks. Access it from Settings on desktop or mobile.
+- A Settings page (`/settings`) centralizes account actions, password changes, saved username account switching, language switching, install guidance, ICS import, and ICS export.
+- A Syllabus Import wizard on the Today page lets you paste a course syllabus or upload one or more files — PDF, CSV, and Word (.docx) are all supported. You can mix file types and paste text together; all sources are combined before analysis. Structured preferences let you choose study timing, assignment prep timing, skipped course item types, and optional extra notes before prompt generation or Claude analysis. The AI prompt asks for concise task descriptions and looks for exams, assignments, readings, prep work, recurring course obligations, and other academic planning items. Before sending to Claude, a consent gate shows you exactly what text will be shared. Automatic import checks for ambiguous syllabus details first, lets you answer optional clarification questions, then creates task drafts with the high-quality analysis path. Extracted task drafts appear on a review screen where you can edit, remove, or restore each item before confirming. The wizard saves your progress for 24 hours so a closed browser does not mean starting over. Batch imports are capped at 200 tasks.
 - Task and reminder CRUD actions — create, update, complete, delete — each confirm with a brief toast notification at the bottom of the screen, including a correct completion message when reminders are marked done. ICS import results also appear as toasts instead of inline banners.
 - Secure registration and login with HttpOnly cookie sessions and persisted `USER` / `ADMIN` roles.
 - Signed-in users can change their password from Settings and use saved username shortcuts to switch accounts without storing passwords.
@@ -53,7 +53,7 @@ Deployed Web: TaskTide
 - Help Center now includes `Quick Walkthroughs`: short question-driven modal guides with GIF-ready media slots for adding tasks, opening Week, finding saved tasks, drag-to-add, and Task Notifications setup.
 - Help Center includes a start-to-finish website guide, focused walkthroughs, and clickable Q&A entries, including offline page guidance.
 - Help Center now explains mobile notification setup, mobile web-app installation, and browser-specific installed-app behavior for iPhone, iPad, and Android.
-- The app shell includes a Settings entry point for installing TaskTide, switching language, importing tasks, exporting tasks, and logging out.
+- The app shell includes a Settings entry point for installing TaskTide, switching language, calendar import and export, and logging out.
 - Help-question posting now keeps the draft visible if the request fails instead of showing a false success state.
 - Week view now respects one-day recurring-task time overrides when placing events on the calendar.
 - Week view now generates recurring events only for the visible range and reuses cached occurrence windows for repeated range renders.
@@ -144,7 +144,7 @@ npm --prefix frontend run build
 - Email notifications are opt-in from Settings and require SMTP environment variables. If `EMAIL_HOST` is not set, email sending degrades without crashing and password reset requests report that email is not configured.
 - `Enable Task Notifications` creates or reuses the current browser subscription and saves it through `POST /notifications/subscriptions`; the backend upserts by endpoint so the same browser does not create duplicate subscription records.
 - `Disable Task Notifications` unsubscribes only the current browser or installed app and deletes only that endpoint through `DELETE /notifications/subscriptions`; other signed-in devices remain connected.
-- Use `Import ICS` on the Today page when you want to bring calendar events into the planner from a `.ics` export. The importer keeps titles, notes, locations, multi-day all-day ranges, timed events, and supported daily, weekly, monthly, and yearly recurrence rules.
+- Use `Import ICS` on the Today page when you want to bring calendar events into the planner from a `.ics` export. Use `Import Syllabus (AI)` on the Today page when you want AI help turning a course outline into planner tasks. The ICS importer keeps titles, notes, locations, multi-day all-day ranges, timed events, and supported daily, weekly, monthly, and yearly recurrence rules.
 - The in-app Updates center mirrors the latest shipped release metadata from `frontend/src/app/releaseNotes.ts` and groups each release under `New Features`, `Improvements`, and `Bug Fixes`.
 - The frontend lint check is separate from `npm test`; run it before shipping UI changes so type, hook, and style issues are caught early.
 - Production builds split heavy planner views and vendor libraries into cacheable chunks; watch the Vite output if a future feature grows the entry bundle again.
