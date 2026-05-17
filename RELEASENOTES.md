@@ -1,5 +1,10 @@
 # Release Notes
 
+## Version 2.12.1 – Update Released (2026-05-16)
+
+### Fixes
+- Fixed: Tasks and reminders now always load the latest data from the server, even when a background sync had a conflict with a change made on another device.
+
 Title: Version 2.15.0 – Update Released (2026-05-09)
 
 What’s New

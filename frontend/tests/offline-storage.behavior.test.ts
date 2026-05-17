@@ -95,7 +95,7 @@ describe("offline storage behavior", () => {
     });
   });
 
-  it("keeps a stale offline task update queued when the server task changed first", async () => {
+  it("discards a stale offline task update when the server task changed first (server wins)", async () => {
     const originalTask = buildTask({ updatedAt: "2026-04-30T12:00:00.000Z" });
     const offlineEdit = buildTask({ title: "Offline edit", updatedAt: "2026-04-30T12:05:00.000Z" });
     const serverEdit = buildTask({ title: "Server edit", updatedAt: "2026-04-30T12:03:00.000Z" });
@@ -106,10 +106,10 @@ describe("offline storage behavior", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     await expect(updateTask(offlineEdit, originalTask)).resolves.toBeUndefined();
-    await expect(flushPendingTaskSync()).rejects.toThrow("Task sync conflict");
+    await expect(flushPendingTaskSync()).resolves.toBeUndefined();
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(fetchMock.mock.calls[1][0]).toBe("/api/tasks");
-    expect(localStorage.getItem("tasktide_tasks_sync_queue_v1")).toContain("Offline edit");
+    expect(localStorage.getItem("tasktide_tasks_sync_queue_v1")).toBeNull();
   });
 });

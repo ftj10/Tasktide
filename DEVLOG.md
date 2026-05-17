@@ -1,5 +1,26 @@
 # Development Log
 
+## Version 2.12.1
+Update Date: 2026-05-16
+
+### Changes
+
+**`frontend/src/app/storage.ts`**
+- `loadTasks`: Split into two separate try/catch blocks. The flush block now logs and continues on error rather than falling into the stale-cache return path. Only a failed server fetch falls back to LocalStorage cache. Previously, any exception from `flushPendingTaskSync` (including conflict detection) caused the function to return stale cached data even when the server was reachable.
+- `flushPendingTaskSync`: Conflict entries detected by `assertPendingTaskSyncHasNoConflict` are now silently skipped (server version wins) instead of throwing. The conflicting entry is removed from the queue and the loop continues. This prevents the queue from being permanently blocked by a single conflict.
+
+**`frontend/src/App.tsx`**
+- `syncOfflineTaskChanges` (online-event handler): Removed the redundant direct `flushPendingTaskSync()` call. The handler now calls `reloadTasksFromServer()` directly, which internally calls `loadTasks()` → `flushPendingTaskSync()`. The old pattern called flush twice and suppressed the reload if the first flush threw.
+
+**`frontend/tests/offline-storage.behavior.test.ts`**
+- Updated the conflict-detection test to match new "server wins" behavior: `flushPendingTaskSync` now resolves (not rejects) on conflict, and the queue is cleared rather than preserved.
+
+### Root Cause
+HAR comparison (debug har/) showed both devices had identical server data (147 tasks, 19 reminders). The sync divergence was caused by `loadTasks` returning stale LocalStorage cache whenever `flushPendingTaskSync` threw — including on conflict errors — even though the server was fully reachable. Device 2 (fresh load with a pending queue conflict) was stuck on cached data while device 1 served fresh results.
+
+### Note on "message channel closed" error
+The "a listener indicated an asynchronous response by returning true, but the msg channel closed before a response was received" error in the HAR device's console is from a browser extension (Chrome Extension runtime messaging API), not TaskTide. `push-sw.js` has no `message` event listener. No code change required.
+
 ## Version 2.15.0
 Update Date: 2026-05-09
 

@@ -225,7 +225,15 @@ export async function flushPendingTaskSync() {
 
   while (remainingQueue.length) {
     const entry = remainingQueue[0];
-    assertPendingTaskSyncHasNoConflict(entry, serverTasksById);
+    if (serverTasksById) {
+      try {
+        assertPendingTaskSyncHasNoConflict(entry, serverTasksById);
+      } catch {
+        remainingQueue.shift();
+        setPendingTaskSyncQueue(remainingQueue);
+        continue;
+      }
+    }
 
     if (entry.type === "create") {
       await requestOk('/tasks', {
@@ -430,6 +438,11 @@ export async function logoutUser() {
 export async function loadTasks(): Promise<Task[]> {
   try {
     await flushPendingTaskSync();
+  } catch (error) {
+    console.error("Failed to flush pending task sync", error);
+  }
+
+  try {
     const serverTasks = normalizeTasks(await requestJson<Task[]>('/tasks'));
     saveCachedTasks(serverTasks);
     return serverTasks;

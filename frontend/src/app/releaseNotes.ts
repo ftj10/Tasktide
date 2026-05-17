@@ -14,6 +14,24 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    id: "2026-05-16-sync-conflict-fix",
+    version: "v2.12.1",
+    releasedAt: "2026-05-16",
+    title: { en: "Sync Reliability Fix", zh: "同步稳定性修复" },
+    summary: {
+      en: "Tasks always reload fresh from the server, even after a sync conflict.",
+      zh: "即使发生同步冲突，任务也会始终从服务器重新加载最新数据。",
+    },
+    changes: {
+      en: [
+        "Fixed: Tasks and reminders now always show the latest server data, even when a background offline sync had a conflict with a change from another device.",
+      ],
+      zh: [
+        "修复：即使离线同步与其他设备的更改发生冲突，任务和提醒现在也始终显示服务器最新数据。",
+      ],
+    },
+  },
+  {
     id: "2026-05-09-today-syllabus-import",
     version: "v2.15.0",
     releasedAt: "2026-05-09",

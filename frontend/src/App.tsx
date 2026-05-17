@@ -36,7 +36,6 @@ import {
   createTask,
   deleteReminder,
   deleteTask,
-  flushPendingTaskSync,
   addSavedAccount,
   getUsername,
   loadSession,
@@ -353,11 +352,9 @@ export default function App() {
     if (!isAuthenticated) return;
 
     function syncOfflineTaskChanges() {
-      void flushPendingTaskSync()
-        .then(() => reloadTasksFromServer())
-        .catch((error) => {
-          console.error(error);
-        });
+      void reloadTasksFromServer().catch((error) => {
+        console.error(error);
+      });
     }
 
     window.addEventListener("online", syncOfflineTaskChanges);
